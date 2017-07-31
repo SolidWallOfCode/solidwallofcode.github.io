@@ -1,0 +1,393 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Traffic Server Projects &#8212; AMC Traffic Server Documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="AMC Traffic Server Documentation" href="index.html" />
+    <link rel="next" title="Buffer Writer" href="buffer-writer.en.html" />
+    <link rel="prev" title="Solid Wall Of Code Documents" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="buffer-writer.en.html" title="Buffer Writer"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Solid Wall Of Code Documents"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Traffic Server Projects</a><ul>
+<li><a class="reference internal" href="#lua-configuration">Lua Configuration</a></li>
+<li><a class="reference internal" href="#layer-7-routing">Layer 7 Routing</a></li>
+<li><a class="reference internal" href="#forwarded-header">Forwarded Header</a></li>
+<li><a class="reference internal" href="#body-factory-cleanup">Body Factory Cleanup</a></li>
+<li><a class="reference internal" href="#logging-tags-from-plugins">Logging tags from plugins</a></li>
+<li><a class="reference internal" href="#c-abi-to-core">C++ ABI to Core</a></li>
+<li><a class="reference internal" href="#plugin-c-api">Plugin C++ API</a></li>
+<li><a class="reference internal" href="#bijection">Bijection</a><ul>
+<li><a class="reference internal" href="#compacting-arena">Compacting Arena</a></li>
+<li><a class="reference internal" href="#replace-tcl-hash-maps">Replace TCL hash maps</a></li>
+<li><a class="reference internal" href="#id1">Bijection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rpc-refactoring">RPC Refactoring</a></li>
+<li><a class="reference internal" href="#testing">Testing</a><ul>
+<li><a class="reference internal" href="#pure-replay-testing">Pure Replay testing</a></li>
+<li><a class="reference internal" href="#header-comparators">Header Comparators</a></li>
+<li><a class="reference internal" href="#traffic-capture-sampling">Traffic Capture / Sampling</a></li>
+<li><a class="reference internal" href="#production-verification">Production Verification</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cache-tool">Cache Tool</a></li>
+<li><a class="reference internal" href="#traffic-server-core">Traffic Server Core</a></li>
+<li><a class="reference internal" href="#dynamic-cert-loader">Dynamic Cert Loader</a></li>
+<li><a class="reference internal" href="#plugin-coordination">Plugin Coordination</a></li>
+<li><a class="reference internal" href="#http-2-outbound">HTTP/2 Outbound</a></li>
+<li><a class="reference internal" href="#jemalloc-and-memory-allocators">jemalloc and memory allocators</a></li>
+<li><a class="reference internal" href="#tls">TLS</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Solid Wall Of Code Documents</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="buffer-writer.en.html"
+                        title="next chapter">Buffer Writer</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ats-projects.en.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="traffic-server-projects">
+<span id="ats-projects"></span><h1>Traffic Server Projects<a class="headerlink" href="#traffic-server-projects" title="Permalink to this headline">¶</a></h1>
+<p>Diagram.</p>
+<img src="_images/graphviz-62d55fccb67266002584e1b07f12afc9f80a52e0.png" alt="digraph {
+
+  subgraph {
+    l7r_project [shape=folder];
+    hostdb_project [shape=folder];
+    request_resolver_project [shape=folder];
+
+    l7r_project -&gt; {hostdb_project request_resolver_project};
+  }
+
+  subgraph {
+    lua_config_project [shape=folder];
+    lua_tree_extractor [shape=rect style=rounded];
+    ts_lua_config [shape=rect style=rounded];
+
+    lua_config_project -&gt; { lua_tree_extractor ts_lua_config};
+  }
+
+  subgraph {
+    RPC_refactor [shape=folder];
+    RPC_library [shape=rect style=rounded];
+    RPC_manager_no_delay [shape=rect style=rounded];
+    RPC_bidirectional [shape=rect style=rounded];
+    RPC_plugin [shape=rect style=rounded];
+
+    RPC_refactor -&gt; {RPC_library RPC_manager_no_delay RPC_bidirectional RPC_plugin};
+    RPC_library -&gt; RPC_manager_no_delay;
+    RPC_library -&gt; RPC_bidirectional;
+    RPC_bidirectional -&gt; RPC_plugin
+  }
+
+}" />
+<div class="section" id="lua-configuration">
+<h2>Lua Configuration<a class="headerlink" href="#lua-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Going forward Traffic Server is pushing to have all configuration be Lua based. A recent discussion on the
+mailing list indicates that Lua may be required for all new configuration files or changes. This
+project is about providing that technology in a generic way to make it easier to add configuration
+for new features.</p>
+<p>The basic idea is to use the TSConfig C++ API as the interface to the Lua data. TSConfig provides an tree structure value interface. Values are of 4 types</p>
+<ul class="simple">
+<li>Primitive - string, integer, float.</li>
+<li>List - a sequence of Value instances.</li>
+<li>Map - Pairs of keys and values.</li>
+</ul>
+<p>Configuration is done by assigning data in Lua to a set of root / global Lua variables. These are specified to TSConfig which then copies the data from the root variables in to the C++ data space where it is made accessible via the previous described interface.</p>
+<p>There are two parts of the implementation. The first is the ability to extract arbitrary Lua data
+structures from a Lua state to C++. The second is the TSConfig interface to provide access to the
+acquired data.</p>
+<p>The current state is the TSConfig interface is mostly written, as it would be based on the current TSConfig library in open source.</p>
+<p>For Lua data extraction I have conducted some limited experiments and have a plan for this part of the project but have not written that code as of yet.</p>
+</div>
+<div class="section" id="layer-7-routing">
+<h2>Layer 7 Routing<a class="headerlink" href="#layer-7-routing" title="Permalink to this headline">¶</a></h2>
+<p>Select upstream target based on the HTTP header information.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Need to consider the ability to bypass upstream selection for non-caching objects (e.g., skip a second caching layer for requests that will always end up at the origin anyway).</p>
+</div>
+</div>
+<div class="section" id="forwarded-header">
+<h2>Forwarded Header<a class="headerlink" href="#forwarded-header" title="Permalink to this headline">¶</a></h2>
+<p>A basic implementation was done for our fork of ATS 5.3.x. This suffices for internal use for now, but for open source it will have to be done better. I did some design based on Walt&#8217;s work and then Walt, Leif, and I had a discussion on future directions for this work. That breaks down in to several steps.</p>
+<ul class="simple">
+<li>Fixed buffer printer class, which takes a buffer and then supports type safe printing on it. See <a class="reference internal" href="buffer-writer.en.html#buffer-writer"><span class="std std-ref">Buffer Writer</span></a>.</li>
+<li>A subclass of the fixed buffer printer which takes a template argument to allocate local (stack) storage for the buffer.</li>
+<li>Update the current Forwarded header logic to use these classes.</li>
+<li>More flexible configuration.</li>
+</ul>
+</div>
+<div class="section" id="body-factory-cleanup">
+<h2>Body Factory Cleanup<a class="headerlink" href="#body-factory-cleanup" title="Permalink to this headline">¶</a></h2>
+<p>The core logic used to generate proxy replies is convoluted and fragile. It has needed to be cleaned up for a long time both to make it more robust and maintainable but also to add features that are currently hard to do. There are also arbitrar internal limits which are entirely artifacts of the implementation.</p>
+<p>The basic plan is to extend the fixed buffer printer classes to have one that takes an <code class="code docutils literal"><span class="pre">MIOBuffer</span></code> as its output. This would make it basically equivalent to C++ I/O stream operators but using Traffic Server core mechanisms. Then a new &#8220;Format&#8221; class would be done which processes the current log style format strings in a generic and modular way. The body factory would be updated to use these new classes.</p>
+</div>
+<div class="section" id="logging-tags-from-plugins">
+<h2>Logging tags from plugins<a class="headerlink" href="#logging-tags-from-plugins" title="Permalink to this headline">¶</a></h2>
+<p>This has been a desire for a long time but the implementation is a bit tricky with regard to timing, due to logging being done as the transaction is being terminated and data may have already disappeared. I have some ideas but those would require some additional infrastructure such as better arenas.</p>
+</div>
+<div class="section" id="c-abi-to-core">
+<h2>C++ ABI to Core<a class="headerlink" href="#c-abi-to-core" title="Permalink to this headline">¶</a></h2>
+<p>There is currently a C++ API for plugins but this is really a wrapper on the C API. It would be good
+to be able to have actual C++ APIs in to the core. There are a number of core features that should
+be made available to plugins, such as the network address handling code and the string view classes.
+The primary problem is the fragility of the C++ ABI, some mechanism would be needed to deal with
+this.</p>
+</div>
+<div class="section" id="plugin-c-api">
+<h2>Plugin C++ API<a class="headerlink" href="#plugin-c-api" title="Permalink to this headline">¶</a></h2>
+<p>The plugin C++ API needs a lot of polishing and updating.</p>
+</div>
+<div class="section" id="bijection">
+<h2>Bijection<a class="headerlink" href="#bijection" title="Permalink to this headline">¶</a></h2>
+<p>Bijection is a class I wrote for my own product software long ago, but it depends on some sophisticated Boost library support and so could not be easily ported to Traffic Server. It was a very useful class, particularly for configuration work and enumeration support. It is a goal of mine because building will create a good amount of powerful infrastructure which will be useful in other situations.</p>
+<div class="section" id="compacting-arena">
+<h3>Compacting Arena<a class="headerlink" href="#compacting-arena" title="Permalink to this headline">¶</a></h3>
+<p>Memory arena support should be formalized in to a support class. Having a better string arena for
+transactions would be a clear improvement in memory handling. The compacting arena is one that does
+standard memory arena support but also enables compacting / coalescing its in use memory in to a
+single block. This is very useful for data constructed at process start time and then not updated.</p>
+</div>
+<div class="section" id="replace-tcl-hash-maps">
+<h3>Replace TCL hash maps<a class="headerlink" href="#replace-tcl-hash-maps" title="Permalink to this headline">¶</a></h3>
+<p>There is currently a templated hash map table but it requires externally allocated memory. This has its benefits in complex situations but is simply annoying for basic hash table use. Adding the compacting arena to the current <code class="code docutils literal"><span class="pre">TSHashTable</span></code> would yield an easily usable hash table with the desired memory allocation properties.</p>
+</div>
+<div class="section" id="id1">
+<h3>Bijection<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Given the compacting arena and <code class="code docutils literal"><span class="pre">TSHashTable</span></code> buidling the bijection class is straightforward. Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is the essential technique.</p>
+</div>
+</div>
+<div class="section" id="rpc-refactoring">
+<h2>RPC Refactoring<a class="headerlink" href="#rpc-refactoring" title="Permalink to this headline">¶</a></h2>
+<p>The current RPC mechanism used to communicate between command line tools and <code class="code docutils literal"><span class="pre">traffic_manager</span></code> is rather a mess and implemented in a assymmetric way. It should be refactored in two steps.</p>
+<ul class="simple">
+<li>Move the RPC logic to separate library.</li>
+<li>Make the RPC symmetric / bidirectional.</li>
+</ul>
+<p>As a side project, there is currently a roughly 5 second delay in communications for no apparent reason. As best as I can tell it is a deliberate pause to avoid <code class="code docutils literal"><span class="pre">epoll</span></code>. This should be fixed.</p>
+</div>
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pure-replay-testing">
+<h3>Pure Replay testing<a class="headerlink" href="#pure-replay-testing" title="Permalink to this headline">¶</a></h3>
+<p>It should be possible to have run tests using only a replay file and potentially some configuration information, without any Python code at all. This requires the micro-DNS server.</p>
+</div>
+<div class="section" id="header-comparators">
+<h3>Header Comparators<a class="headerlink" href="#header-comparators" title="Permalink to this headline">¶</a></h3>
+<p>Frequently the literalness of the gold testing is a problem. AUTest should have comparators that are specialized for HTTP headers. This could be worked in to the replay file format with metadata indicating which headers should be literal, vs. present/absent vs. irrelevant. Replay file based testing would greatly benefit from this.</p>
+</div>
+<div class="section" id="traffic-capture-sampling">
+<h3>Traffic Capture / Sampling<a class="headerlink" href="#traffic-capture-sampling" title="Permalink to this headline">¶</a></h3>
+<p>At one point the technology existed to capture traffic for traffic replay. This should be resurrected and improved. After discussion among the group it seems that for replay purposes literal content is unnecessary, only the size matters. It is still debated if full capture is useful for debugging purposes. My opinion is it is not and complicates the capture process unnecessarily.</p>
+<p>We have an ask from another team for monitoring based roughly on this technology. A third party box would be placed in a data center and an ATS instance would proxy its outbound connections and produce records of its transactions. The outbound connections would be of two types.</p>
+<ul class="simple">
+<li>HTTPS connection which are presumed small and API based, at a rate of 1/second or less. These would be monitored in their entirety.</li>
+<li>HTTP connections which are presumed rare and essential downloads of new packages. Only headers and content size would be recorded for these.</li>
+</ul>
+<p>I think in terms of building out the replay tooling, making a plugin to do this is a good start. The plugin should record</p>
+<ul class="simple">
+<li>Each transaction</li>
+<li>The four headers</li>
+<li>The protocol stack for the user agent.</li>
+<li>The association between transactions and sessions.</li>
+<li>Sampling should be session based.</li>
+</ul>
+</div>
+<div class="section" id="production-verification">
+<h3>Production Verification<a class="headerlink" href="#production-verification" title="Permalink to this headline">¶</a></h3>
+<p>It would be nice to be able to run AUTest against live production systems to verify behavior, particularly with regard to paranoid requirements.</p>
+</div>
+</div>
+<div class="section" id="cache-tool">
+<h2>Cache Tool<a class="headerlink" href="#cache-tool" title="Permalink to this headline">¶</a></h2>
+<p>Cache Tool is a command line tool for interacting with the Traffic Server cache. I originally started it as a test bed for a variety of technology of interest to me, including</p>
+<ul class="simple">
+<li>LibScalar - a template for creating quantized integral types.</li>
+<li>StringView - read only view of string data.</li>
+<li>New data structures for the cache, as part of a larger scale redesign.</li>
+<li>Improved stripe allocation algorithms.</li>
+</ul>
+<p>It was originally made as a side project for eventual release while various of these technologies were exported to open source. In addition to being a test bed, Cache Tool was intended to do useful work, one such feature (stripe re-allocation) to get around a bug in Traffic Server was sufficiently desirable that i was pressured in to making Cache Tool itself available to the community.</p>
+<ul class="simple">
+<li>Fix stripe allocation for unused disks.</li>
+<li>List stripe data for a cache.</li>
+<li>Clear / reset cache disks independently.</li>
+<li>Provide cache directory analysis, as is done by <code class="code docutils literal"><span class="pre">--command</span> <span class="pre">--check</span></code> now, but with sufficiently low resource requirements it can be run on live system.</li>
+<li>Cache directory diagnostics.</li>
+<li>Cache scanning
+*  Scan to purge.
+*  Statistical analysis.</li>
+<li>Cache repartitioning.<ul>
+<li>Store additional information about cache configuration.
+*  More efficient and reliable examination.
+*  Required to repartition, if values are always computed there is a chicken and egg problem.</li>
+<li>Update stripes to shift storage between directory and content (change effect average object size).</li>
+<li>Maintain backwards compatibility and some forward compatibility. In particular it must be
+possible to run 8.0 on a box and revert to 7.X without clearing the cache.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="traffic-server-core">
+<h2>Traffic Server Core<a class="headerlink" href="#traffic-server-core" title="Permalink to this headline">¶</a></h2>
+<p>Restructure the overridable configs to remove cyclic dependencies. Already discussed with community and I have a design.</p>
+<p>Event loop changes - put in our 5.3.x fork but never contributed to open source. This will be necessary relatively soon in the internal 7.1.x codebase. Unfortunately this requires the TS-4265 thread initialization changes first.</p>
+<p>Potentially the &#8220;proxy-protocol&#8221; extension.</p>
+<p>Internal version of C++17 <code class="code docutils literal"><span class="pre">filesystem</span></code> library.</p>
+<p>Internal version of C++17 <code class="code docutils literal"><span class="pre">string_view</span></code> library and Traffic Server specialized version <code class="code docutils literal"><span class="pre">StringView</span></code>.</p>
+<p>Fix <code class="code docutils literal"><span class="pre">TSNetConnect</span></code> to have options instead of a multiplying set of API calls.</p>
+<p>Make remap rules be pure first match (long term).</p>
+<p>The crypto hash support needs to be cleaned up.</p>
+<p>Add log tags to dump transaction headers in full. This would be useful for the operations teams. The idea is a custom log is setup that logs the full headers but is filtered by error return codes. The result is a log of full headers only for failed transactions. We had originally looked at doing this with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing logging mechanisms.</p>
+<p>TLS Session re-use updates. Currently TLS session re-use is done by having the plugin directly
+control the openSSL callbacks. This leads to conflicts and also requires some custom core changes
+used only internally to update some core state. It would be much better to have the Traffic Server core
+control the openSSL callbacks and farm out the work to plugins as needed. This would not only reduce
+plugin conflict and remove the need for custom core changes but also would let our plugin take
+advantage of the openSSL session table while still sharing them across a pod. Additionally we should
+look at removing the use of MDBM both for reliability and the potential to contribute the TLS
+session resuse plugin to open source.</p>
+</div>
+<div class="section" id="dynamic-cert-loader">
+<h2>Dynamic Cert Loader<a class="headerlink" href="#dynamic-cert-loader" title="Permalink to this headline">¶</a></h2>
+<p>An open source plugin that does dynamic certificate loading / management. This is to avoid a huge delay at process start and instead load certificates as needed. We are likely to be using a lot more distinct certificates in the future and this is also a feature that will be important in comparing to VDMS. There are two phases for this</p>
+<ul class="simple">
+<li>Load certificates on demand, and release unused certificates.</li>
+<li>Dynamically generate impersonation certificates.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A dynamic certificate loader could also make rotating certificates easier. Although Traffic Server can be provided with updated certificates will running this will reload all certificates which is even worse than the start up problem. In addition a certificate loader could respond to plugin messages or check files times to reload only changed certificates, or permite revocation without a reload.</p>
+</div>
+</div>
+<div class="section" id="plugin-coordination">
+<h2>Plugin Coordination<a class="headerlink" href="#plugin-coordination" title="Permalink to this headline">¶</a></h2>
+<p>There is a consistent need for coordination among plugins. At one point (Feb 2016) I had a working prototype of plugin priorities based on Y! 5.3.x which assigned priorities to plugin callbacks along with an API to manipulate not just the current plugins priorities but that of other plugins. That would be very useful although priorities of themselves are only one approach to this problem. Based on that work I have a technology ladder to climb to provide this capability.</p>
+<dl class="docutils">
+<dt>Modular hook dispatch.</dt>
+<dd>Create a class to handle the hook dispatching to provide a level of consistency needed later.</dd>
+<dt>Continuation tracking</dt>
+<dd>Associate every continuation with a &#8220;root&#8221; plugin. This would be very valuable in debugging plugin problems and would result in significantly less developer time spent with faster results for customer support.</dd>
+<dt>TS API to probe hooks for callbacks.</dt>
+<dd>Allow plugins to check the callbacks on a hook.</dd>
+<dt>TS API to manipulate callbacks on hooks</dt>
+<dd>Allow plugins to alter the callbacks on a hook, either in terms of priorities, dependency, or direct access by plugin.</dd>
+</dl>
+</div>
+<div class="section" id="http-2-outbound">
+<h2>HTTP/2 Outbound<a class="headerlink" href="#http-2-outbound" title="Permalink to this headline">¶</a></h2>
+<p>Traffic Server should be able to use HTTP/2 outbound. This will require some restructuring of the internal classes used to model outbound connections (similar to the restructuring needed for inbound HTTP/2 as expressed in TS-3612).</p>
+</div>
+<div class="section" id="jemalloc-and-memory-allocators">
+<h2>jemalloc and memory allocators<a class="headerlink" href="#jemalloc-and-memory-allocators" title="Permalink to this headline">¶</a></h2>
+<p>We need to proceed with work on testing <code class="code docutils literal"><span class="pre">jemalloc</span></code> and its interaction with Traffic Server memory allocation.</p>
+</div>
+<div class="section" id="tls">
+<h2>TLS<a class="headerlink" href="#tls" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>openSSL 1.1</dt>
+<dd>Traffic Server needs to be compatible with the openSSL 1.1 library. This is mostly done, it should be primarily verification at this point.</dd>
+<dt>TLS/1.3</dt>
+<dd>This is a soon to be standard. We should start planning for it.</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="buffer-writer.en.html" title="Buffer Writer"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Solid Wall Of Code Documents"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+    </div>
+  </body>
+</html>

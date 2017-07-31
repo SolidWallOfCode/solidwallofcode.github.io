@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Setting Up Github Pages &#8212; AMC Traffic Server Documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="AMC Traffic Server Documentation" href="index.html" />
+    <link rel="prev" title="Buffer Writer" href="buffer-writer.en.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="buffer-writer.en.html" title="Buffer Writer"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="buffer-writer.en.html"
+                        title="previous chapter">Buffer Writer</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/github-pages.en.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="setting-up-github-pages">
+<h1>Setting Up Github Pages<a class="headerlink" href="#setting-up-github-pages" title="Permalink to this headline">¶</a></h1>
+<p>Github can provide simple web hosting based on repositories. This seems to be available from both of
+our internal github instances (<a class="reference external" href="http://git.corp.yahoo.com">Corporate Git</a> and <a class="reference external" href="http://partner.git.corp.yahoo.com">Partner Git</a>) and from the Traffic Server open source host <a class="reference external" href="http://github.com">Github</a>.</p>
+<p>This document does not explain the full power of <a class="reference external" href="http://pages.github.com">Github Pages</a> - click
+on the link for the full details. What is explained here is a specific application of Github Pages
+for Edge Group developers.</p>
+<p>The goal of this is to have a repository containing documentation in
+<a class="reference external" href="http://sphinx-docs.org">Sphinx</a> format which can be published to Github Pages, thereby avoiding
+the need to have a LAMP server which must be allocated and maintained. In the setup I use I have two
+repositories. One contains the documentation source and support files. The other is used only to
+contain the HTML generated from the documentation source. Sphinx was chosen because that is the
+documentation engine for Traffic Server and therefore all Edge Group Traffic Server developer should be familiar with it.
+If not, learn it.</p>
+<p>My repositories are the <a class="reference external" href="https://git.corp.yahoo.com/solidwallofcode/docs">source repository</a> and
+the <a class="reference external" href="https://git.corp.yahoo.com/solidwallofcode/solidwallofcode.github.io">publish repository</a>.
+The source can have any name but the publish must be named in the pattern <cite>username.github.io</cite> where
+<code class="docutils literal"><span class="pre">username</span></code> is replaced by your Github user name (which should be the same as your Oath: login name).</p>
+<p>In my source repository is a makefile which performs the two basic operations, generation and
+publication. Generation done by <code class="code docutils literal"><span class="pre">make</span> <span class="pre">html</span></code> which runs Sphinx on the documentation source,
+generating HTML output in the <code class="file docutils literal"><span class="pre">docbuild/html</span></code> directory. It is by design that changes and updates to
+the source can be committed and pushed independently of publishing so that intermediate results can
+be saved. When the documentation is ready for a publishing update I use <code class="code docutils literal"><span class="pre">make</span> <span class="pre">publish</span></code>. This
+assumes the publish repository has been cloned in a parallel directory named <cite>swoc-publish</cite>. It runs
+the <cite>publish.sh</cite> script which clears out that directory, copies the contents of <code class="file docutils literal"><span class="pre">docbuild/html</span></code>,
+commits it, and then pushes. Once the new content has been pushed it is served at the URL
+<a class="reference external" href="https://git.corp.yahoo.com/pages/solidwallofcode/solidwallofcode.github.io">https://git.corp.yahoo.com/pages/solidwallofcode/solidwallofcode.github.io</a>. For someone else,
+the <code class="docutils literal"><span class="pre">solidwallofcode</span></code> will be replaced by your github username.</p>
+<p>To set this up for yourself, I would</p>
+<ol class="arabic simple">
+<li>download (not fork) my source repository</li>
+<li>unpack the download, clean out my documentation except for <cite>index.rst</cite>, and use it to create a repository.</li>
+<li>create the publish repository and clone it locally.</li>
+<li>adjust <code class="file docutils literal"><span class="pre">publish.sh</span></code> to use the directory where your publish repository is cloned.</li>
+<li>Generate the documentation (which should be just a shell from <cite>index.rst</cite>) and publish it.</li>
+<li>See if your pages are live.</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Github Pages uses a HTML engine called <a class="reference external" href="https://help.github.com/articles/about-github-pages-and-jekyll/">Jekyll</a>. By default this will <em>not</em> include subdirectories. To work around this you can add the <code class="file docutils literal"><span class="pre">.nojekyll</span></code> file to the root of your publish repository. This disables all pre-processing by Githug Pages. In my Sphinx <code class="file docutils literal"><span class="pre">conf.py</span></code> I have added the <a class="reference external" href="http://www.sphinx-doc.org/en/1.5.1/ext/githubpages.html">Sphinx Github Pages extension</a> to handle this.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Publishing is not always instaneous so it may be a few minutes before updated pages are available.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="buffer-writer.en.html" title="Buffer Writer"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+    </div>
+  </body>
+</html>
