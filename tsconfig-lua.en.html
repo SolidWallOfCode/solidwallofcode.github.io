@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>TSConfig / Lua &#8212; AMC Traffic Server Documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="AMC Traffic Server Documentation" href="index.html" />
+    <link rel="next" title="Setting Up Github Pages" href="github-pages.en.html" />
+    <link rel="prev" title="Buffer Writer" href="buffer-writer.en.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="github-pages.en.html" title="Setting Up Github Pages"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="buffer-writer.en.html" title="Buffer Writer"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">TSConfig / Lua</a><ul>
+<li><a class="reference internal" href="#current-practice">Current Practice</a></li>
+<li><a class="reference internal" href="#design">Design</a></li>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+<li><a class="reference internal" href="#interface">Interface</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="buffer-writer.en.html"
+                        title="previous chapter">Buffer Writer</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="github-pages.en.html"
+                        title="next chapter">Setting Up Github Pages</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tsconfig-lua.en.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tsconfig-lua">
+<span id="id1"></span><h1>TSConfig / Lua<a class="headerlink" href="#tsconfig-lua" title="Permalink to this headline">¶</a></h1>
+<p>Traffic Server has committed to moving configuration files to be LUA based. While conversion of existing files
+to LUA isn&#8217;t required, new configuration files are required to be in LUA.</p>
+<div class="section" id="current-practice">
+<h2>Current Practice<a class="headerlink" href="#current-practice" title="Permalink to this headline">¶</a></h2>
+<p>The primary example current is the custom logging configuration file <code class="file docutils literal"><span class="pre">logging.config</span></code> which is
+processed as a LUA file. The interface to the Traffic Server core is done by creating LUA types in the core
+and exposing them to the LUA interpretor (see <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/proxy/logging/LogBindings.cc">LogBindings.cc</a>). Data is
+transfered by the LUA interpretor parsing calls to the extended LUA types and then invoking the core
+provided instances with arguments passed by the interpretor, which are then stored in logging
+configuration data structures. This works but with the downside that every subsystem that needs a
+configuration file will need to write specialized LUA types to get its data.</p>
+</div>
+<div class="section" id="design">
+<h2>Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h2>
+<p>An alternative is to provide a more generic facility that has the LUA file construct a forest of
+data and then copy that forest over to a C++ container. There is already an existing library of this
+type, TSConfig. TSConfig had its own input file format based on <a class="reference external" href="https://github.com/hyperrealm/libconfig">libconfig</a> plus a C++ tree container interface supporting a small
+set of basic types. This interface suffices for the require LUA config interface. The approach here
+is to keep the TSConfig C++ data access interface and replace the configuration file parsing with
+LUA parsing and extraction of the LUA data.</p>
+<p>The usage would be to create an instance of TSConfig, passing it a configuration file and a set of
+&#8220;roots&#8221;. The configuration file would be loaded and interpreted as a LUA file. After that a set of
+global variables, identified by the roots passed in, would be copied in to the C++ container. The
+roots could each contain a tree of arbitrary depth, the group forming a forest. This forest could
+then be walked or examined in way very similar to how the current configuration data is accessed,
+but with more generality.</p>
+<ul class="simple">
+<li>Relative paths could be used rather than absolute paths.</li>
+<li>Run time type checking of values.</li>
+</ul>
+</div>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>TSConfig needs to be able to extract trees of arbitrary depth from LUA.</p>
+</div>
+<div class="section" id="interface">
+<h2>Interface<a class="headerlink" href="#interface" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="_CPPv28TSConfig">
+<span id="TSConfig"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">TSConfig</code><a class="headerlink" href="#_CPPv28TSConfig" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="function">
+<dt id="_CPPv2N8TSConfig8TSConfigEv">
+<span id="TSConfig::TSConfig"></span><code class="descclassname"></code><code class="descname">TSConfig</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8TSConfig8TSConfigEv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default constructor, creates an empty configuration.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N8TSConfig7addRootE11string_view">
+<span id="TSConfig::addRoot__string_view"></span><a class="reference internal" href="#_CPPv28TSConfig" title="TSConfig">TSConfig</a> &amp;<code class="descclassname"></code><code class="descname">addRoot</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv211string_view" title="string_view">string_view</a> <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8TSConfig7addRootE11string_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a root. This will become available as a name in the root map of the configuration and the
+value of the global variable of the same name in the LUA state will be copied to that name.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N8TSConfig4loadE11string_view">
+<span id="TSConfig::load__string_view"></span>bool <code class="descclassname"></code><code class="descname">load</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv211string_view" title="string_view">string_view</a> <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8TSConfig4loadE11string_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a configuration file. The file will be loaded and then interpreted as a LUA script. The
+set of global variables defined by the roots of the configuration will have their values
+copied from the LUA state to the corresponding names in the root map.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="_CPPv2N8TSConfig5ValueE">
+<span id="TSConfig::Value"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">Value</code><a class="headerlink" href="#_CPPv2N8TSConfig5ValueE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data in the container. This is a generic type that covers all of the possible types in a
+configuration. Types are divided in to <em>primitives</em> and <em>containers</em>. Primitives are typical
+built in types that are treated as a single datum. Containers are capable of containing other
+values.</p>
+<dl class="docutils">
+<dt>Primitives</dt>
+<dd><dl class="first last docutils">
+<dt>integer</dt>
+<dd>An signed integer.</dd>
+<dt>string</dt>
+<dd>A string (sequence of characters).</dd>
+<dt>float</dt>
+<dd>A floating point number.</dd>
+<dt>ip_addr</dt>
+<dd>An IP address.</dd>
+</dl>
+</dd>
+<dt>Containers</dt>
+<dd><dl class="first last docutils">
+<dt>array</dt>
+<dd>An indexed sequence of values, all values of the same type.</dd>
+<dt>list</dt>
+<dd>A sequence of values of potentially different types.</dd>
+<dt>map</dt>
+<dd>A set of key/value pairs indexed by key. All keys are strings but values may be of any type.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="github-pages.en.html" title="Setting Up Github Pages"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="buffer-writer.en.html" title="Buffer Writer"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+    </div>
+  </body>
+</html>

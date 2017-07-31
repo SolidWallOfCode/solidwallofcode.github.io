@@ -18,4 +18,15 @@ Projects planned for Apache |TS|.
 
    ats-projects.en
    buffer-writer.en
+   tsconfig-lua.en
    github-pages.en
+
+Reference
+=========
+
+.. toctree::
+   :hidden:
+
+   external-types.en
+
+:ref:`Types used but not defined <external types>` in this documentation set.
