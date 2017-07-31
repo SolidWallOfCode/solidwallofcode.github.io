@@ -12,7 +12,7 @@ Buffer writer is a project to improve writting text data to buffers. Currently t
 
 .. code-block:: cpp
 
-    via_string++ = ' ';
+   *via_string++ = ' ';
    *via_string++ = '[';
 
    // incoming_via can be max MAX_VIA_INDICES+1 long (i.e. around 25 or so)
