@@ -9,29 +9,11 @@ Diagram.
 
 .. graphviz:: dot/ats-projects.dot
 
-Lua Configuration
-=================
+.. toctree::
+   :maxdepth: 1
 
-Going forward |TS| is pushing to have all configuration be Lua based. A recent discussion on the
-mailing list indicates that Lua may be required for all new configuration files or changes. This
-project is about providing that technology in a generic way to make it easier to add configuration
-for new features.
-
-The basic idea is to use the TSConfig C++ API as the interface to the Lua data. TSConfig provides an tree structure value interface. Values are of 4 types
-
-*  Primitive - string, integer, float.
-*  List - a sequence of Value instances.
-*  Map - Pairs of keys and values.
-
-Configuration is done by assigning data in Lua to a set of root / global Lua variables. These are specified to TSConfig which then copies the data from the root variables in to the C++ data space where it is made accessible via the previous described interface.
-
-There are two parts of the implementation. The first is the ability to extract arbitrary Lua data
-structures from a Lua state to C++. The second is the TSConfig interface to provide access to the
-acquired data.
-
-The current state is the TSConfig interface is mostly written, as it would be based on the current TSConfig library in open source.
-
-For Lua data extraction I have conducted some limited experiments and have a plan for this part of the project but have not written that code as of yet.
+   buffer-writer.en
+   tsconfig-lua.en
 
 Layer 7 Routing
 ===============
@@ -249,4 +231,3 @@ openSSL 1.1
 
 TLS/1.3
    This is a soon to be standard. We should start planning for it.
-   

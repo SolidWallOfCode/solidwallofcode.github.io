@@ -14,11 +14,9 @@ Apache Traffic Server Projects
 Projects planned for Apache |TS|.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    ats-projects.en
-   buffer-writer.en
-   tsconfig-lua.en
    github-pages.en
 
 Reference

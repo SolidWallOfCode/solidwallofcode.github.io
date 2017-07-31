@@ -53,7 +53,6 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Traffic Server Projects</a><ul>
-<li><a class="reference internal" href="#lua-configuration">Lua Configuration</a></li>
 <li><a class="reference internal" href="#layer-7-routing">Layer 7 Routing</a></li>
 <li><a class="reference internal" href="#forwarded-header">Forwarded Header</a></li>
 <li><a class="reference internal" href="#body-factory-cleanup">Body Factory Cleanup</a></li>
@@ -151,24 +150,11 @@
   }
 
 }" />
-<div class="section" id="lua-configuration">
-<h2>Lua Configuration<a class="headerlink" href="#lua-configuration" title="Permalink to this headline">¶</a></h2>
-<p>Going forward Traffic Server is pushing to have all configuration be Lua based. A recent discussion on the
-mailing list indicates that Lua may be required for all new configuration files or changes. This
-project is about providing that technology in a generic way to make it easier to add configuration
-for new features.</p>
-<p>The basic idea is to use the TSConfig C++ API as the interface to the Lua data. TSConfig provides an tree structure value interface. Values are of 4 types</p>
-<ul class="simple">
-<li>Primitive - string, integer, float.</li>
-<li>List - a sequence of Value instances.</li>
-<li>Map - Pairs of keys and values.</li>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="buffer-writer.en.html">Buffer Writer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tsconfig-lua.en.html">TSConfig / Lua</a></li>
 </ul>
-<p>Configuration is done by assigning data in Lua to a set of root / global Lua variables. These are specified to TSConfig which then copies the data from the root variables in to the C++ data space where it is made accessible via the previous described interface.</p>
-<p>There are two parts of the implementation. The first is the ability to extract arbitrary Lua data
-structures from a Lua state to C++. The second is the TSConfig interface to provide access to the
-acquired data.</p>
-<p>The current state is the TSConfig interface is mostly written, as it would be based on the current TSConfig library in open source.</p>
-<p>For Lua data extraction I have conducted some limited experiments and have a plan for this part of the project but have not written that code as of yet.</p>
 </div>
 <div class="section" id="layer-7-routing">
 <h2>Layer 7 Routing<a class="headerlink" href="#layer-7-routing" title="Permalink to this headline">¶</a></h2>

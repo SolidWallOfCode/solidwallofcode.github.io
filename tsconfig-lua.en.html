@@ -26,6 +26,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="AMC Traffic Server Documentation" href="index.html" />
+    <link rel="up" title="Traffic Server Projects" href="ats-projects.en.html" />
     <link rel="next" title="Setting Up Github Pages" href="github-pages.en.html" />
     <link rel="prev" title="Buffer Writer" href="buffer-writer.en.html" /> 
   </head>
@@ -42,7 +43,8 @@
         <li class="right" >
           <a href="buffer-writer.en.html" title="Buffer Writer"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -95,7 +97,9 @@
   <div class="section" id="tsconfig-lua">
 <span id="id1"></span><h1>TSConfig / Lua<a class="headerlink" href="#tsconfig-lua" title="Permalink to this headline">¶</a></h1>
 <p>Traffic Server has committed to moving configuration files to be LUA based. While conversion of existing files
-to LUA isn&#8217;t required, new configuration files are required to be in LUA.</p>
+to LUA isn&#8217;t required, the current view based on mailing list discussions is that new configuration
+files are required to be in LUA. This project is about providing that technology in a generic way to
+make it easier to add configuration for new features.</p>
 <div class="section" id="current-practice">
 <h2>Current Practice<a class="headerlink" href="#current-practice" title="Permalink to this headline">¶</a></h2>
 <p>The primary example current is the custom logging configuration file <code class="file docutils literal"><span class="pre">logging.config</span></code> which is
@@ -127,7 +131,11 @@ but with more generality.</p>
 </div>
 <div class="section" id="implementation">
 <h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
-<p>TSConfig needs to be able to extract trees of arbitrary depth from LUA.</p>
+<p>TSConfig needs to be able to extract trees of arbitrary depth from LUA. Some work has been done with this but there is not yet a full implementation.</p>
+<p>On the TSConfig side, the library is currently working and should be relatively easy to adapt to LUA
+because this will be mostly removing parsing code. A side effect of this will be to finally put an
+end to the FLEX/Bison issues where these files get updated inappropriately causing source control
+issues.</p>
 </div>
 <div class="section" id="interface">
 <h2>Interface<a class="headerlink" href="#interface" title="Permalink to this headline">¶</a></h2>
@@ -166,12 +174,12 @@ values.</p>
 <dt>Primitives</dt>
 <dd><dl class="first last docutils">
 <dt>integer</dt>
-<dd>An signed integer.</dd>
+<dd>A signed integer.</dd>
 <dt>string</dt>
 <dd>A string (sequence of characters).</dd>
 <dt>float</dt>
 <dd>A floating point number.</dd>
-<dt>ip_addr</dt>
+<dt>ip</dt>
 <dd>An IP address.</dd>
 </dl>
 </dd>
@@ -211,7 +219,8 @@ values.</p>
         <li class="right" >
           <a href="buffer-writer.en.html" title="Buffer Writer"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

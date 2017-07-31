@@ -9,7 +9,9 @@ TSConfig / Lua
 **************
 
 |TS| has committed to moving configuration files to be LUA based. While conversion of existing files
-to LUA isn't required, new configuration files are required to be in LUA.
+to LUA isn't required, the current view based on mailing list discussions is that new configuration
+files are required to be in LUA. This project is about providing that technology in a generic way to
+make it easier to add configuration for new features.
 
 Current Practice
 ================
@@ -46,7 +48,12 @@ but with more generality.
 Implementation
 ==============
 
-TSConfig needs to be able to extract trees of arbitrary depth from LUA.
+TSConfig needs to be able to extract trees of arbitrary depth from LUA. Some work has been done with this but there is not yet a full implementation.
+
+On the TSConfig side, the library is currently working and should be relatively easy to adapt to LUA
+because this will be mostly removing parsing code. A side effect of this will be to finally put an
+end to the FLEX/Bison issues where these files get updated inappropriately causing source control
+issues.
 
 Interface
 =========
@@ -77,7 +84,7 @@ Interface
 
       Primitives
          integer
-            An signed integer.
+            A signed integer.
 
          string
             A string (sequence of characters).
@@ -85,7 +92,7 @@ Interface
          float
             A floating point number.
 
-         ip_addr
+         ip
             An IP address.
 
       Containers
