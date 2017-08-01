@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>External Types &#8212; AMC Traffic Server Documentation</title>
+    <title>Command Registration &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -23,7 +23,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Setting Up Github Pages" href="github-pages.en.html" /> 
+    <link rel="next" title="Errata" href="errata.en.html" />
+    <link rel="prev" title="Cache Tool" href="cache-tool.en.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -33,9 +34,14 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="github-pages.en.html" title="Setting Up Github Pages"
+          <a href="errata.en.html" title="Errata"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cache-tool.en.html" title="Cache Tool"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cache-tool.en.html" accesskey="U">Cache Tool</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -43,19 +49,16 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
             </a></p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">External Types</a></li>
-<li><a class="reference internal" href="#builtin-types">Builtin Types</a></li>
-</ul>
-
   <h4>Previous topic</h4>
-  <p class="topless"><a href="github-pages.en.html"
-                        title="previous chapter">Setting Up Github Pages</a></p>
+  <p class="topless"><a href="cache-tool.en.html"
+                        title="previous chapter">Cache Tool</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="errata.en.html"
+                        title="next chapter">Errata</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/external-types.en.rst.txt"
+      <li><a href="_sources/command-registration.en.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -77,22 +80,18 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="external-types">
-<span id="id1"></span><h1>External Types<a class="headerlink" href="#external-types" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="_CPPv211string_view">
-<span id="string_view"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">string_view</code><a class="headerlink" href="#_CPPv211string_view" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>A local implementation of the C++17 <a class="reference external" href="http://en.cppreference.com/w/cpp/string/basic_string_view">std::string_view</a>. See <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/lib/ts/string_view.h">string_view.h</a>.</p>
-</dd></dl>
-
+  <div class="section" id="command-registration">
+<span id="id1"></span><h1>Command Registration<a class="headerlink" href="#command-registration" title="Permalink to this headline">¶</a></h1>
+<p>Command registration is registering <em>tags</em> that correspond to actions for a command line tool to execute. There is a tree of tags so that more specific commands are done by listing multiple tags. E.g. “list” and “list stripes” are different actions and each tag controls which tags are allowed to follow. For exanmple <strong class="program">traffic_ctl</strong> with commands like:</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">traffic_ctl</span> <span class="n">shutdown</span>
+<span class="n">traffic_ctl</span> <span class="n">metric</span> <span class="n">set</span> <span class="n">proxy</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">http</span><span class="p">.</span><span class="n">cache</span><span class="p">.</span><span class="n">enable</span> <span class="mi">0</span>
+</pre></div>
 </div>
-<div class="section" id="builtin-types">
-<h1>Builtin Types<a class="headerlink" href="#builtin-types" title="Permalink to this headline">¶</a></h1>
-<dl class="type">
-<dt id="_CPPv26size_t">
-<span id="s"></span><em class="property">type </em><code class="descclassname"></code><code class="descname">size_t</code><a class="headerlink" href="#_CPPv26size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
+<p>Internally this is done in <strong class="program">traffic_ctl</strong> in an ad hoc fashion where each action is done by
+invoking a function and each such function must handle dispatching to any subcommand tags. This
+class is an attempt to make that generic so that action functions are leafs of command line parsing.
+This reduces cut and paste code along with making the tag hieararchy controlled from the top level
+of the program rather than being scattered across the implementation.</p>
 </div>
 
 
@@ -108,9 +107,14 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="github-pages.en.html" title="Setting Up Github Pages"
+          <a href="errata.en.html" title="Errata"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cache-tool.en.html" title="Cache Tool"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="cache-tool.en.html" >Cache Tool</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

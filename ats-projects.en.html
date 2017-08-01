@@ -1,23 +1,21 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Traffic Server Projects &#8212; AMC Traffic Server Documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '8.0.x',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,11 +23,10 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="AMC Traffic Server Documentation" href="index.html" />
     <link rel="next" title="Buffer Writer" href="buffer-writer.en.html" />
     <link rel="prev" title="Solid Wall Of Code Documents" href="index.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -73,7 +70,6 @@
 <li><a class="reference internal" href="#production-verification">Production Verification</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#cache-tool">Cache Tool</a></li>
 <li><a class="reference internal" href="#traffic-server-core">Traffic Server Core</a></li>
 <li><a class="reference internal" href="#dynamic-cert-loader">Dynamic Cert Loader</a></li>
 <li><a class="reference internal" href="#plugin-coordination">Plugin Coordination</a></li>
@@ -93,7 +89,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/ats-projects.en.txt"
+      <li><a href="_sources/ats-projects.en.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -154,6 +150,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="buffer-writer.en.html">Buffer Writer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tsconfig-lua.en.html">TSConfig / Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache-tool.en.html">Cache Tool</a></li>
 <li class="toctree-l1"><a class="reference internal" href="errata.en.html">Errata</a></li>
 </ul>
 </div>
@@ -167,7 +164,7 @@
 </div>
 <div class="section" id="forwarded-header">
 <h2>Forwarded Header<a class="headerlink" href="#forwarded-header" title="Permalink to this headline">¶</a></h2>
-<p>A basic implementation was done for our fork of ATS 5.3.x. This suffices for internal use for now, but for open source it will have to be done better. I did some design based on Walt&#8217;s work and then Walt, Leif, and I had a discussion on future directions for this work. That breaks down in to several steps.</p>
+<p>A basic implementation was done for our fork of ATS 5.3.x. This suffices for internal use for now, but for open source it will have to be done better. I did some design based on Walt’s work and then Walt, Leif, and I had a discussion on future directions for this work. That breaks down in to several steps.</p>
 <ul class="simple">
 <li>Fixed buffer printer class, which takes a buffer and then supports type safe printing on it. See <a class="reference internal" href="buffer-writer.en.html#buffer-writer"><span class="std std-ref">Buffer Writer</span></a>.</li>
 <li>A subclass of the fixed buffer printer which takes a template argument to allocate local (stack) storage for the buffer.</li>
@@ -178,7 +175,7 @@
 <div class="section" id="body-factory-cleanup">
 <h2>Body Factory Cleanup<a class="headerlink" href="#body-factory-cleanup" title="Permalink to this headline">¶</a></h2>
 <p>The core logic used to generate proxy replies is convoluted and fragile. It has needed to be cleaned up for a long time both to make it more robust and maintainable but also to add features that are currently hard to do. There are also arbitrar internal limits which are entirely artifacts of the implementation.</p>
-<p>The basic plan is to extend the fixed buffer printer classes to have one that takes an <code class="code docutils literal"><span class="pre">MIOBuffer</span></code> as its output. This would make it basically equivalent to C++ I/O stream operators but using Traffic Server core mechanisms. Then a new &#8220;Format&#8221; class would be done which processes the current log style format strings in a generic and modular way. The body factory would be updated to use these new classes.</p>
+<p>The basic plan is to extend the fixed buffer printer classes to have one that takes an <code class="code docutils literal"><span class="pre">MIOBuffer</span></code> as its output. This would make it basically equivalent to C++ I/O stream operators but using Traffic Server core mechanisms. Then a new “Format” class would be done which processes the current log style format strings in a generic and modular way. The body factory would be updated to use these new classes.</p>
 </div>
 <div class="section" id="logging-tags-from-plugins">
 <h2>Logging tags from plugins<a class="headerlink" href="#logging-tags-from-plugins" title="Permalink to this headline">¶</a></h2>
@@ -256,41 +253,11 @@ single block. This is very useful for data constructed at process start time and
 <p>It would be nice to be able to run AUTest against live production systems to verify behavior, particularly with regard to paranoid requirements.</p>
 </div>
 </div>
-<div class="section" id="cache-tool">
-<h2>Cache Tool<a class="headerlink" href="#cache-tool" title="Permalink to this headline">¶</a></h2>
-<p>Cache Tool is a command line tool for interacting with the Traffic Server cache. I originally started it as a test bed for a variety of technology of interest to me, including</p>
-<ul class="simple">
-<li>LibScalar - a template for creating quantized integral types.</li>
-<li>StringView - read only view of string data.</li>
-<li>New data structures for the cache, as part of a larger scale redesign.</li>
-<li>Improved stripe allocation algorithms.</li>
-</ul>
-<p>It was originally made as a side project for eventual release while various of these technologies were exported to open source. In addition to being a test bed, Cache Tool was intended to do useful work, one such feature (stripe re-allocation) to get around a bug in Traffic Server was sufficiently desirable that i was pressured in to making Cache Tool itself available to the community.</p>
-<ul class="simple">
-<li>Fix stripe allocation for unused disks.</li>
-<li>List stripe data for a cache.</li>
-<li>Clear / reset cache disks independently.</li>
-<li>Provide cache directory analysis, as is done by <code class="code docutils literal"><span class="pre">--command</span> <span class="pre">--check</span></code> now, but with sufficiently low resource requirements it can be run on live system.</li>
-<li>Cache directory diagnostics.</li>
-<li>Cache scanning
-*  Scan to purge.
-*  Statistical analysis.</li>
-<li>Cache repartitioning.<ul>
-<li>Store additional information about cache configuration.
-*  More efficient and reliable examination.
-*  Required to repartition, if values are always computed there is a chicken and egg problem.</li>
-<li>Update stripes to shift storage between directory and content (change effect average object size).</li>
-<li>Maintain backwards compatibility and some forward compatibility. In particular it must be
-possible to run 8.0 on a box and revert to 7.X without clearing the cache.</li>
-</ul>
-</li>
-</ul>
-</div>
 <div class="section" id="traffic-server-core">
 <h2>Traffic Server Core<a class="headerlink" href="#traffic-server-core" title="Permalink to this headline">¶</a></h2>
 <p>Restructure the overridable configs to remove cyclic dependencies. Already discussed with community and I have a design.</p>
 <p>Event loop changes - put in our 5.3.x fork but never contributed to open source. This will be necessary relatively soon in the internal 7.1.x codebase. Unfortunately this requires the TS-4265 thread initialization changes first.</p>
-<p>Potentially the &#8220;proxy-protocol&#8221; extension.</p>
+<p>Potentially the “proxy-protocol” extension.</p>
 <p>Internal version of C++17 <code class="code docutils literal"><span class="pre">filesystem</span></code> library.</p>
 <p>Internal version of C++17 <code class="code docutils literal"><span class="pre">string_view</span></code> library and Traffic Server specialized version <code class="code docutils literal"><span class="pre">StringView</span></code>.</p>
 <p>Fix <code class="code docutils literal"><span class="pre">TSNetConnect</span></code> to have options instead of a multiplying set of API calls.</p>
@@ -326,7 +293,7 @@ session resuse plugin to open source.</p>
 <dt>Modular hook dispatch.</dt>
 <dd>Create a class to handle the hook dispatching to provide a level of consistency needed later.</dd>
 <dt>Continuation tracking</dt>
-<dd>Associate every continuation with a &#8220;root&#8221; plugin. This would be very valuable in debugging plugin problems and would result in significantly less developer time spent with faster results for customer support.</dd>
+<dd>Associate every continuation with a “root” plugin. This would be very valuable in debugging plugin problems and would result in significantly less developer time spent with faster results for customer support.</dd>
 <dt>TS API to probe hooks for callbacks.</dt>
 <dd>Allow plugins to check the callbacks on a hook.</dd>
 <dt>TS API to manipulate callbacks on hooks</dt>
@@ -375,7 +342,7 @@ session resuse plugin to open source.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

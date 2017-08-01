@@ -14,6 +14,7 @@ Diagram.
 
    buffer-writer.en
    tsconfig-lua.en
+   cache-tool.en
    errata.en
 
 Layer 7 Routing
@@ -129,35 +130,6 @@ Production Verification
 +++++++++++++++++++++++
 
 It would be nice to be able to run AUTest against live production systems to verify behavior, particularly with regard to paranoid requirements.
-
-Cache Tool
-==========
-
-Cache Tool is a command line tool for interacting with the |TS| cache. I originally started it as a test bed for a variety of technology of interest to me, including
-
-*  LibScalar - a template for creating quantized integral types.
-*  StringView - read only view of string data.
-*  New data structures for the cache, as part of a larger scale redesign.
-*  Improved stripe allocation algorithms.
-
-It was originally made as a side project for eventual release while various of these technologies were exported to open source. In addition to being a test bed, Cache Tool was intended to do useful work, one such feature (stripe re-allocation) to get around a bug in |TS| was sufficiently desirable that i was pressured in to making Cache Tool itself available to the community.
-
-*  Fix stripe allocation for unused disks.
-*  List stripe data for a cache.
-*  Clear / reset cache disks independently.
-*  Provide cache directory analysis, as is done by :code:`--command --check` now, but with sufficiently low resource requirements it can be run on live system.
-*  Cache directory diagnostics.
-*  Cache scanning
-   *  Scan to purge.
-   *  Statistical analysis.
-*  Cache repartitioning.
-
-   *  Store additional information about cache configuration.
-      *  More efficient and reliable examination.
-      *  Required to repartition, if values are always computed there is a chicken and egg problem.
-   *  Update stripes to shift storage between directory and content (change effect average object size).
-   *  Maintain backwards compatibility and some forward compatibility. In particular it must be
-      possible to run 8.0 on a box and revert to 7.X without clearing the cache.
 
 Traffic Server Core
 ===================
