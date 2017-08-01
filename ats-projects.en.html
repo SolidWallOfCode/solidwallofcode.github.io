@@ -154,6 +154,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="buffer-writer.en.html">Buffer Writer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tsconfig-lua.en.html">TSConfig / Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errata.en.html">Errata</a></li>
 </ul>
 </div>
 <div class="section" id="layer-7-routing">
@@ -295,6 +296,7 @@ possible to run 8.0 on a box and revert to 7.X without clearing the cache.</li>
 <p>Fix <code class="code docutils literal"><span class="pre">TSNetConnect</span></code> to have options instead of a multiplying set of API calls.</p>
 <p>Make remap rules be pure first match (long term).</p>
 <p>The crypto hash support needs to be cleaned up.</p>
+<p>Look at using <a class="reference external" href="https://www.threadingbuildingblocks.org">TBB</a> for thread safe containers.</p>
 <p>Add log tags to dump transaction headers in full. This would be useful for the operations teams. The idea is a custom log is setup that logs the full headers but is filtered by error return codes. The result is a log of full headers only for failed transactions. We had originally looked at doing this with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing logging mechanisms.</p>
 <p>TLS Session re-use updates. Currently TLS session re-use is done by having the plugin directly
 control the openSSL callbacks. This leads to conflicts and also requires some custom core changes

@@ -14,6 +14,7 @@ Diagram.
 
    buffer-writer.en
    tsconfig-lua.en
+   errata.en
 
 Layer 7 Routing
 ===============
@@ -176,6 +177,8 @@ Fix :code:`TSNetConnect` to have options instead of a multiplying set of API cal
 Make remap rules be pure first match (long term).
 
 The crypto hash support needs to be cleaned up.
+
+Look at using `TBB <https://www.threadingbuildingblocks.org>`_ for thread safe containers.
 
 Add log tags to dump transaction headers in full. This would be useful for the operations teams. The idea is a custom log is setup that logs the full headers but is filtered by error return codes. The result is a log of full headers only for failed transactions. We had originally looked at doing this with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing logging mechanisms.
 

@@ -48,7 +48,8 @@ but with more generality.
 Implementation
 ==============
 
-TSConfig needs to be able to extract trees of arbitrary depth from LUA. Some work has been done with this but there is not yet a full implementation.
+TSConfig needs to be able to extract trees of arbitrary depth from LUA. Some work has been done with
+this but there is not yet a full implementation.
 
 On the TSConfig side, the library is currently working and should be relatively easy to adapt to LUA
 because this will be mostly removing parsing code. A side effect of this will be to finally put an
@@ -64,7 +65,7 @@ Interface
 
       Default constructor, creates an empty configuration.
 
-   .. function:: TSConfig& addRoot(string_view name)
+   .. function:: TSConfig& add_root(string_view name)
 
       Add a root. This will become available as a name in the root map of the configuration and the
       value of the global variable of the same name in the LUA state will be copied to that name.
@@ -73,34 +74,56 @@ Interface
 
       Load a configuration file. The file will be loaded and then interpreted as a LUA script. The
       set of global variables defined by the roots of the configuration will have their values
-      copied from the LUA state to the corresponding names in the root map.
+      copied from the LUA state to the corresponding names in the root table.
 
-   .. class:: Value
+   .. function:: TSConfigValue root()
 
-      Data in the container. This is a generic type that covers all of the possible types in a
-      configuration. Types are divided in to *primitives* and *containers*. Primitives are typical
-      built in types that are treated as a single datum. Containers are capable of containing other
-      values.
+      Return the root value of the configuration. This will be a :code:`table`. The keys for the
+      table will be the roots added to the configuration via :func:`TSConfig::add_root`. The values
+      for the keys will be the values of the corresponding global variables in the LUA state.
 
-      Primitives
-         integer
-            A signed integer.
+.. class:: TSConfigValue
 
-         string
-            A string (sequence of characters).
+   Configuration data in a :class:`TSConfig` instance. This is a generic type that covers all of the
+   possible types in a configuration. A value is either a *primitive* which is a single basic value
+   or a *table* which is a container for other values. A :code:`table` can have indexed values and also
+   named values, to be similar to a LUA table.
 
-         float
-            A floating point number.
+   Primitives
+      :code:`nil`
+         No value.
 
-         ip
-            An IP address.
+      :code:`integer`
+         A signed integer.
 
-      Containers
-         array
-            An indexed sequence of values, all values of the same type.
+      :code:`string`
+         A string (sequence of characters).
 
-         list
-            A sequence of values of potentially different types.
+      :code:`float`
+         A floating point number.
 
-         map
-            A set of key/value pairs indexed by key. All keys are strings but values may be of any type.
+      :code:`ip`
+         An IP address.
+
+   .. function:: TSConfigValue()
+
+      Default constructor, creates a :code:`nil` value.
+
+   .. function:: bool is_primitive() const
+
+      Returns :code:`true` if this is a :code:`primitive`, :code:`false` otherwise.
+
+   .. function:: bool is_table() const
+
+      Returns :code:`true` if this is a :code:`table`, :code:`false` otherwise.
+
+   .. function:: TSConfigValue operator [] (int idx)
+
+      Get the value at :arg:`idx`. If this is not a :code:`table` or there is no value at :arg:`idx`
+      a :code:`nil` value is returned.
+
+   .. function:: TSConfigValue operator [] (string_view name)
+
+      Get the value for the key :arg:`name`. If this is not a :code:`table` or there the key
+      :arg:`name` is not in the table, a :code:`nil` value is returned.
+

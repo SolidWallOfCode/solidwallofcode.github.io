@@ -27,7 +27,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="AMC Traffic Server Documentation" href="index.html" />
     <link rel="up" title="Traffic Server Projects" href="ats-projects.en.html" />
-    <link rel="next" title="Setting Up Github Pages" href="github-pages.en.html" />
+    <link rel="next" title="Errata" href="errata.en.html" />
     <link rel="prev" title="Buffer Writer" href="buffer-writer.en.html" /> 
   </head>
   <body role="document">
@@ -38,7 +38,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="github-pages.en.html" title="Setting Up Github Pages"
+          <a href="errata.en.html" title="Errata"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="buffer-writer.en.html" title="Buffer Writer"
@@ -67,8 +67,8 @@
   <p class="topless"><a href="buffer-writer.en.html"
                         title="previous chapter">Buffer Writer</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="github-pages.en.html"
-                        title="next chapter">Setting Up Github Pages</a></p>
+  <p class="topless"><a href="errata.en.html"
+                        title="next chapter">Errata</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -131,7 +131,8 @@ but with more generality.</p>
 </div>
 <div class="section" id="implementation">
 <h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
-<p>TSConfig needs to be able to extract trees of arbitrary depth from LUA. Some work has been done with this but there is not yet a full implementation.</p>
+<p>TSConfig needs to be able to extract trees of arbitrary depth from LUA. Some work has been done with
+this but there is not yet a full implementation.</p>
 <p>On the TSConfig side, the library is currently working and should be relatively easy to adapt to LUA
 because this will be mostly removing parsing code. A side effect of this will be to finally put an
 end to the FLEX/Bison issues where these files get updated inappropriately causing source control
@@ -149,8 +150,8 @@ issues.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2N8TSConfig7addRootE11string_view">
-<span id="TSConfig::addRoot__string_view"></span><a class="reference internal" href="#_CPPv28TSConfig" title="TSConfig">TSConfig</a> &amp;<code class="descclassname"></code><code class="descname">addRoot</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv211string_view" title="string_view">string_view</a> <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8TSConfig7addRootE11string_view" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv2N8TSConfig8add_rootE11string_view">
+<span id="TSConfig::add_root__string_view"></span><a class="reference internal" href="#_CPPv28TSConfig" title="TSConfig">TSConfig</a> &amp;<code class="descclassname"></code><code class="descname">add_root</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv211string_view" title="string_view">string_view</a> <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8TSConfig8add_rootE11string_view" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a root. This will become available as a name in the root map of the configuration and the
 value of the global variable of the same name in the LUA state will be copied to that name.</p>
 </dd></dl>
@@ -160,40 +161,72 @@ value of the global variable of the same name in the LUA state will be copied to
 <span id="TSConfig::load__string_view"></span>bool <code class="descclassname"></code><code class="descname">load</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv211string_view" title="string_view">string_view</a> <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8TSConfig4loadE11string_view" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a configuration file. The file will be loaded and then interpreted as a LUA script. The
 set of global variables defined by the roots of the configuration will have their values
-copied from the LUA state to the corresponding names in the root map.</p>
+copied from the LUA state to the corresponding names in the root table.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N8TSConfig4rootEv">
+<span id="TSConfig::root"></span><a class="reference internal" href="#_CPPv213TSConfigValue" title="TSConfigValue">TSConfigValue</a> <code class="descclassname"></code><code class="descname">root</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8TSConfig4rootEv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the root value of the configuration. This will be a <code class="code docutils literal"><span class="pre">table</span></code>. The keys for the
+table will be the roots added to the configuration via <a class="reference internal" href="#_CPPv2N8TSConfig8add_rootE11string_view" title="TSConfig::add_root"><code class="xref cpp cpp-func docutils literal"><span class="pre">TSConfig::add_root()</span></code></a>. The values
+for the keys will be the values of the corresponding global variables in the LUA state.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
-<dt id="_CPPv2N8TSConfig5ValueE">
-<span id="TSConfig::Value"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">Value</code><a class="headerlink" href="#_CPPv2N8TSConfig5ValueE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Data in the container. This is a generic type that covers all of the possible types in a
-configuration. Types are divided in to <em>primitives</em> and <em>containers</em>. Primitives are typical
-built in types that are treated as a single datum. Containers are capable of containing other
-values.</p>
+<dt id="_CPPv213TSConfigValue">
+<span id="TSConfigValue"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">TSConfigValue</code><a class="headerlink" href="#_CPPv213TSConfigValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configuration data in a <a class="reference internal" href="#_CPPv28TSConfig" title="TSConfig"><code class="xref cpp cpp-class docutils literal"><span class="pre">TSConfig</span></code></a> instance. This is a generic type that covers all of the
+possible types in a configuration. A value is either a <em>primitive</em> which is a single basic value
+or a <em>table</em> which is a container for other values. A <code class="code docutils literal"><span class="pre">table</span></code> can have indexed values and also
+named values, to be similar to a LUA table.</p>
 <dl class="docutils">
 <dt>Primitives</dt>
 <dd><dl class="first last docutils">
-<dt>integer</dt>
+<dt><code class="code docutils literal"><span class="pre">nil</span></code></dt>
+<dd>No value.</dd>
+<dt><code class="code docutils literal"><span class="pre">integer</span></code></dt>
 <dd>A signed integer.</dd>
-<dt>string</dt>
+<dt><code class="code docutils literal"><span class="pre">string</span></code></dt>
 <dd>A string (sequence of characters).</dd>
-<dt>float</dt>
+<dt><code class="code docutils literal"><span class="pre">float</span></code></dt>
 <dd>A floating point number.</dd>
-<dt>ip</dt>
+<dt><code class="code docutils literal"><span class="pre">ip</span></code></dt>
 <dd>An IP address.</dd>
 </dl>
 </dd>
-<dt>Containers</dt>
-<dd><dl class="first last docutils">
-<dt>array</dt>
-<dd>An indexed sequence of values, all values of the same type.</dd>
-<dt>list</dt>
-<dd>A sequence of values of potentially different types.</dd>
-<dt>map</dt>
-<dd>A set of key/value pairs indexed by key. All keys are strings but values may be of any type.</dd>
 </dl>
-</dd>
-</dl>
+<dl class="function">
+<dt id="_CPPv2N13TSConfigValue13TSConfigValueEv">
+<span id="TSConfigValue::TSConfigValue"></span><code class="descclassname"></code><code class="descname">TSConfigValue</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13TSConfigValue13TSConfigValueEv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default constructor, creates a <code class="code docutils literal"><span class="pre">nil</span></code> value.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2NK13TSConfigValue12is_primitiveEv">
+<span id="TSConfigValue::is_primitiveC"></span>bool <code class="descclassname"></code><code class="descname">is_primitive</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK13TSConfigValue12is_primitiveEv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="code docutils literal"><span class="pre">true</span></code> if this is a <code class="code docutils literal"><span class="pre">primitive</span></code>, <code class="code docutils literal"><span class="pre">false</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2NK13TSConfigValue8is_tableEv">
+<span id="TSConfigValue::is_tableC"></span>bool <code class="descclassname"></code><code class="descname">is_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK13TSConfigValue8is_tableEv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="code docutils literal"><span class="pre">true</span></code> if this is a <code class="code docutils literal"><span class="pre">table</span></code>, <code class="code docutils literal"><span class="pre">false</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13TSConfigValueixEi">
+<span id="TSConfigValue::subscript-operator__i"></span><a class="reference internal" href="#_CPPv213TSConfigValue" title="TSConfigValue">TSConfigValue</a> <code class="descclassname"></code><code class="descname">operator[]</code><span class="sig-paren">(</span>int <em>idx</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13TSConfigValueixEi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value at <em>idx</em>. If this is not a <code class="code docutils literal"><span class="pre">table</span></code> or there is no value at <em>idx</em>
+a <code class="code docutils literal"><span class="pre">nil</span></code> value is returned.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13TSConfigValueixE11string_view">
+<span id="TSConfigValue::subscript-operator__string_view"></span><a class="reference internal" href="#_CPPv213TSConfigValue" title="TSConfigValue">TSConfigValue</a> <code class="descclassname"></code><code class="descname">operator[]</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv211string_view" title="string_view">string_view</a> <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13TSConfigValueixE11string_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value for the key <em>name</em>. If this is not a <code class="code docutils literal"><span class="pre">table</span></code> or there the key
+<em>name</em> is not in the table, a <code class="code docutils literal"><span class="pre">nil</span></code> value is returned.</p>
 </dd></dl>
 
 </dd></dl>
@@ -214,7 +247,7 @@ values.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="github-pages.en.html" title="Setting Up Github Pages"
+          <a href="errata.en.html" title="Errata"
              >next</a> |</li>
         <li class="right" >
           <a href="buffer-writer.en.html" title="Buffer Writer"
