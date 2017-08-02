@@ -81,7 +81,11 @@ e.g. ::
    BufferWriter& operator << (BufferWriter& w, SomeSpecificType const& t) { ... }
 
 This can be done independently as :class:`BufferWriter` provides sufficient functionality to
-implement these stream operators if desired.
+implement these stream operators if desired. :class:`BufferWriter` itself should have few methods to
+actually write to the buffer, just enough to make it possible to write stream operators for it.
+Those stream operators should be defined outside of the :class:`BufferWriter` header so that
+:class:`BufferWriter` does not need to be updated to add additional IO stream operators for new
+types.
 
 Reference
 +++++++++
@@ -125,11 +129,11 @@ Reference
 
       Set the number of bytes of valid (written) data.
 
-   .. function:: clip(size_t n)
+   .. function:: BufferWriter & clip(size_t n)
 
       Reduce the available space by :arg:`n` bytes.
 
-   .. function:: extend(size_t n)
+   .. function:: BufferWriter & extend(size_t n)
 
       Increase the available space by :arg:`n` bytes. Extreme care must be used with this method as
       :class:`BufferWriter` will trust the argument, having no way to verify it. In general this
@@ -165,6 +169,8 @@ Reference
    with::
 
       LocalBufferWriter<1024> w;
+
+   Having the buffer size in only one place promotes more robust code.
 
 Futures
 +++++++

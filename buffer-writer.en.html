@@ -161,7 +161,11 @@ e.g.</p>
 </pre></div>
 </div>
 <p>This can be done independently as <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> provides sufficient functionality to
-implement these stream operators if desired.</p>
+implement these stream operators if desired. <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> itself should have few methods to
+actually write to the buffer, just enough to make it possible to write stream operators for it.
+Those stream operators should be defined outside of the <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> header so that
+<a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> does not need to be updated to add additional IO stream operators for new
+types.</p>
 </div>
 <div class="section" id="reference">
 <h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
@@ -220,13 +224,13 @@ is not written.</p>
 
 <dl class="function">
 <dt id="_CPPv2N12BufferWriter4clipE6size_t">
-<span id="BufferWriter::clip__s"></span><code class="descclassname"></code><code class="descname">clip</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter4clipE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="BufferWriter::clip__s"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">clip</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter4clipE6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reduce the available space by <em>n</em> bytes.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv2N12BufferWriter6extendE6size_t">
-<span id="BufferWriter::extend__s"></span><code class="descclassname"></code><code class="descname">extend</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter6extendE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="BufferWriter::extend__s"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">extend</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter6extendE6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Increase the available space by <em>n</em> bytes. Extreme care must be used with this method as
 <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> will trust the argument, having no way to verify it. In general this
 should only be used after calling <a class="reference internal" href="#_CPPv2N12BufferWriter4clipE6size_t" title="BufferWriter::clip"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::clip()</span></code></a> and passing the same value.
@@ -272,6 +276,7 @@ buffer is <em>N</em> bytes long. The point of this is to replace code like this:
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">LocalBufferWriter</span><span class="o">&lt;</span><span class="mi">1024</span><span class="o">&gt;</span> <span class="n">w</span><span class="p">;</span>
 </pre></div>
 </div>
+<p>Having the buffer size in only one place promotes more robust code.</p>
 </dd></dl>
 
 </div>
