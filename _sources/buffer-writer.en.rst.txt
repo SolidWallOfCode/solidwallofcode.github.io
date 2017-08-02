@@ -87,6 +87,14 @@ Those stream operators should be defined outside of the :class:`BufferWriter` he
 :class:`BufferWriter` does not need to be updated to add additional IO stream operators for new
 types.
 
+For instance if I wanted to make :code:`ts::StringView` work with :class:`BufferWriter` I would add
+to the :code:`ts::StringView` header the code ::
+
+   BufferWriter & operator << (BufferWriter & w, ts::StringView & sv) {
+      w.write(sv.ptr(), sv.size());
+      return w;
+   }
+
 Reference
 +++++++++
 
@@ -145,6 +153,13 @@ Reference
    .. function:: bool error() const
 
       Return :code:`true` if the buffer has overflowed from writing, :code:`false` if not.
+
+   .. function:: size_t extent() const
+
+      Return the total number of bytes in all attempted writes to this buffer. This value allows a
+      successful retry in case of overflow, presuming the output data doesn't change. This works
+      well with the standard "try before you buy" approach of attempting to write output, counting
+      the characters needed, then allocating a sufficiently sized buffer and actually writing.
 
 .. class:: FixedBufferWriter : public BufferWriter
 

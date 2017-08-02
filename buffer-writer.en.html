@@ -166,6 +166,14 @@ actually write to the buffer, just enough to make it possible to write stream op
 Those stream operators should be defined outside of the <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> header so that
 <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> does not need to be updated to add additional IO stream operators for new
 types.</p>
+<p>For instance if I wanted to make <code class="code docutils literal"><span class="pre">ts::StringView</span></code> work with <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> I would add
+to the <code class="code docutils literal"><span class="pre">ts::StringView</span></code> header the code</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="k">operator</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="n">ts</span><span class="o">::</span><span class="n">StringView</span> <span class="o">&amp;</span> <span class="n">sv</span><span class="p">)</span> <span class="p">{</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">sv</span><span class="p">.</span><span class="n">ptr</span><span class="p">(),</span> <span class="n">sv</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+   <span class="k">return</span> <span class="n">w</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="reference">
 <h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
@@ -243,6 +251,15 @@ even if part of the string is not.</p>
 <dt id="_CPPv2NK12BufferWriter5errorEv">
 <span id="BufferWriter::errorC"></span>bool <code class="descclassname"></code><code class="descname">error</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter5errorEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Return <code class="code docutils literal"><span class="pre">true</span></code> if the buffer has overflowed from writing, <code class="code docutils literal"><span class="pre">false</span></code> if not.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2NK12BufferWriter6extentEv">
+<span id="BufferWriter::extentC"></span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">extent</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter6extentEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Return the total number of bytes in all attempted writes to this buffer. This value allows a
+successful retry in case of overflow, presuming the output data doesn’t change. This works
+well with the standard “try before you buy” approach of attempting to write output, counting
+the characters needed, then allocating a sufficiently sized buffer and actually writing.</p>
 </dd></dl>
 
 </dd></dl>
