@@ -179,10 +179,17 @@ enough room to fit all the data, none is written.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv2N12BufferWriter5writeE11string_view">
+<span id="BufferWriter::write__string_view"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">write</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv211string_view" title="string_view">string_view</a> <em>str</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter5writeE11string_view" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Write the string <em>str</em> to the buffer. If there is not enough room to write the string no
+data is written.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_CPPv2I_6size_tEN12BufferWriter5writeERAN_Kc">
 template&lt;<a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">N</code>&gt;<br /><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">write</code><span class="sig-paren">(</span><em class="property">const</em> char (&amp;<em>literal</em>)[N]<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2I_6size_tEN12BufferWriter5writeERAN_Kc" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Write <em>literal</em> to the output treating it as a literal string. This means the size is
-computed by the compiler and the null terminated is discarded. If there is not enough space in
+computed by the compiler and the null terminator is discarded. If there is not enough space in
 the buffer no data is written.</p>
 </dd></dl>
 
@@ -270,7 +277,9 @@ buffer is <em>N</em> bytes long. The point of this is to replace code like this:
 </div>
 <div class="section" id="futures">
 <h2>Futures<a class="headerlink" href="#futures" title="Permalink to this headline">¶</a></h2>
-<p>A planned future extension is a variant of <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> that operates on a <code class="code docutils literal"><span class="pre">MIOBuffer</span></code>. This would be very useful in many places that work with <code class="code docutils literal"><span class="pre">MIOBuffer</span></code> instances, most specifically in the body factory logic.</p>
+<p>A planned future extension is a variant of <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> that operates on a
+<code class="code docutils literal"><span class="pre">MIOBuffer</span></code>. This would be very useful in many places that work with <code class="code docutils literal"><span class="pre">MIOBuffer</span></code>
+instances, most specifically in the body factory logic.</p>
 </div>
 </div>
 
