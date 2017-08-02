@@ -117,20 +117,21 @@
 <p>This is ugly, error prone, and unsafe. Most instances of this style just hope there is no buffer overflow. We need to do better.</p>
 <p>The idea is to use C++ eleventy features to build a more robust approach. This is based on a family
 of classes that control the output buffer and manage the offset tracking. The base is <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> which enables writing to the buffer. Assuming there is an instance of a concrete subclass of <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> named <code class="code docutils literal"><span class="pre">w</span></code> which controls the <em>via_string</em> buffer, the equivalent of the above code would be</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span><span class="p">.</span><span class="n">l</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">);</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">);</span>
 <span class="k">if</span> <span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Highest verbosity</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">cstr</span><span class="p">(</span><span class="n">incoming_via</span><span class="p">);</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">incoming_via</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">incoming_via</span><span class="p">));</span>
 <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-   <span class="n">w</span><span class="p">(</span><span class="n">incoming_via</span> <span class="o">+</span> <span class="n">VIA_CLIENT</span><span class="p">,</span> <span class="n">VIA_SERVER</span> <span class="o">-</span> <span class="n">VIA_CLIENT</span><span class="p">);</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">((</span><span class="n">incoming_via</span> <span class="o">+</span> <span class="n">VIA_CLIENT</span><span class="p">,</span> <span class="n">VIA_SERVER</span> <span class="o">-</span> <span class="n">VIA_CLIENT</span><span class="p">);</span>
 <span class="p">}</span>
-<span class="n">w</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span>
+<span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span>
 
 <span class="c1">// reserve 4 for &quot; []&quot; and 3 for &quot;])&quot;.</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">auxSize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="o">&amp;&amp;</span> <span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Ultra highest verbosity</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">l</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">);</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">auxWrite</span><span class="p">(</span><span class="n">write_via_protocol_stack</span><span class="p">(</span>
-      <span class="n">w</span><span class="p">.</span><span class="n">auxBuffer</span><span class="p">(),</span> <span class="n">w</span><span class="p">.</span><span class="n">auxSize</span><span class="p">()</span> <span class="o">-</span> <span class="mi">3</span><span class="p">),</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">));</span>
-   <span class="n">w</span><span class="p">.(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="o">&amp;&amp;</span> <span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Ultra highest verbosity</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">);</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// reserve a byte for closing bracket.</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">write_via_protocol_stack</span><span class="p">(</span>
+      <span class="n">w</span><span class="p">.</span><span class="n">auxBuffer</span><span class="p">(),</span> <span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">()</span> <span class="o">-</span> <span class="mi">3</span><span class="p">),</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">));</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">write</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">error</span><span class="p">())</span> <span class="n">Warning</span><span class="p">(</span><span class="s">&quot;VIA: static buffer overflow&quot;</span><span class="p">);</span>
@@ -143,10 +144,11 @@ overflowing writes, and stop output at the last element that fits in the target 
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">size_t</span> <span class="n">write_via_protocol_stack</span><span class="p">(</span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="kt">bool</span><span class="p">,</span> <span class="n">ts</span><span class="o">::</span><span class="n">StringView</span> <span class="o">*</span> <span class="n">proto</span> <span class="kt">int</span> <span class="n">n_proto</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>then <code class="code docutils literal"><span class="pre">BufferWriter::write</span></code> can be used to further simplify the code for the VIA output to</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span><span class="p">.</span><span class="n">l</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">)</span>
-  <span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">write_via_protocol_stack</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">)</span>
-  <span class="p">.</span><span class="n">release</span><span class="p">().</span><span class="n">c</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span>
+<p>then the code can be simplified to</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">);</span>
+<span class="n">w</span><span class="p">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// reserver a byte for closing bracket</span>
+<span class="n">write_via_protocol_stack</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buff</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">);</span>
+<span class="n">w</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">write</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span> <span class="c1">// always succeeds because we checked for space earlier.</span>
 </pre></div>
 </div>
 <div class="section" id="issues">
@@ -170,42 +172,58 @@ implement these stream operators if desired.</p>
 is intended to be the reference type used when passing concrete instances rather than having to
 support the distinct types.</p>
 <dl class="function">
-<dt id="_CPPv2I_6size_tEN12BufferWriter1lERAN_Kc">
-template&lt;<a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">N</code>&gt;<br /><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">l</code><span class="sig-paren">(</span><em class="property">const</em> char (&amp;<em>literal</em>)[N]<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2I_6size_tEN12BufferWriter1lERAN_Kc" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Write <em>literal</em> to the output treating it as a literal string. This will clip the terminating null.</p>
+<dt id="_CPPv2I_6size_tEN12BufferWriter5writeEPv6size_t">
+template&lt;<a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">N</code>&gt;<br /><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">write</code><span class="sig-paren">(</span>void *<em>data</em>, <a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2I_6size_tEN12BufferWriter5writeEPv6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Write to the buffer starting at <em>data</em> for at most <em>length</em> bytes. If there is not
+enough room to fit all the data, none is written.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2N12BufferWriter4cstrEPKc">
-<span id="BufferWriter::cstr__cCP"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">cstr</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>str</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter4cstrEPKc" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Write <em>str</em> to the output treating it as a C-string (null terminated). This will call
-<code class="code docutils literal"><span class="pre">strlen</span></code> on <em>str</em> to determine the length.</p>
+<dt id="_CPPv2I_6size_tEN12BufferWriter5writeERAN_Kc">
+template&lt;<a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">N</code>&gt;<br /><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">write</code><span class="sig-paren">(</span><em class="property">const</em> char (&amp;<em>literal</em>)[N]<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2I_6size_tEN12BufferWriter5writeERAN_Kc" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Write <em>literal</em> to the output treating it as a literal string. This means the size is
+computed by the compiler and the null terminated is discarded.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2N12BufferWriter5writeENSt8functionIF6size_tR12BufferWriterzEEEz">
-<a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">write</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv2I0ENSt8functionE" title="std::function">function</a>&lt;<a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a>&amp;, ...<span class="sig-paren">)</span>&gt; <em>f</em>, ..., <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter5writeENSt8functionIF6size_tR12BufferWriterzEEEz" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Create a nested <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> that operates on the empty part of the current buffer.
-The function <em>f</em> is called and passed the nested <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> and the argument
-pack passed to this method.</p>
+<dt id="_CPPv2NK12BufferWriter4sizeEv">
+<span id="BufferWriter::sizeC"></span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter4sizeEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Return the number of valid (written) bytes in the buffer.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2N12BufferWriter7reserveE6size_t">
-<span id="BufferWriter::reserve__s"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">reserve</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter7reserveE6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Restrict the buffer to be <em>n</em> characters less than it is currently. This effectively reserves <em>n</em> characters at the end of the buffer.</p>
+<dt id="_CPPv2NK12BufferWriter9remainingEv">
+<span id="BufferWriter::remainingC"></span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">remaining</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter9remainingEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Return the number of available remaining bytes that could be written in the buffer.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2N12BufferWriter7releaseEv">
-<span id="BufferWriter::release"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">release</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter7releaseEv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Release all reserved space.</p>
+<dt id="_CPPv2N12BufferWriter6resizeE6size_t">
+<span id="BufferWriter::resize__s"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">resize</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter6resizeE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Set the number of bytes of valid (written) data.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2N12BufferWriter7releaseE6size_t">
-<span id="BufferWriter::release__s"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">release</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter7releaseE6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Release <em>n</em> characters of space. The released space is always adjacent to the available buffer.</p>
+<dt id="_CPPv2N12BufferWriter4clipE6size_t">
+<span id="BufferWriter::clip__s"></span><code class="descclassname"></code><code class="descname">clip</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter4clipE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Reduce the available space by <em>n</em> bytes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N12BufferWriter6extendE6size_t">
+<span id="BufferWriter::extend__s"></span><code class="descclassname"></code><code class="descname">extend</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter6extendE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Increase the available space by <em>n</em> bytes. Extreme care must be used with this method as
+<a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> will trust the argument, having no way to verify it. In general this
+should only be used after calling <a class="reference internal" href="#_CPPv2N12BufferWriter4clipE6size_t" title="BufferWriter::clip"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::clip()</span></code></a> and passing the same value.
+Together these allow the buffer to be temporarily reduced to reserve space for the trailing
+element of a required pair of output strings, e.g. making sure a closing quote can be written
+even if part of the string is not.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2NK12BufferWriter5errorEv">
+<span id="BufferWriter::errorC"></span>bool <code class="descclassname"></code><code class="descname">error</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter5errorEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Return <code class="code docutils literal"><span class="pre">true</span></code> if the buffer has overflowed from writing, <code class="code docutils literal"><span class="pre">false</span></code> if not.</p>
 </dd></dl>
 
 </dd></dl>

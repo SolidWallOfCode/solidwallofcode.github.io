@@ -36,20 +36,21 @@ This is ugly, error prone, and unsafe. Most instances of this style just hope th
 The idea is to use C++ eleventy features to build a more robust approach. This is based on a family
 of classes that control the output buffer and manage the offset tracking. The base is :class:`BufferWriter` which enables writing to the buffer. Assuming there is an instance of a concrete subclass of :class:`BufferWriter` named :code:`w` which controls the :arg:`via_string` buffer, the equivalent of the above code would be ::
 
-   w.l(" [");
+   w.write(" [");
    if (s->txn_conf->insert_request_via_string > 2) { // Highest verbosity
-      w.cstr(incoming_via);
+      w.write(incoming_via, strlen(incoming_via));
    } else {
-      w(incoming_via + VIA_CLIENT, VIA_SERVER - VIA_CLIENT);
+      w.write((incoming_via + VIA_CLIENT, VIA_SERVER - VIA_CLIENT);
    }
-   w(']');
+   w.write(']');
 
    // reserve 4 for " []" and 3 for "])".
-   if (w.auxSize() > 4 && s->txn_conf->insert_request_via_string > 3) { // Ultra highest verbosity
-      w.l(" [");
-      w.auxWrite(write_via_protocol_stack(
-         w.auxBuffer(), w.auxSize() - 3), true, proto_buf.data(), n_proto));
-      w.(']');
+   if (w.remaining() > 4 && s->txn_conf->insert_request_via_string > 3) { // Ultra highest verbosity
+      w.write(" [");
+      w.clip(1); // reserve a byte for closing bracket.
+      w.write(write_via_protocol_stack(
+         w.auxBuffer(), w.remaining() - 3), true, proto_buf.data(), n_proto));
+      w.extend(1).write(']');
    }
 
    if (w.error()) Warning("VIA: static buffer overflow");
@@ -62,11 +63,12 @@ If :code:`write_via_protocol_stack` were changed a bit to have the signature ::
 
    size_t write_via_protocol_stack(BufferWriter& w, bool, ts::StringView * proto int n_proto)
 
-then :code:`BufferWriter::write` can be used to further simplify the code for the VIA output to ::
+then the code can be simplified to ::
 
-      w.l(" [")
-        .reserve(1).write(&write_via_protocol_stack, true, proto_buf.data(), n_proto)
-        .release().c(']');
+      w.write(" [");
+      w.clip(1); // reserver a byte for closing bracket
+      write_via_protocol_stack(w, true, proto_buff.data(), n_proto);
+      w.extend(1).write(']'); // always succeeds because we checked for space earlier.
 
 Issues
 ++++++
@@ -90,38 +92,50 @@ Reference
    is intended to be the reference type used when passing concrete instances rather than having to
    support the distinct types.
 
-   .. function:: template <size_t N> BufferWriter & l(const char (&literal)[N])
+   .. function:: template <size_t N> BufferWriter & write(void * data, size_t length)
 
-      Write :arg:`literal` to the output treating it as a literal string. This will clip the terminating null.
+      Write to the buffer starting at :arg:`data` for at most :arg:`length` bytes. If there is not
+      enough room to fit all the data, none is written.
 
-   .. function:: BufferWriter& cstr(const char * str)
+   .. function:: template <size_t N> BufferWriter & write(const char (&literal)[N])
 
-      Write :arg:`str` to the output treating it as a C-string (null terminated). This will call
-      :code:`strlen` on :arg:`str` to determine the length.
+      Write :arg:`literal` to the output treating it as a literal string. This means the size is
+      computed by the compiler and the null terminated is discarded.
 
-   .. function:: BufferWriter& write(std::function<size_t (BufferWriter&, ...)> f, ...)
+   .. function:: size_t size() const
 
-      Create a nested :class:`BufferWriter` that operates on the empty part of the current buffer.
-      The function :arg:`f` is called and passed the nested :class:`BufferWriter` and the argument
-      pack passed to this method.
+      Return the number of valid (written) bytes in the buffer.
 
-   .. function:: BufferWriter& reserve(size_t n)
+   .. function:: size_t remaining() const
 
-      Restrict the buffer to be :arg:`n` characters less than it is currently. This effectively reserves :arg:`n` characters at the end of the buffer.
+      Return the number of available remaining bytes that could be written in the buffer.
 
-   .. function:: BufferWriter & release()
+   .. function:: BufferWriter& resize(size_t n)
 
-      Release all reserved space.
+      Set the number of bytes of valid (written) data.
 
-   .. function :: BufferWriter & release(size_t n)
+   .. function:: clip(size_t n)
 
-      Release :arg:`n` characters of space. The released space is always adjacent to the available buffer.
+      Reduce the available space by :arg:`n` bytes.
+
+   .. function:: extend(size_t n)
+
+      Increase the available space by :arg:`n` bytes. Extreme care must be used with this method as
+      :class:`BufferWriter` will trust the argument, having no way to verify it. In general this
+      should only be used after calling :func:`BufferWriter::clip` and passing the same value.
+      Together these allow the buffer to be temporarily reduced to reserve space for the trailing
+      element of a required pair of output strings, e.g. making sure a closing quote can be written
+      even if part of the string is not.
+
+   .. function:: bool error() const
+
+      Return :code:`true` if the buffer has overflowed from writing, :code:`false` if not.
 
 .. class:: FixedBufferWriter : public BufferWriter
 
    This is a class that implements :class:`BufferWriter` on a fixed buffer.
 
-   .. function:: FixedBufferWriter(void* buffer, size_t length)
+   .. function:: FixedBufferWriter(void * buffer, size_t length)
 
       Construct an instance that will write to :arg:`buffer` at most :arg:`length` bytes. Individual
       items are either written or not - if the item doesn't fit nothing is written and the instance
