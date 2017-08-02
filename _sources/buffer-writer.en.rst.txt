@@ -108,7 +108,7 @@ Reference
       computed by the compiler and the null terminator is discarded. If there is not enough space in
       the buffer no data is written.
 
-   .. function:: BufferWrite & write(char c)
+   .. function:: BufferWriter & write(char c)
 
       Write the character :arg:`c` to the buffer. If there is no space in the buffer the character
       is not written.
