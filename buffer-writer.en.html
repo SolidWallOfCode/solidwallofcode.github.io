@@ -136,13 +136,30 @@ of classes that control the output buffer and manage the offset tracking. The ba
 <span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">error</span><span class="p">())</span> <span class="n">Warning</span><span class="p">(</span><span class="s">&quot;VIA: static buffer overflow&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>In addition to being shorter and cleaner, the latter is also far more robust in that if the buffer overflows there will be no memory corruption because <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> will avoid doing the overflowing writes, and stop output at the last element that fits in the target buffer.</p>
+<p>In addition to being shorter and cleaner, the latter is also far more robust in that if the buffer
+overflows there will be no memory corruption because <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> will avoid doing the
+overflowing writes, and stop output at the last element that fits in the target buffer.</p>
+<p>If <code class="code docutils literal"><span class="pre">write_via_protocol_stack</span></code> were changed a bit to have the signature</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">size_t</span> <span class="n">write_via_protocol_stack</span><span class="p">(</span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="kt">bool</span><span class="p">,</span> <span class="n">ts</span><span class="o">::</span><span class="n">StringView</span> <span class="o">*</span> <span class="n">proto</span> <span class="kt">int</span> <span class="n">n_proto</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>then <code class="code docutils literal"><span class="pre">BufferWriter::write</span></code> can be used to further simplify the code for the VIA output to</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span><span class="p">.</span><span class="n">l</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">)</span>
+  <span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">write_via_protocol_stack</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">)</span>
+  <span class="p">.</span><span class="n">release</span><span class="p">().</span><span class="n">c</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
 <div class="section" id="issues">
 <h2>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h2>
-<p>A remaining issue is how non string data is provided to <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. This should be sufficiently generic that new types can be supported without changing <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. It has been suggested the standard stream operators be overloaded to work with a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>, e.g.</p>
+<p>A remaining issue is how non string data is provided to <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. This should be
+sufficiently generic that new types can be supported without changing <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. It has
+been suggested the standard stream operators be overloaded to work with a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>,
+e.g.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="k">operator</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="n">SomeSpecificType</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">t</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
 </pre></div>
 </div>
+<p>This can be done independently as <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> provides sufficient functionality to
+implement these stream operators if desired.</p>
 </div>
 <div class="section" id="reference">
 <h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
@@ -163,6 +180,32 @@ template&lt;<a class="reference internal" href="external-types.en.html#_CPPv26si
 <span id="BufferWriter::cstr__cCP"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">cstr</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>str</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter4cstrEPKc" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Write <em>str</em> to the output treating it as a C-string (null terminated). This will call
 <code class="code docutils literal"><span class="pre">strlen</span></code> on <em>str</em> to determine the length.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N12BufferWriter5writeENSt8functionIF6size_tR12BufferWriterzEEEz">
+<a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">write</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv2I0ENSt8functionE" title="std::function">function</a>&lt;<a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a>&amp;, ...<span class="sig-paren">)</span>&gt; <em>f</em>, ..., <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter5writeENSt8functionIF6size_tR12BufferWriterzEEEz" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Create a nested <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> that operates on the empty part of the current buffer.
+The function <em>f</em> is called and passed the nested <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> and the argument
+pack passed to this method.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N12BufferWriter7reserveE6size_t">
+<span id="BufferWriter::reserve__s"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">reserve</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter7reserveE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Restrict the buffer to be <em>n</em> characters less than it is currently. This effectively reserves <em>n</em> characters at the end of the buffer.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N12BufferWriter7releaseEv">
+<span id="BufferWriter::release"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">release</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter7releaseEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Release all reserved space.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N12BufferWriter7releaseE6size_t">
+<span id="BufferWriter::release__s"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">release</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter7releaseE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Release <em>n</em> characters of space. The released space is always adjacent to the available buffer.</p>
 </dd></dl>
 
 </dd></dl>

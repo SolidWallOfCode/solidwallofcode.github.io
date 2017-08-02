@@ -8,9 +8,7 @@
 Buffer Writer
 *************
 
-Buffer writer is a project to improve writting text data to buffers. Currently this is done by code that looks like
-
-.. code-block:: cpp
+Buffer writer is a project to improve writting text data to buffers. Currently this is done by code that looks like ::
 
    *via_string++ = ' ';
    *via_string++ = '[';
@@ -56,14 +54,32 @@ of classes that control the output buffer and manage the offset tracking. The ba
 
    if (w.error()) Warning("VIA: static buffer overflow");
 
-In addition to being shorter and cleaner, the latter is also far more robust in that if the buffer overflows there will be no memory corruption because :class:`BufferWriter` will avoid doing the overflowing writes, and stop output at the last element that fits in the target buffer.
+In addition to being shorter and cleaner, the latter is also far more robust in that if the buffer
+overflows there will be no memory corruption because :class:`BufferWriter` will avoid doing the
+overflowing writes, and stop output at the last element that fits in the target buffer.
+
+If :code:`write_via_protocol_stack` were changed a bit to have the signature ::
+
+   size_t write_via_protocol_stack(BufferWriter& w, bool, ts::StringView * proto int n_proto)
+
+then :code:`BufferWriter::write` can be used to further simplify the code for the VIA output to ::
+
+      w.l(" [")
+        .reserve(1).write(&write_via_protocol_stack, true, proto_buf.data(), n_proto)
+        .release().c(']');
 
 Issues
 ++++++
 
-A remaining issue is how non string data is provided to :class:`BufferWriter`. This should be sufficiently generic that new types can be supported without changing :class:`BufferWriter`. It has been suggested the standard stream operators be overloaded to work with a :class:`BufferWriter`, e.g. ::
+A remaining issue is how non string data is provided to :class:`BufferWriter`. This should be
+sufficiently generic that new types can be supported without changing :class:`BufferWriter`. It has
+been suggested the standard stream operators be overloaded to work with a :class:`BufferWriter`,
+e.g. ::
 
    BufferWriter& operator << (BufferWriter& w, SomeSpecificType const& t) { ... }
+
+This can be done independently as :class:`BufferWriter` provides sufficient functionality to
+implement these stream operators if desired.
 
 Reference
 +++++++++
@@ -82,6 +98,24 @@ Reference
 
       Write :arg:`str` to the output treating it as a C-string (null terminated). This will call
       :code:`strlen` on :arg:`str` to determine the length.
+
+   .. function:: BufferWriter& write(std::function<size_t (BufferWriter&, ...)> f, ...)
+
+      Create a nested :class:`BufferWriter` that operates on the empty part of the current buffer.
+      The function :arg:`f` is called and passed the nested :class:`BufferWriter` and the argument
+      pack passed to this method.
+
+   .. function:: BufferWriter& reserve(size_t n)
+
+      Restrict the buffer to be :arg:`n` characters less than it is currently. This effectively reserves :arg:`n` characters at the end of the buffer.
+
+   .. function:: BufferWriter & release()
+
+      Release all reserved space.
+
+   .. function :: BufferWriter & release(size_t n)
+
+      Release :arg:`n` characters of space. The released space is always adjacent to the available buffer.
 
 .. class:: FixedBufferWriter : public BufferWriter
 
