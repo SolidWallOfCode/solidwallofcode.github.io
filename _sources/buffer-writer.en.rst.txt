@@ -92,7 +92,7 @@ Reference
    is intended to be the reference type used when passing concrete instances rather than having to
    support the distinct types.
 
-   .. function:: template <size_t N> BufferWriter & write(void * data, size_t length)
+   .. function:: BufferWriter & write(void * data, size_t length)
 
       Write to the buffer starting at :arg:`data` for at most :arg:`length` bytes. If there is not
       enough room to fit all the data, none is written.
@@ -100,7 +100,13 @@ Reference
    .. function:: template <size_t N> BufferWriter & write(const char (&literal)[N])
 
       Write :arg:`literal` to the output treating it as a literal string. This means the size is
-      computed by the compiler and the null terminated is discarded.
+      computed by the compiler and the null terminated is discarded. If there is not enough space in
+      the buffer no data is written.
+
+   .. function:: BufferWrite & write(char c)
+
+      Write the character :arg:`c` to the buffer. If there is no space in the buffer the character
+      is not written.
 
    .. function:: size_t size() const
 
@@ -108,9 +114,9 @@ Reference
 
    .. function:: size_t remaining() const
 
-      Return the number of available remaining bytes that could be written in the buffer.
+      Return the number of available remaining bytes that could be written to the buffer.
 
-   .. function:: BufferWriter& resize(size_t n)
+   .. function:: BufferWriter & resize(size_t n)
 
       Set the number of bytes of valid (written) data.
 
