@@ -51,7 +51,7 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Buffer Writer</a><ul>
-<li><a class="reference internal" href="#issues">Issues</a></li>
+<li><a class="reference internal" href="#stream-operators">Stream Operators</a></li>
 <li><a class="reference internal" href="#reference">Reference</a></li>
 <li><a class="reference internal" href="#futures">Futures</a></li>
 </ul>
@@ -146,17 +146,20 @@ overflowing writes, and stop output at the last element that fits in the target 
 </div>
 <p>then the code can be simplified to</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">);</span>
-<span class="n">w</span><span class="p">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// reserver a byte for closing bracket</span>
+<span class="n">w</span><span class="p">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span> <span class="c1">// reserver a byte for closing bracket</span>
 <span class="n">write_via_protocol_stack</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buff</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">);</span>
-<span class="n">w</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">write</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span> <span class="c1">// always succeeds because we checked for space earlier.</span>
+<span class="n">w</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">write</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span> <span class="c1">// always succeeds because we checked for space earlier.</span>
 </pre></div>
 </div>
-<div class="section" id="issues">
-<h2>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h2>
-<p>A remaining issue is how non string data is provided to <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. This should be
-sufficiently generic that new types can be supported without changing <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. It has
-been suggested the standard stream operators be overloaded to work with a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>,
-e.g.</p>
+<p>This allows an instance of <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> to be passed in place of a buffer pointer and
+length making the code simpler and more robust, making clear the intent to have the buffer written.
+Size updates are then handled internally without need for explicit return values.</p>
+<div class="section" id="stream-operators">
+<h2>Stream Operators<a class="headerlink" href="#stream-operators" title="Permalink to this headline">¶</a></h2>
+<p>A remaining issue is how non-string data is provided to <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. This should be
+sufficiently generic that new types can be supported without changing <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> while
+also not bloating the class. It has been suggested the standard stream operators be overloaded to
+work with a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>, e.g.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="k">operator</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="n">SomeSpecificType</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">t</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
 </pre></div>
 </div>
@@ -168,10 +171,33 @@ Those stream operators should be defined outside of the <a class="reference inte
 types.</p>
 <p>For instance if I wanted to make <code class="code docutils literal"><span class="pre">ts::StringView</span></code> work with <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> I would add
 to the <code class="code docutils literal"><span class="pre">ts::StringView</span></code> header the code</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="k">operator</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="n">ts</span><span class="o">::</span><span class="n">StringView</span> <span class="o">&amp;</span> <span class="n">sv</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="k">operator</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="n">ts</span><span class="o">::</span><span class="n">StringView</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">sv</span><span class="p">)</span> <span class="p">{</span>
    <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">sv</span><span class="p">.</span><span class="n">ptr</span><span class="p">(),</span> <span class="n">sv</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
    <span class="k">return</span> <span class="n">w</span><span class="p">;</span>
 <span class="p">}</span>
+</pre></div>
+</div>
+<p>Using IO stream style operators (presuming they have been defined for the relevant types), the example could would look like</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; [&quot;</span><span class="p">;</span>
+
+<span class="c1">// incoming_via can be max MAX_VIA_INDICES+1 long (i.e. around 25 or so)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Highest verbosity</span>
+   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="n">incoming_via</span><span class="p">;</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="n">string_view</span><span class="p">(</span><span class="n">incoming_via</span> <span class="o">+</span> <span class="n">VIA_CLIENT</span><span class="p">,</span> <span class="n">VIA_SERVER</span> <span class="o">-</span> <span class="n">VIA_CLIENT</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;]&#39;</span><span class="p">;</span>
+
+<span class="c1">// reserve 4 for &quot; []&quot; and 3 for &quot;])&quot;.</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="o">&amp;&amp;</span> <span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Ultra highest verbosity</span>
+   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; [&quot;</span><span class="p">;</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+   <span class="n">write_via_protocol_stack</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">);</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;]&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">error</span><span class="p">())</span> <span class="n">Warning</span><span class="p">(</span><span class="s">&quot;VIA: static buffer overflow&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>

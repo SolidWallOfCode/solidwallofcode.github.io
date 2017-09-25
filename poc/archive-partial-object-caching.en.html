@@ -1,0 +1,232 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Partal Object Caching &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Partial Caching Initial Design" href="archive-partial-object-caching-prototype.en.html" />
+    <link rel="prev" title="Glossary" href="cache-glossary.en.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="archive-partial-object-caching-prototype.en.html" title="Partial Caching Initial Design"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cache-glossary.en.html" title="Glossary"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="poc-index.html" accesskey="U">Partial Object Caching</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Partal Object Caching</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li><a class="reference internal" href="#architectural-changes">Architectural changes</a><ul>
+<li><a class="reference internal" href="#decoupling-reading-and-writing">Decoupling reading and writing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#object-contention">Object Contention</a><ul>
+<li><a class="reference internal" href="#previous-features">Previous Features</a><ul>
+<li><a class="reference internal" href="#read-while-write">Read While Write</a></li>
+<li><a class="reference internal" href="#stale-while-revalidate">Stale While Revalidate</a></li>
+<li><a class="reference internal" href="#cache-write-fail-action">Cache Write Fail Action</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#other-implementation-notes">Other Implementation Notes</a></li>
+<li><a class="reference internal" href="#revalidation">Revalidation</a></li>
+<li><a class="reference internal" href="#background-fill">Background Fill</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cache-glossary.en.html"
+                        title="previous chapter">Glossary</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="archive-partial-object-caching-prototype.en.html"
+                        title="next chapter">Partial Caching Initial Design</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/poc/archive-partial-object-caching.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="partal-object-caching">
+<span id="partial-object-caching-architecture"></span><h1>Partal Object Caching<a class="headerlink" href="#partal-object-caching" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Partial object caching is the capability to store partial content in the Traffic Server
+cache. This requires large architectural changes as the original design had many
+implicit dependencies on all content being present if an object was cached.</p>
+<div class="section" id="architectural-changes">
+<h3>Architectural changes<a class="headerlink" href="#architectural-changes" title="Permalink to this headline">¶</a></h3>
+<p>The primary change is that all content, requests, and responses are treated as
+ranged requests internally with a full request being just an optimized special
+case where the range is the entire object.</p>
+<div class="section" id="decoupling-reading-and-writing">
+<h4>Decoupling reading and writing<a class="headerlink" href="#decoupling-reading-and-writing" title="Permalink to this headline">¶</a></h4>
+<p>Partial content causes a decoupling between the serving of cache
+content and the writing of cache content. Given a partial cache object and a
+range request from a user agent, there may be little relationship between what
+is requested from the origin and what is served to the user agent. In particular
+served content can be an arbitrary mix of previously cached content and fresh
+content, dependent on the specific history of requests for the object. This is a
+major change in that previously there was either a reader VC that served content
+from the cache, or a writer VC that wrote to the cache in parallel to serving it
+to a user agent.</p>
+</div>
+</div>
+</div>
+<div class="section" id="object-contention">
+<h2>Object Contention<a class="headerlink" href="#object-contention" title="Permalink to this headline">¶</a></h2>
+<p>When an object is found in cache or a new cache object is created an in memory record of that object is allocated, an instance of <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a>. This tracks the state of the object. In the object, and therefore in the ODE (<a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a>) there is an <a class="reference internal" href="cache-glossary.en.html#term-alternate-vector"><span class="xref std std-term">alternate vector</span></a> which is a set of <a class="reference internal" href="cache-glossary.en.html#term-alternates"><span class="xref std std-term">alternates</span></a> for the object. Initially this is an empty vector (for newly created objects) but can contain multiple entries for the object. The alternate vector gets updated (update of a specific alt or the addition of a new alt) from the response headers of a request. When such a request is made to the origin, this state is referred to as <em>pending alternate vector update</em>. This state lasts until either the response headers arrive (and the alternate vector is updated) or the origin connection fails. By design, only one alternate vector update can be pending. While one is pending no other request can be proxied to the origin for that object. This was the subject of much thought but currently it seems the best approach, primarily because doing otherwise creates complexity without apparent benefit. It is important to note this does not mean only one request to an origin for an object can be outstanding - once the response headers are received a new request can be made. Additional request should not be any faster than waiting for a request that is already on the wire except for connection issues with the origin server.</p>
+<dl class="docutils">
+<dt>If, after a cache read hit, there is a pending alternate vector update, the transaction will wait for a configurable number of milliseconds for the update to complete. If this times out the transaction must do one of the following -</dt>
+<dd><ul class="first last simple">
+<li>Go direct to origin without caching.</li>
+<li>Fail the transaction with an error.</li>
+<li>Serve stale content (if available).\aspx</li>
+</ul>
+</dd>
+</dl>
+<p>Note that serving stale content is not always an option as it may not exist (e.g., the transaction is waiting on a request for a new object). In that case the transaction will have to fall back again to one of the other options.</p>
+<p>If there is no pending alternate vector update or such an update completes within the time limit, then <a class="reference internal" href="cache-glossary.en.html#term-alternate-selection"><span class="xref std std-term">alternate selection</span></a> is performed, selecting a specific alternate for the request. This can result in a selection of “none” meaning no alternate was suitable which is always the case for a new object. A selection of “none” always results in a request to origin to add a new alternate to the alternate vector. If an existing alternate is selected then it is first checked for <em>coverage</em>. This is matching the content that is cached against the content requested and current active requests. The request is covered if all requested content is already cached. If the request is not covered then an origin request is made to retrieve the missing content. In this case, if the alternate is stale, then none of the existing content is considered valid when computing the content to request from the origin. Once Traffic Server is committed to an origin request it should get fresh content <a class="footnote-reference" href="#fn-uncovered-stale" id="id1">[1]</a>.</p>
+<p>After the alternate is selected and verified to cover the request it is checked for freshness. If it fresh then it is served to the user agent without further action. If the content is stale the alternate is <a class="reference internal" href="cache-glossary.en.html#term-revalidated"><span class="xref std std-term">revalidated</span></a> by sending an conditional request upstream <a class="footnote-reference" href="#fn-partial-revalidate" id="id2">[2]</a>. This puts the object in to the pending alternate vector update state. Conceptually, at this point, the user agent request transitions to the state of having a cache hit with an alternate vector update pending. This enables the transaction to serve stale content while the revalidation happens asynchronously, or even to wait a little bit for a fast origin and then give up to serve stale.</p>
+<p>Active requests are recorded in the ODE and content in active requests that has not yet arrived is considered when determining if a request is covered. This drives the implementation decision to separate reader and writer CacheVC instances because the content in the origin request can be very loosely related to the content in the user agent request depending on what has been cached and what other user agent requests are active. When the missing content is determined and is not empty then a request is sent to the origin to retrieve enough data to cover the missing content. Because this is a cache fill and not an alternate vector update it does not block other requests and therefore multiple cache fills can be active on the same alternate.</p>
+<p>The point of doing coverage calculations against pending content is to reduce the load on origin servers by fetching content the fewest number of times. In some cases administrators would prefer to trade off origin load for faster responses to the user agent. The most common instance of this is video content serving. In that case if a user agent has requested the full video content and another user then requests only a range of the video it can be the range is a “long way” from the currently streaming content for the full request, forcing the other user to effectively wait until the first user gets that part of the video. This can be an unacceptably long wait (consider a 200MB video where the other user just wants to watch a it near the end). For this reason there is a configurable limit on how many bytes a request should wait to get pending content. If the wait is longer then the user agent request will create an origin request even though it duplicates content.</p>
+<div class="section" id="previous-features">
+<h3>Previous Features<a class="headerlink" href="#previous-features" title="Permalink to this headline">¶</a></h3>
+<p>There are several current features that are eliminated in the partial caching implementation. Instead these features are built more directly in to the basic mechanisms so equivalent functionality is still available.</p>
+<div class="section" id="read-while-write">
+<h4>Read While Write<a class="headerlink" href="#read-while-write" title="Permalink to this headline">¶</a></h4>
+<p>There is no mention of “read while write” in the previous section because it is no longer a distinct case. Any cache operation that is not a fresh write to cache of a full request is implemented internally as read while write. Any request to the origin that will cache content gets a CacheVC as a writer. This becomes effectively independent of the user agent request. In the special case noted previously the response from the origin is split via <a class="reference internal" href="cache-types.en.html#_CPPv210HttpTunnel" title="HttpTunnel"><code class="xref cpp cpp-class docutils literal"><span class="pre">HttpTunnel</span></code></a> for performance reasons but in any other case a CacheVC to read content is created. This CacheVC handles cached and live content directly, fetching from ram cache, or disk, or waiting for a writer CacheVC to fill.</p>
+<p>For this reason the previous implementation of read while write has been completely removed, replaced in its limited scope by this more general mechanism. What was “read while write” is now the general case for all cache operations. The new implementation is more efficient and robust as well</p>
+</div>
+<div class="section" id="stale-while-revalidate">
+<h4>Stale While Revalidate<a class="headerlink" href="#stale-while-revalidate" title="Permalink to this headline">¶</a></h4>
+<p>Allowing the alternate selection to select stale content enables the serving of stale content while revalidating. The implementation internally puts the stale earliest cache key in the ODE for use in this situation. Because only one alternate vector update is permitted at a time only one cache key slot is required.</p>
+</div>
+<div class="section" id="cache-write-fail-action">
+<h4>Cache Write Fail Action<a class="headerlink" href="#cache-write-fail-action" title="Permalink to this headline">¶</a></h4>
+<p>The cache object write lock is now only held during the alternate vector update pending time. If there is no request with pending response headers then any new transaction can access the cache object and serve from it or initiate an additional request if some content is missing or will take too long to return. This cannot be made better as selecting an alternate requires the alternate vector to be stable and a new request will not get the response headers needed back any faster. Even so, requests can pile up during the alternate vector update time. For this reason a timeout is available to give up on waiting for the response headers and take another action. These cover the cache write fail actions and the timeout is effectively the retry time multiplied by the number of retries. Because of how the new implementation is structured there are no longer any “retries” - the waiting CacheVC instances are placed on a list and explicitly rescheduled only when the update is complete.</p>
+</div>
+</div>
+<div class="section" id="other-implementation-notes">
+<h3>Other Implementation Notes<a class="headerlink" href="#other-implementation-notes" title="Permalink to this headline">¶</a></h3>
+<p>Much effort was made to avoid any sort of retry in the cache logic. An additional link list pair was added to the CacheVC to allow instances to be placed on pending lists. When a CacheVC cannot obtain a resource because it is in use by another CacheVC it adds itself to a list to be notified when the resource is available. For example if a reader CacheVC needs content that is not cached but is scheduled to arrive due to an active origin request it adds itself to a list associated with its alternate with an internal note of which fragment in the alternate it needs. When a writer CacheVC caches a fragment, it grabs the list and walks it, scheduling CacheVC instances that were waiting for that fragment and putting the rest back on the list.</p>
+<p>This helps with error cases as well. If a writer CacheVC fails it can easily notify any readers that the write has failed and schedule them to handle that case. The writer can even check if there are multiple writers if any other writer will deliver the content and not provide the notification in that case.</p>
+<p>The cache data strutures are still locked but now are locked only while being actively updated so the locks are held for much shorter times. The equivalent of the cache object write lock is now to lock the ODE, update the state to indicate a alternate vector update, then drop the lock. Other CacheVC instances can then check this and arrange to wait as needed rather than failing to lock and retrying the low level lock.</p>
+</div>
+<div class="section" id="revalidation">
+<h3>Revalidation<a class="headerlink" href="#revalidation" title="Permalink to this headline">¶</a></h3>
+<p>Revalidation occurs only after a request has done alternate selection. That particular alternate is checked for requiring revalidation and if so the state machine performs a proxy request to the origin. It is not an object that is revalidated but always a specific alternate.</p>
+<p>If the response is a header only update (which generally means a <cite>304</cite> response) or the response for whatever reason is uncachebale, then the alternate key (earliest) key remains the same and only the first doc is written to disk. If a cacheable response with content is received then the alternate is replaced and the earliest key changed. The writer CacheVC stores the original alternate key in <code class="xref cpp cpp-member docutils literal"><span class="pre">CacheVC::update_key</span></code>. The alternate vector is not updated until the writer CacheVC is closed. At that point the earliest key for the new content is copied to the alternate vector.</p>
+<p>Because of this the original alternate content remains available in the alternate vector until the replacement has been completely written to the cache. However this still has timing problems in that a reader CacheVC can being serving the stale content just before the final replacement content arrives and therefore still be serving from the stale data when the alternate vector is updated (changing its apparently local <code class="xref cpp cpp-member docutils literal"><span class="pre">CacheVC::alternate</span></code>).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is not yet clear when the request and response headers in the alternate vector are updated. This may happen when the origin server response header is merged with the cached response header. <code class="xref cpp cpp-func docutils literal"><span class="pre">CacheVC::set_http_info()</span></code> updates <code class="xref cpp cpp-member docutils literal"><span class="pre">CacheVC::alternate</span></code> but shallowly so that the alternate vector is unaltered. As best I can tell the cleanup logic depends on an alternate never getting updated more than once while the <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> exists. If multiple writers are not allowed then the <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> is destoyed when the write completes which in turn destroys the newly allocated alternate. If multiple writers are allowed it’s not as clear but I think it’s presumed these must all be for different alternates and therefore when the last writer CacheVC closes it will trigger the same cleanup as the single writer case. There is in fact a comment implying that in <code class="file docutils literal"><span class="pre">!CacheWrite.cc</span></code> which states that only the first writer of multiple writers can do an update which in turns means an alternate can’t be updated twice. This implies that alternates are not destroyed until the <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> is destroyed.</p>
+</div>
+</div>
+<div class="section" id="background-fill">
+<h3>Background Fill<a class="headerlink" href="#background-fill" title="Permalink to this headline">¶</a></h3>
+<p>Background fill is a configuration option that causes Traffic Server to continue retrieving content for an object even if the user agent disconnects. This should still work with partial caching in the same way. The utility may be much reduced because currently without background fill any retrieved content is lost if the entire object is not cached. With partial caching any full fragment that arrives will be cached, meaning that if the user agent disconnects part way through the content servered to the user agent will be cached and available for other requests even if the connection to the origin server is dropped.</p>
+<p>However it may be the case that background fill is used in such situations as a form of pre-fetching. That doesn’t work as well for range requests if the user agent requests only its desired range. For this reason it may be useful to provide a configuration option to extend range requests to fetch more content to be cached but not served to the user. If the object demographics are such that most objects are smaller than a reasonable pre-fetch size this could be set to pre-fetch such objects (effectively converting the range request into a full request to the origin) or providing some buffering room so that future full requests can overlap serving cached content and fetching new content from the origin.</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="fn-uncovered-stale" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>This is a form of revalidation in that the stale content should all be discarded from the alternate and placed in the stale buffer in the ODE.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fn-partial-revalidate" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>When the alternate is stale but the request is partial, should a conditional partial request be sent to the origin? That’s proably reasonable. If the response is 304 then all is good, otherwise the current content should be discarded and replaced with just the partial response. Note that this doesn’t stack like a normal content fill because it is also a pending alternate vector update.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="archive-partial-object-caching-prototype.en.html" title="Partial Caching Initial Design"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cache-glossary.en.html" title="Glossary"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="poc-index.html" >Partial Object Caching</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

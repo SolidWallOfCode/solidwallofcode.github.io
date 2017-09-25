@@ -66,17 +66,21 @@ If :code:`write_via_protocol_stack` were changed a bit to have the signature ::
 then the code can be simplified to ::
 
       w.write(" [");
-      w.clip(1); // reserver a byte for closing bracket
+      w.clip(3); // reserver a byte for closing bracket
       write_via_protocol_stack(w, true, proto_buff.data(), n_proto);
-      w.extend(1).write(']'); // always succeeds because we checked for space earlier.
+      w.extend(3).write(']'); // always succeeds because we checked for space earlier.
+      
+This allows an instance of :class:`BufferWriter` to be passed in place of a buffer pointer and
+length making the code simpler and more robust, making clear the intent to have the buffer written.
+Size updates are then handled internally without need for explicit return values.
 
-Issues
-++++++
+Stream Operators
+++++++++++++++++
 
-A remaining issue is how non string data is provided to :class:`BufferWriter`. This should be
-sufficiently generic that new types can be supported without changing :class:`BufferWriter`. It has
-been suggested the standard stream operators be overloaded to work with a :class:`BufferWriter`,
-e.g. ::
+A remaining issue is how non-string data is provided to :class:`BufferWriter`. This should be
+sufficiently generic that new types can be supported without changing :class:`BufferWriter` while
+also not bloating the class. It has been suggested the standard stream operators be overloaded to
+work with a :class:`BufferWriter`, e.g. ::
 
    BufferWriter& operator << (BufferWriter& w, SomeSpecificType const& t) { ... }
 
@@ -90,10 +94,33 @@ types.
 For instance if I wanted to make :code:`ts::StringView` work with :class:`BufferWriter` I would add
 to the :code:`ts::StringView` header the code ::
 
-   BufferWriter & operator << (BufferWriter & w, ts::StringView & sv) {
+   BufferWriter & operator << (BufferWriter & w, ts::StringView const & sv) {
       w.write(sv.ptr(), sv.size());
       return w;
    }
+
+Using IO stream style operators (presuming they have been defined for the relevant types), the example could would look like ::
+
+   w << " [";
+
+   // incoming_via can be max MAX_VIA_INDICES+1 long (i.e. around 25 or so)
+   if (s->txn_conf->insert_request_via_string > 2) { // Highest verbosity
+      w << incoming_via;
+   } else {
+      w << string_view(incoming_via + VIA_CLIENT, VIA_SERVER - VIA_CLIENT);
+   }
+   w << ']';
+
+   // reserve 4 for " []" and 3 for "])".
+   if (w.remaining() > 4 && s->txn_conf->insert_request_via_string > 3) { // Ultra highest verbosity
+      w << " [";
+      w.clip(3);
+      write_via_protocol_stack(w, true, proto_buf.data(), n_proto);
+      w.extend(3);
+      w << ']';
+   }
+   
+   if (w.error()) Warning("VIA: static buffer overflow");
 
 Reference
 +++++++++

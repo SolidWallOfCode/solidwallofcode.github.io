@@ -17,10 +17,15 @@ Projects planned for Apache |TS|.
    :maxdepth: 2
 
    ats-projects.en
-   github-pages.en
+   poc/poc-index
 
 Reference
 =========
+
+.. toctree::
+   :maxdepth: 1
+
+   guide.en
 
 .. toctree::
    :hidden:

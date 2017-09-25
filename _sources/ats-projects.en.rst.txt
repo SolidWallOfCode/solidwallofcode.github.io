@@ -15,6 +15,7 @@ Diagram.
    buffer-writer.en
    tsconfig-lua.en
    cache-tool.en
+   testing.en
    errata.en
 
 Layer 7 Routing
@@ -95,42 +96,6 @@ The current RPC mechanism used to communicate between command line tools and :co
 
 As a side project, there is currently a roughly 5 second delay in communications for no apparent reason. As best as I can tell it is a deliberate pause to avoid :code:`epoll`. This should be fixed.
 
-Testing
-=======
-
-Pure Replay testing
-+++++++++++++++++++
-
-It should be possible to have run tests using only a replay file and potentially some configuration information, without any Python code at all. This requires the micro-DNS server.
-
-Header Comparators
-++++++++++++++++++
-
-Frequently the literalness of the gold testing is a problem. AUTest should have comparators that are specialized for HTTP headers. This could be worked in to the replay file format with metadata indicating which headers should be literal, vs. present/absent vs. irrelevant. Replay file based testing would greatly benefit from this.
-
-Traffic Capture / Sampling
-++++++++++++++++++++++++++
-
-At one point the technology existed to capture traffic for traffic replay. This should be resurrected and improved. After discussion among the group it seems that for replay purposes literal content is unnecessary, only the size matters. It is still debated if full capture is useful for debugging purposes. My opinion is it is not and complicates the capture process unnecessarily.
-
-We have an ask from another team for monitoring based roughly on this technology. A third party box would be placed in a data center and an ATS instance would proxy its outbound connections and produce records of its transactions. The outbound connections would be of two types.
-
-*  HTTPS connection which are presumed small and API based, at a rate of 1/second or less. These would be monitored in their entirety.
-*  HTTP connections which are presumed rare and essential downloads of new packages. Only headers and content size would be recorded for these.
-
-I think in terms of building out the replay tooling, making a plugin to do this is a good start. The plugin should record
-
-*  Each transaction
-*  The four headers
-*  The protocol stack for the user agent.
-*  The association between transactions and sessions.
-*  Sampling should be session based.
-
-Production Verification
-+++++++++++++++++++++++
-
-It would be nice to be able to run AUTest against live production systems to verify behavior, particularly with regard to paranoid requirements.
-
 Traffic Server Core
 ===================
 
@@ -152,7 +117,11 @@ The crypto hash support needs to be cleaned up.
 
 Look at using `TBB <https://www.threadingbuildingblocks.org>`_ for thread safe containers.
 
-Add log tags to dump transaction headers in full. This would be useful for the operations teams. The idea is a custom log is setup that logs the full headers but is filtered by error return codes. The result is a log of full headers only for failed transactions. We had originally looked at doing this with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing logging mechanisms.
+Add log tags to dump transaction headers in full. This would be useful for the operations teams. The
+idea is a custom log is setup that logs the full headers but is filtered by error return codes. The
+result is a log of full headers only for failed transactions. We had originally looked at doing this
+with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing
+logging mechanisms.
 
 TLS Session re-use updates. Currently TLS session re-use is done by having the plugin directly
 control the openSSL callbacks. This leads to conflicts and also requires some custom core changes
@@ -162,6 +131,14 @@ plugin conflict and remove the need for custom core changes but also would let o
 advantage of the openSSL session table while still sharing them across a pod. Additionally we should
 look at removing the use of MDBM both for reliability and the potential to contribute the TLS
 session resuse plugin to open source.
+
+Use :code:`std::chrono`.
+
+Prevent restart on cache failure (bad disks).
+
+Transaction arenas for plugin use.
+
+Pending event counting at base event loop / continuation.
 
 Dynamic Cert Loader
 ===================
@@ -206,3 +183,28 @@ openSSL 1.1
 
 TLS/1.3
    This is a soon to be standard. We should start planning for it.
+
+Cache API Toolkit
+=================
+
+This is a restructuring of how the cache to enable fine grained control by plugins. Put in a reference to the summit presentation on this.
+
+Live Restart
+============
+
+A long running request is to be able to do a live restart of |TS|. The mechanism would be
+
+*  Start new |TS| process.
+*  New process starts accepting connections.
+*  Old process stops accepting connections.
+*  Old process shuts down.
+
+   *  When all inbound connections have terminated.
+   *  When there are less than a specified number of inbound connections.
+   *  After a specific amount of time.
+   *  When explicitly requested by the administrator.
+
+The main difficulty for this is handling the cache. To some extent the cache would need to be
+multi-process. To make this more feasible the access would be single writer and the control of
+writing would pass from the old process to the new process. This may mean terminating cache writes
+in the old process.

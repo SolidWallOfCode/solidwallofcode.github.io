@@ -1,0 +1,149 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Open Source Contributions &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="External Types" href="external-types.en.html" />
+    <link rel="prev" title="Partial Caching Initial Design" href="poc/archive-partial-object-caching-prototype.en.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="external-types.en.html" title="External Types"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="poc/archive-partial-object-caching-prototype.en.html" title="Partial Caching Initial Design"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="poc/archive-partial-object-caching-prototype.en.html"
+                        title="previous chapter">Partial Caching Initial Design</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="external-types.en.html"
+                        title="next chapter">External Types</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/guide.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="open-source-contributions">
+<span id="guides"></span><h1>Open Source Contributions<a class="headerlink" href="#open-source-contributions" title="Permalink to this headline">¶</a></h1>
+<p>Contributing to open source can be a struggle given the variety of concerns from the community.
+Overall, however, my view is that code is made stronger by surviving the gauntlet. There are many
+skilled developers in the community who will often see things you miss.</p>
+<p>The community has undergone rather a lot of growth lately and so is still adapting to an overall
+group where it it not the case that every one knows every one else from chat and summits and there
+is a shared understanding of what makes a good pull request. The following are I think the most basic
+and important things to keep in mind that will help ease the process.</p>
+<dl class="docutils">
+<dt>Separability</dt>
+<dd>Pull requests should be as small as possible. This yields the important result that isolating
+changes that cause problems and recovering from them is much easier. This means that if new
+classes / technology / support is required for a pull request, it is almost always better to
+contribute it in a separate, prior pull request. Pull requests that have a lot of new classes and
+other things have a very difficult time, both because the additional support obscures the real
+point of the pull request and that discussions can get bogged down on details in the support that
+aren’t critical for the overall work.</dd>
+<dt>Parsimony</dt>
+<dd>There is a general concern about code bloat and much effort has been made in the past to decrease
+the over all code size. For what Traffic Server can do it has a remarkably small code base. This is not an
+accident. For this reason think twice, then reconsider again, if you really need to add a support
+class. Avoid this if you can, especially if the class is used only once or in limited
+circumstances. Also avoid putting classes in separate files if the class isn’t used in other file
+scopes. See if there are existing classes or other techniques which, with a bit of work, could be
+made to suffice.</dd>
+<dt>Consistency</dt>
+<dd>Traffic Server is an old project with people who have been working on it for over a decade. They are
+comfortable with where things are and how things are done. This doesn’t mean it’s perfect but
+unless there is a strong reason to change, you should peruse the code and try to do things in a
+similar way. One example would be initialization. There are various ways to do this in C++, most
+of which result in the same machine code. Therefore it’s a reasonable expectation that you will
+do this in the same way as the existing code. As a newcomer to the community, try to show a bit
+of respect for existing customs and habits, _especially_ when such things have no real impact on
+the code quality.</dd>
+<dt>Additional reference pages</dt>
+<dd><p class="first"><a class="reference external" href="https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=65146830">Basic coding style</a>.</p>
+<p class="last"><a class="reference external" href="https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=65146830">C++11 Usage Guide</a>.</p>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="external-types.en.html" title="External Types"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="poc/archive-partial-object-caching-prototype.en.html" title="Partial Caching Initial Design"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

@@ -63,19 +63,14 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#rpc-refactoring">RPC Refactoring</a></li>
-<li><a class="reference internal" href="#testing">Testing</a><ul>
-<li><a class="reference internal" href="#pure-replay-testing">Pure Replay testing</a></li>
-<li><a class="reference internal" href="#header-comparators">Header Comparators</a></li>
-<li><a class="reference internal" href="#traffic-capture-sampling">Traffic Capture / Sampling</a></li>
-<li><a class="reference internal" href="#production-verification">Production Verification</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#traffic-server-core">Traffic Server Core</a></li>
 <li><a class="reference internal" href="#dynamic-cert-loader">Dynamic Cert Loader</a></li>
 <li><a class="reference internal" href="#plugin-coordination">Plugin Coordination</a></li>
 <li><a class="reference internal" href="#http-2-outbound">HTTP/2 Outbound</a></li>
 <li><a class="reference internal" href="#jemalloc-and-memory-allocators">jemalloc and memory allocators</a></li>
 <li><a class="reference internal" href="#tls">TLS</a></li>
+<li><a class="reference internal" href="#cache-api-toolkit">Cache API Toolkit</a></li>
+<li><a class="reference internal" href="#live-restart">Live Restart</a></li>
 </ul>
 </li>
 </ul>
@@ -114,7 +109,7 @@
   <div class="section" id="traffic-server-projects">
 <span id="ats-projects"></span><h1>Traffic Server Projects<a class="headerlink" href="#traffic-server-projects" title="Permalink to this headline">¶</a></h1>
 <p>Diagram.</p>
-<img src="_images/graphviz-62d55fccb67266002584e1b07f12afc9f80a52e0.png" alt="digraph {
+<img src="_images/graphviz-2115d7ef5bf257691f19211ca8654a061da6e869.png" alt="digraph {
 
   subgraph {
     l7r_project [shape=folder];
@@ -142,15 +137,29 @@
     RPC_refactor -&gt; {RPC_library RPC_manager_no_delay RPC_bidirectional RPC_plugin};
     RPC_library -&gt; RPC_manager_no_delay;
     RPC_library -&gt; RPC_bidirectional;
-    RPC_bidirectional -&gt; RPC_plugin
+    RPC_bidirectional -&gt; RPC_plugin;
   }
 
+  subgraph {
+    poc [shape=rect style=rounded];
+    cache_toolkit [shape=rect style=rounded];
+    cache_tool [shape=rect style=rounded];
+
+    poc -&gt; cache_toolkit;
+    cache_tool -&gt; cache_toolkit;
+  }
+
+}
+
+digraph {
+  live_restart [shape=folder]
 }" />
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="buffer-writer.en.html">Buffer Writer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tsconfig-lua.en.html">TSConfig / Lua</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cache-tool.en.html">Cache Tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.en.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="errata.en.html">Errata</a></li>
 </ul>
 </div>
@@ -221,38 +230,6 @@ single block. This is very useful for data constructed at process start time and
 </ul>
 <p>As a side project, there is currently a roughly 5 second delay in communications for no apparent reason. As best as I can tell it is a deliberate pause to avoid <code class="code docutils literal"><span class="pre">epoll</span></code>. This should be fixed.</p>
 </div>
-<div class="section" id="testing">
-<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="pure-replay-testing">
-<h3>Pure Replay testing<a class="headerlink" href="#pure-replay-testing" title="Permalink to this headline">¶</a></h3>
-<p>It should be possible to have run tests using only a replay file and potentially some configuration information, without any Python code at all. This requires the micro-DNS server.</p>
-</div>
-<div class="section" id="header-comparators">
-<h3>Header Comparators<a class="headerlink" href="#header-comparators" title="Permalink to this headline">¶</a></h3>
-<p>Frequently the literalness of the gold testing is a problem. AUTest should have comparators that are specialized for HTTP headers. This could be worked in to the replay file format with metadata indicating which headers should be literal, vs. present/absent vs. irrelevant. Replay file based testing would greatly benefit from this.</p>
-</div>
-<div class="section" id="traffic-capture-sampling">
-<h3>Traffic Capture / Sampling<a class="headerlink" href="#traffic-capture-sampling" title="Permalink to this headline">¶</a></h3>
-<p>At one point the technology existed to capture traffic for traffic replay. This should be resurrected and improved. After discussion among the group it seems that for replay purposes literal content is unnecessary, only the size matters. It is still debated if full capture is useful for debugging purposes. My opinion is it is not and complicates the capture process unnecessarily.</p>
-<p>We have an ask from another team for monitoring based roughly on this technology. A third party box would be placed in a data center and an ATS instance would proxy its outbound connections and produce records of its transactions. The outbound connections would be of two types.</p>
-<ul class="simple">
-<li>HTTPS connection which are presumed small and API based, at a rate of 1/second or less. These would be monitored in their entirety.</li>
-<li>HTTP connections which are presumed rare and essential downloads of new packages. Only headers and content size would be recorded for these.</li>
-</ul>
-<p>I think in terms of building out the replay tooling, making a plugin to do this is a good start. The plugin should record</p>
-<ul class="simple">
-<li>Each transaction</li>
-<li>The four headers</li>
-<li>The protocol stack for the user agent.</li>
-<li>The association between transactions and sessions.</li>
-<li>Sampling should be session based.</li>
-</ul>
-</div>
-<div class="section" id="production-verification">
-<h3>Production Verification<a class="headerlink" href="#production-verification" title="Permalink to this headline">¶</a></h3>
-<p>It would be nice to be able to run AUTest against live production systems to verify behavior, particularly with regard to paranoid requirements.</p>
-</div>
-</div>
 <div class="section" id="traffic-server-core">
 <h2>Traffic Server Core<a class="headerlink" href="#traffic-server-core" title="Permalink to this headline">¶</a></h2>
 <p>Restructure the overridable configs to remove cyclic dependencies. Already discussed with community and I have a design.</p>
@@ -264,7 +241,11 @@ single block. This is very useful for data constructed at process start time and
 <p>Make remap rules be pure first match (long term).</p>
 <p>The crypto hash support needs to be cleaned up.</p>
 <p>Look at using <a class="reference external" href="https://www.threadingbuildingblocks.org">TBB</a> for thread safe containers.</p>
-<p>Add log tags to dump transaction headers in full. This would be useful for the operations teams. The idea is a custom log is setup that logs the full headers but is filtered by error return codes. The result is a log of full headers only for failed transactions. We had originally looked at doing this with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing logging mechanisms.</p>
+<p>Add log tags to dump transaction headers in full. This would be useful for the operations teams. The
+idea is a custom log is setup that logs the full headers but is filtered by error return codes. The
+result is a log of full headers only for failed transactions. We had originally looked at doing this
+with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing
+logging mechanisms.</p>
 <p>TLS Session re-use updates. Currently TLS session re-use is done by having the plugin directly
 control the openSSL callbacks. This leads to conflicts and also requires some custom core changes
 used only internally to update some core state. It would be much better to have the Traffic Server core
@@ -273,6 +254,10 @@ plugin conflict and remove the need for custom core changes but also would let o
 advantage of the openSSL session table while still sharing them across a pod. Additionally we should
 look at removing the use of MDBM both for reliability and the potential to contribute the TLS
 session resuse plugin to open source.</p>
+<p>Use <code class="code docutils literal"><span class="pre">std::chrono</span></code>.</p>
+<p>Prevent restart on cache failure (bad disks).</p>
+<p>Transaction arenas for plugin use.</p>
+<p>Pending event counting at base event loop / continuation.</p>
 </div>
 <div class="section" id="dynamic-cert-loader">
 <h2>Dynamic Cert Loader<a class="headerlink" href="#dynamic-cert-loader" title="Permalink to this headline">¶</a></h2>
@@ -316,6 +301,30 @@ session resuse plugin to open source.</p>
 <dt>TLS/1.3</dt>
 <dd>This is a soon to be standard. We should start planning for it.</dd>
 </dl>
+</div>
+<div class="section" id="cache-api-toolkit">
+<h2>Cache API Toolkit<a class="headerlink" href="#cache-api-toolkit" title="Permalink to this headline">¶</a></h2>
+<p>This is a restructuring of how the cache to enable fine grained control by plugins. Put in a reference to the summit presentation on this.</p>
+</div>
+<div class="section" id="live-restart">
+<h2>Live Restart<a class="headerlink" href="#live-restart" title="Permalink to this headline">¶</a></h2>
+<p>A long running request is to be able to do a live restart of Traffic Server. The mechanism would be</p>
+<ul class="simple">
+<li>Start new Traffic Server process.</li>
+<li>New process starts accepting connections.</li>
+<li>Old process stops accepting connections.</li>
+<li>Old process shuts down.<ul>
+<li>When all inbound connections have terminated.</li>
+<li>When there are less than a specified number of inbound connections.</li>
+<li>After a specific amount of time.</li>
+<li>When explicitly requested by the administrator.</li>
+</ul>
+</li>
+</ul>
+<p>The main difficulty for this is handling the cache. To some extent the cache would need to be
+multi-process. To make this more feasible the access would be single writer and the control of
+writing would pass from the old process to the new process. This may mean terminating cache writes
+in the old process.</p>
 </div>
 </div>
 

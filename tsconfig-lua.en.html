@@ -55,6 +55,8 @@
 <li><a class="reference internal" href="#design">Design</a></li>
 <li><a class="reference internal" href="#implementation">Implementation</a></li>
 <li><a class="reference internal" href="#interface">Interface</a></li>
+<li><a class="reference internal" href="#future-work">Future Work</a></li>
+<li><a class="reference internal" href="#schema">Schema</a></li>
 </ul>
 </li>
 </ul>
@@ -227,6 +229,135 @@ a <code class="code docutils literal"><span class="pre">nil</span></code> value 
 
 </dd></dl>
 
+</div>
+<div class="section" id="future-work">
+<h2>Future Work<a class="headerlink" href="#future-work" title="Permalink to this headline">¶</a></h2>
+<p>It would be beneficial if configuration could be grouped by specific applications / properties /
+customers instead of by subsystem.</p>
+</div>
+<div class="section" id="schema">
+<h2>Schema<a class="headerlink" href="#schema" title="Permalink to this headline">¶</a></h2>
+<p>Configuration data should be schema based. Use Lua for syntax and take structure from JSON schema. The schema is used to generate a C++ structure that contains schema data along with storage for configuration data. Code is written to look up data in the configuration structure and populate a C++ domain specific structure.</p>
+<p>For SNI configuration, this is a mapping of FQDNs to actions and properties. To support this we will
+need type references / definitions and enumerations.</p>
+<p>The schema will be used to build a C++ structure that models the schema and contains storage for data extracted from the configuration file. Loading will take a path and an instance of the configuration structure. Any data from the schema that is needed must be embedded in the configuration structure.</p>
+<p>Example use:</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">SNIConfig</span> <span class="n">tls_conf</span><span class="p">;</span> <span class="c1">// Schema &amp; output structure. Name derived from schema data.</span>
+<span class="n">ts</span><span class="o">::</span><span class="n">Errata</span> <span class="n">r</span> <span class="o">=</span> <span class="n">tls_conf</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">);</span> <span class="c1">// path to file</span>
+</pre></div>
+</div>
+<p>Example schema for SNI configuration.</p>
+<div class="highlight-lua"><div class="highlight"><pre><span></span><span class="p">{</span>
+   <span class="s2">&quot;$scheme&quot;</span><span class="p">:</span> <span class="s2">&quot;URI&quot;</span><span class="p">,</span>
+   <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;TLS&quot;</span><span class="p">,</span>
+   <span class="n">cname</span><span class="p">:</span> <span class="s2">&quot;SNIConfig&quot;</span><span class="p">,</span>
+   <span class="n">global</span><span class="p">:</span> <span class="s2">&quot;sni_config&quot;</span><span class="p">,</span>
+   <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+   <span class="n">items</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="n">properties</span><span class="p">:</span> <span class="p">{</span>
+         <span class="n">fqdn</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="n">validators</span><span class="p">:</span> <span class="p">{</span> <span class="n">fqdn</span><span class="o">-</span><span class="n">check</span> <span class="p">}</span>
+            <span class="p">)</span>
+         <span class="p">}</span>
+      <span class="p">}</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Example configuration file:</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">sni_config</span> <span class="o">=</span> <span class="p">{</span>
+   <span class="p">{</span> <span class="nl">fqdn</span><span class="p">:</span><span class="s">&quot;one.com&quot;</span><span class="p">,</span> <span class="nl">action</span><span class="p">:</span><span class="n">TLS</span><span class="p">.</span><span class="n">ACTION</span><span class="p">.</span><span class="n">TUNNEL</span><span class="p">,</span> <span class="nl">upstream_cert_verification</span><span class="p">:</span><span class="n">TLS</span><span class="p">.</span><span class="n">VERIFY</span><span class="p">.</span><span class="n">REQUIRED</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Example C++ data structure:</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TsConfigDescriptor</span> <span class="p">{</span>
+   <span class="k">enum</span> <span class="k">class</span> <span class="nc">Type</span> <span class="p">{</span> <span class="n">ARRAY</span><span class="p">,</span> <span class="n">OBJECT</span><span class="p">,</span> <span class="n">INT</span><span class="p">,</span> <span class="n">FLOAT</span><span class="p">,</span> <span class="n">STRING</span><span class="p">,</span> <span class="n">ENUM</span> <span class="p">};</span>
+   <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">;</span>
+   <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">description</span><span class="p">;</span>
+   <span class="n">Type</span> <span class="n">type</span><span class="p">;</span>
+   <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">type_name</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">TsConfigEnumDescriptor</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TsConfigBaseDescriptor</span> <span class="p">{</span>
+   <span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">values</span><span class="p">;</span>
+   <span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">keys</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">TsConfigObjectDescriptor</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TsConfigBaseDescriptor</span> <span class="p">{</span>
+   <span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="n">TsConfigBaseDescriptor</span> <span class="k">const</span><span class="o">*&gt;</span> <span class="n">fields</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">TsConfigArrayDescriptor</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TsConfigBaseDescriptor</span> <span class="p">{</span>
+   <span class="n">TsConfigArrayDescriptor</span><span class="p">(</span><span class="n">TsConfigBaseDescriptor</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">d</span><span class="p">)</span> <span class="o">:</span> <span class="n">item</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="p">{}</span>
+   <span class="n">TsConfigBaseDescriptor</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">item</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cm">/* Base class of config structures for generic access.</span>
+
+<span class="cm">   Each config class has a static member of type @c TsConfigDesciptor or a subclass.</span>
+<span class="cm">   A reference to that member is passed to this base class in the constructor. Then</span>
+<span class="cm">   access is available generically by casting the config structure to this class.</span>
+
+<span class="cm">   @note The reference mechanism is needed so that each config struct can have its own</span>
+<span class="cm">   instance with static values. If inherited there would be only one for all subclasses.</span>
+<span class="cm">*/</span>
+<span class="k">class</span> <span class="nc">TsConfigBase</span> <span class="p">{</span>
+   <span class="n">TsConfigBase</span><span class="p">(</span><span class="n">TsConfigDescriptor</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">d</span><span class="p">)</span> <span class="o">:</span> <span class="n">descriptor</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="p">{}</span>
+   <span class="n">TsConfigDescriptor</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">descriptor</span><span class="p">;</span>
+
+   <span class="k">virtual</span> <span class="n">ts</span><span class="o">::</span><span class="n">Errata</span> <span class="n">loader</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span> <span class="k">typename</span> <span class="n">T</span> <span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">TsConfigInt</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TsConfigBase</span> <span class="p">{</span>
+   <span class="n">TsConfigInt</span><span class="p">(</span><span class="n">TsConfigDesciptor</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="n">T</span><span class="o">::</span><span class="kt">int</span><span class="p">)</span><span class="o">&amp;</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">TsConfigBase</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">ref</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{}</span>
+   <span class="n">T</span><span class="o">::</span><span class="kt">int</span> <span class="o">&amp;</span> <span class="n">ref</span><span class="p">;</span>
+   <span class="n">ts</span><span class="o">::</span><span class="n">Errata</span> <span class="n">loader</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="k">override</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span> <span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">E</span> <span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">TsConfigEnum</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TsConfigBase</span> <span class="p">{</span>
+   <span class="n">TsConfigInt</span><span class="p">(</span><span class="n">TsConfigDesciptor</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="n">T</span><span class="o">::</span><span class="n">E</span><span class="p">)</span><span class="o">&amp;</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">TsConfigBase</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">ref</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{}</span>
+   <span class="n">T</span><span class="o">::</span><span class="n">E</span> <span class="o">&amp;</span> <span class="n">ref</span><span class="p">;</span>
+   <span class="n">ts</span><span class="o">::</span><span class="n">Errata</span> <span class="n">loader</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="k">override</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="nl">LuaSNIConfig</span> <span class="p">:</span> <span class="k">public</span> <span class="n">TsConfigBase</span> <span class="p">{</span>
+   <span class="k">using</span> <span class="n">self</span> <span class="o">=</span> <span class="n">LuaSNIConfig</span><span class="p">;</span>
+   <span class="k">enum</span> <span class="k">class</span> <span class="nc">Action</span> <span class="p">{</span> <span class="n">CLOSE</span><span class="p">,</span> <span class="n">TUNNEL</span> <span class="p">};</span>
+
+   <span class="k">static</span> <span class="n">TsConfigArrayDescriptor</span> <span class="n">DESCRIPTOR</span><span class="p">;</span>
+   <span class="n">LuaSNIConfig</span><span class="p">()</span> <span class="o">:</span> <span class="n">TsConfigBase</span><span class="p">(</span><span class="n">DESCRIPTOR</span><span class="p">),</span> <span class="n">DESCRIPTOR</span><span class="p">(</span><span class="n">Item</span><span class="o">::</span><span class="n">DESCRIPTOR</span><span class="p">)</span> <span class="p">{}</span>
+
+   <span class="k">struct</span> <span class="nl">Item</span> <span class="p">:</span> <span class="k">public</span> <span class="n">TsConfigBase</span> <span class="p">{</span>
+      <span class="n">Item</span><span class="p">()</span> <span class="o">:</span> <span class="n">TsConfigBase</span><span class="p">(</span><span class="n">DESCRIPTOR</span><span class="p">),</span>
+         <span class="n">FQDN_CONFIG</span><span class="p">(</span><span class="n">FQDN_DESCRIPTOR</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">self</span><span class="o">::</span><span class="n">fqdn</span><span class="p">),</span>
+         <span class="n">LEVEL_CONFIG</span><span class="p">(</span><span class="n">LEVEL_DESCRIPTOR</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">self</span><span class="o">::</span><span class="n">level</span><span class="p">),</span>
+         <span class="n">ACTION_CONFIG</span><span class="p">(</span><span class="n">ACTION_DESCRIPTOR</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">self</span><span class="o">::</span><span class="n">action</span><span class="p">)</span>
+         <span class="p">{</span> <span class="p">}</span>
+      <span class="n">Errata</span> <span class="n">loader</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="k">override</span><span class="p">;</span>
+
+      <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">fqdn</span><span class="p">;</span>
+      <span class="kt">int</span> <span class="n">level</span><span class="p">;</span>
+      <span class="n">Action</span> <span class="n">action</span><span class="p">;</span>
+
+      <span class="c1">// These need to be initialized statically.</span>
+      <span class="k">static</span> <span class="n">TsConfigObjectDescriptor</span> <span class="n">DESCRIPTOR</span><span class="p">;</span>
+      <span class="k">static</span> <span class="n">TsConfigBaseDescriptor</span> <span class="n">FQDN_DESCRIPTOR</span><span class="p">;</span>
+      <span class="k">static</span> <span class="n">TsConfigString</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span> <span class="n">FQDN_CONFIG</span><span class="p">;</span>
+      <span class="k">static</span> <span class="n">TsConfigBaseDescriptor</span> <span class="n">LEVEL_DESCRIPTOR</span><span class="p">;</span>
+      <span class="k">static</span> <span class="n">TsConfigInt</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span> <span class="n">LEVEL_CONFIG</span><span class="p">;</span>
+      <span class="k">static</span> <span class="n">TsConfigEnumDescriptor</span> <span class="n">ACTION_DESCRIPTOR</span><span class="p">;</span>
+      <span class="k">static</span> <span class="n">TsConfigEnum</span><span class="o">&lt;</span><span class="n">Item</span><span class="p">,</span> <span class="n">ACTION</span><span class="o">&gt;</span> <span class="n">ACTION_CONFIG</span><span class="p">;</span>
+   <span class="p">};</span>
+   <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;</span> <span class="n">items</span><span class="p">;</span>
+   <span class="n">ts</span><span class="o">::</span><span class="n">Errata</span> <span class="n">loader</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="k">override</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 </div>
 
