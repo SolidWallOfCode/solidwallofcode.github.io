@@ -42,7 +42,7 @@ Consistency
    similar way. One example would be initialization. There are various ways to do this in C++, most
    of which result in the same machine code. Therefore it's a reasonable expectation that you will
    do this in the same way as the existing code. As a newcomer to the community, try to show a bit
-   of respect for existing customs and habits, _especially_ when such things have no real impact on
+   of respect for existing customs and habits, *especially* when such things have no real impact on
    the code quality.
 
 Additional reference pages
