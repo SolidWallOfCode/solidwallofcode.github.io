@@ -91,7 +91,7 @@
   <div class="section" id="cache-logic-operations">
 <h1>Cache Logic / Operations<a class="headerlink" href="#cache-logic-operations" title="Permalink to this headline">¶</a></h1>
 <p>State machine.</p>
-<img src="../_images/graphviz-67507b8b5d153c79c7e1e2ef129a22c8a8fe3749.png" alt="digraph cache {
+<img src="../_images/graphviz-736c5fe737e61e9ebf2c53e80359449c214274f7.png" alt="digraph cache {
 
     node
         [shape=Mrecord width=1.5];
@@ -111,10 +111,20 @@
             [label=&quot;{Finish}&quot;];
 
         &quot;Cache::open_write&quot;
-            [label=&quot;{open_write|Entry/\l&amp;nbsp;&amp;nbsp;&amp;nbsp;new_CacheVC;\l&amp;nbsp;&amp;nbsp;&amp;nbsp;lockStripe;\l}&quot;];
+            [label=&quot;{open_write}&quot;];
 
         &quot;%start&quot;
             [label=&quot;&quot; shape=circle style=filled fillcolor=black width=0.25];
+
+    }
+
+    subgraph cluster_Vol {
+
+        label=&quot;Vol&quot;;
+
+        //
+        // States (Nodes)
+        //
 
     }
 
@@ -126,8 +136,8 @@
         // States (Nodes)
         //
 
-        &quot;OpenDirEntry::open&quot;
-            [label=&quot;{open}&quot;];
+        &quot;push(OpenDirEntry::Default)&quot;
+            [label=&quot;&quot; shape=plaintext];
 
     }
 
@@ -140,13 +150,28 @@
         //
 
         &quot;CacheVC::openWriteStartBegin&quot;
-            [label=&quot;{openWriteStartBegin|Entry/\l&amp;nbsp;&amp;nbsp;&amp;nbsp;lockStripe;\l}&quot;];
+            [label=&quot;{openWriteStartBegin}&quot;];
+
+        &quot;CacheVC::dummy&quot;
+            [label=&quot;{dummy}&quot;];
 
         &quot;CacheVC::openWriteInit&quot;
             [label=&quot;{openWriteInit}&quot;];
 
         &quot;CacheVC::openWriteOverwrite&quot;
             [label=&quot;{openWriteOverwrite}&quot;];
+
+        &quot;CacheVC::pop(LOCK_READY)&quot;
+            [label=&quot;&quot; width=1]
+
+        &quot;CacheVC::%end&quot;
+            [label=&quot;&quot; shape=doublecircle style=filled fillcolor=black width=0.15];
+
+        &quot;CacheVC::openWriteStartBegin::CacheVC&quot;
+            [label=&quot;{CacheVC|O-O\r}&quot;]
+
+        &quot;CacheVC::openWriteInit::OpenDirEntry&quot;
+            [label=&quot;{OpenDirEntry|O-O\r}&quot;]
 
     }
 
@@ -155,21 +180,45 @@
     //
 
     &quot;Cache::idle&quot; -&gt; &quot;Cache::open_write&quot;
-        [label=&quot;open_write/\l&quot;];
+        [label=&quot;Cache::open_write/\l&quot;];
 
     &quot;Cache::open_write&quot; -&gt; &quot;CacheVC::openWriteStartBegin&quot;
-        [label=&quot;lock_failed\l\[! locked\]/\l&quot;];
+        [label=&quot;lock_failed/\l&quot;];
 
     &quot;Cache::open_write&quot; -&gt; &quot;CacheVC::openWriteOverwrite&quot;
-        [label=&quot;overwrite\l\[f.overwrite\]/\l&quot;];
+        [label=&quot;overwrite/\l&quot;];
 
     &quot;Cache::open_write&quot; -&gt; &quot;CacheVC::openWriteInit&quot;
         [label=&quot;write/\l&quot;];
 
     &quot;%start&quot; -&gt; &quot;Cache::idle&quot;
 
-    &quot;CacheVC::openWriteStartBegin&quot; -&gt; &quot;CacheVC::openWriteStartBegin&quot;
-        [label=&quot;reschedule\l\[! locked\]/\l&quot;];
+    &quot;push(OpenDirEntry::Default)&quot; -&gt; &quot;OpenDirEntry::Default&quot;
+        [arrowtail=odot];
+
+    &quot;CacheVC::openWriteStartBegin&quot; -&gt; &quot;CacheVC::openWriteStartBegin::CacheVC&quot;
+        [label=&quot;unlocked/\lpush(dummy)\l&quot;];
+
+    &quot;CacheVC::openWriteStartBegin&quot; -&gt; &quot;CacheVC::dummy&quot;
+        [label=&quot;dummy/\l&quot;];
+
+    &quot;CacheVC::openWriteStartBegin&quot; -&gt; &quot;CacheVC::openWriteInit&quot;
+        [label=&quot;LOCK_READY/\l&quot;];
+
+    &quot;CacheVC::dummy&quot; -&gt; &quot;CacheVC::pop(LOCK_READY)&quot;
+        [label=&quot;lock/\l&quot;];
+
+    &quot;CacheVC::openWriteInit&quot; -&gt; &quot;CacheVC::openWriteInit::OpenDirEntry&quot;
+        [label=&quot;unlocked/\lpush(OpenDirEntry::Default)\l&quot;];
+
+    &quot;CacheVC::pop(LOCK_READY)&quot; -&gt; &quot;CacheVC::%end&quot;
+        [label=&quot;pop(LOCK_READY);\l&quot;];
+
+    &quot;CacheVC::openWriteStartBegin::CacheVC&quot; -&gt; &quot;CacheVC::openWriteStartBegin&quot;
+        [label=&quot;pop/&quot;]
+
+    &quot;CacheVC::openWriteInit::OpenDirEntry&quot; -&gt; &quot;CacheVC::openWriteInit&quot;
+        [label=&quot;pop/&quot;]
 
 }" />
 <div class="section" id="lock-waiting">
@@ -194,6 +243,13 @@ casing for performance. The locks are spread among threads for a few reasons.</p
 <dt>Thread Consistency</dt>
 <dd>Waiting <a class="reference internal" href="poc-data-structures.en.html#_CPPv27CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal"><span class="pre">CacheVC</span></code></a> instances can be dispatched on their preferred thread. This is more important for <a class="reference internal" href="poc-data-structures.en.html#_CPPv23Vol" title="Vol"><code class="xref cpp cpp-class docutils literal"><span class="pre">Vol</span></code></a> interaction as those are much close to the HTTP state machine which prefers to always run on a single thread.</dd>
 </dl>
+<p><a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> uses a single global atomic list of events per instance. It is not feasible to
+use thread local storage because instances of <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> are created and destroyed
+frequently and the corresponding number of instances fluctuates over a large range. The load
+distribution issue is of lesser importance because of the (usually) much larger number of instances
+which spreads the load when the instances become available. It is unfortunate this causes
+<a class="reference internal" href="poc-data-structures.en.html#_CPPv27CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal"><span class="pre">CacheVC</span></code></a> instances to dispatch on other threads but the <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> interactions
+tend to be less closely coupled to HTTP state machine instances.</p>
 </div>
 <div class="section" id="write-operations">
 <h2>Write Operations<a class="headerlink" href="#write-operations" title="Permalink to this headline">¶</a></h2>

@@ -17,6 +17,7 @@ Diagram.
    cache-tool.en
    testing.en
    errata.en
+   body-factory.en
 
 Layer 7 Routing
 ===============
@@ -26,23 +27,6 @@ Select upstream target based on the HTTP header information.
 .. note::
 
    Need to consider the ability to bypass upstream selection for non-caching objects (e.g., skip a second caching layer for requests that will always end up at the origin anyway).
-
-Forwarded Header
-================
-
-A basic implementation was done for our fork of ATS 5.3.x. This suffices for internal use for now, but for open source it will have to be done better. I did some design based on Walt's work and then Walt, Leif, and I had a discussion on future directions for this work. That breaks down in to several steps.
-
-*  Fixed buffer printer class, which takes a buffer and then supports type safe printing on it. See :ref:`buffer writer`.
-*  A subclass of the fixed buffer printer which takes a template argument to allocate local (stack) storage for the buffer.
-*  Update the current Forwarded header logic to use these classes.
-*  More flexible configuration.
-
-Body Factory Cleanup
-====================
-
-The core logic used to generate proxy replies is convoluted and fragile. It has needed to be cleaned up for a long time both to make it more robust and maintainable but also to add features that are currently hard to do. There are also arbitrar internal limits which are entirely artifacts of the implementation.
-
-The basic plan is to extend the fixed buffer printer classes to have one that takes an :code:`MIOBuffer` as its output. This would make it basically equivalent to C++ I/O stream operators but using |TS| core mechanisms. Then a new "Format" class would be done which processes the current log style format strings in a generic and modular way. The body factory would be updated to use these new classes.
 
 Logging tags from plugins
 =========================

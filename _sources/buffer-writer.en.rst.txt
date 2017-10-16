@@ -136,7 +136,7 @@ Reference
       Write to the buffer starting at :arg:`data` for at most :arg:`length` bytes. If there is not
       enough room to fit all the data, none is written.
 
-   .. function:: BufferWriter & write(string_view str)
+   .. function:: BufferWriter & write(ts::string_view str)
 
       Write the string :arg:`str` to the buffer. If there is not enough room to write the string no
       data is written.

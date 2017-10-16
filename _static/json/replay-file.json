@@ -26,6 +26,10 @@
                    "description": "Inbound protocol stack.",
                    "type": "string"
                 },
+                "connect-time": {
+                    "description": "User Agent connection time.",
+                    "type": "number"
+                },
                 "transactions": {
                    "description": "List of transactions",
                    "type": "array",

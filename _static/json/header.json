@@ -9,25 +9,30 @@
             "type": "string"
         },
         "method": {
-            "descriptions": "HTTP method",
+            "description": "HTTP method",
             "type": "string"
+        },
+        "encoding": {
+            "description": "Encoding for the fields.",
+            "type": "string",
+            "enum": [ "plain", "uri"]
         },
         "headers": {
             "description": "HTTP header fields.",
             "type": "array",
             "items": {
                 "description": "HTTP field.",
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "description": "Field name",
+                "type": "array",
+                "items": [
+                    {
+                        "description": "Name of the field.",
                         "type": "string"
                     },
-                    "value": {
-                        "description": "Field value",
+                    {
+                        "description": "Value of the field.",
                         "type": "string"
                     }
-                }
+                ]
             }
         }
     }

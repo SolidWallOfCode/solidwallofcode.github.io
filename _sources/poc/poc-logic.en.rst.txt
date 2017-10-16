@@ -33,6 +33,14 @@ Load Distribution
 Thread Consistency
    Waiting :class:`CacheVC` instances can be dispatched on their preferred thread. This is more important for :class:`Vol` interaction as those are much close to the HTTP state machine which prefers to always run on a single thread.
 
+:class:`OpenDirEntry` uses a single global atomic list of events per instance. It is not feasible to
+use thread local storage because instances of :class:`OpenDirEntry` are created and destroyed
+frequently and the corresponding number of instances fluctuates over a large range. The load
+distribution issue is of lesser importance because of the (usually) much larger number of instances
+which spreads the load when the instances become available. It is unfortunate this causes
+:class:`CacheVC` instances to dispatch on other threads but the :class:`OpenDirEntry` interactions
+tend to be less closely coupled to HTTP state machine instances.
+
 Write Operations
 ================
 

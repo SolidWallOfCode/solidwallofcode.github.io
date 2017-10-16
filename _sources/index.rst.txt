@@ -26,6 +26,7 @@ Reference
    :maxdepth: 1
 
    guide.en
+   completed.en
 
 .. toctree::
    :hidden:

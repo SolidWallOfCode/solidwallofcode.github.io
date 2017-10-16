@@ -43,9 +43,27 @@ Consistency
    of which result in the same machine code. Therefore it's a reasonable expectation that you will
    do this in the same way as the existing code. As a newcomer to the community, try to show a bit
    of respect for existing customs and habits, *especially* when such things have no real impact on
-   the code quality.
+   code quality.
+
+C++ Guidelines
+==============
+
+Some basics are here in the `C++11 Usage Guide <https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=65146830>`_.
+
+Memory and Allocation
+---------------------
+
+The main path of |TS| execution is very sensitve to blocking or delay. For this reason memory
+allocation should be strongly minimized. It is frequently the case the reasonable maximums can be
+determined and needed memory allocated on the stack or statically. This is particularly true for
+temporaries. One example is file path names. There is a operating system based maximum length,
+:code:`PATH_NAME_MAX`, which is the longest path |TS| will handle. A path used only in a local scope
+can be put in stack allocated buffer of that length without any memory allocation at all.
+
+Use of STL containers should be avoided where possible, except for :code:`std::vector`.
 
 Additional reference pages
-   `Basic coding style <https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=65146830>`_.
+==========================
 
-   `C++11 Usage Guide <https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=65146830>`_.
+`Basic coding style <https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=65146830>`_.
+

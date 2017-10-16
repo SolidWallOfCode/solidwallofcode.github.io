@@ -51,8 +51,6 @@
   <ul>
 <li><a class="reference internal" href="#">Traffic Server Projects</a><ul>
 <li><a class="reference internal" href="#layer-7-routing">Layer 7 Routing</a></li>
-<li><a class="reference internal" href="#forwarded-header">Forwarded Header</a></li>
-<li><a class="reference internal" href="#body-factory-cleanup">Body Factory Cleanup</a></li>
 <li><a class="reference internal" href="#logging-tags-from-plugins">Logging tags from plugins</a></li>
 <li><a class="reference internal" href="#c-abi-to-core">C++ ABI to Core</a></li>
 <li><a class="reference internal" href="#plugin-c-api">Plugin C++ API</a></li>
@@ -161,6 +159,7 @@ digraph {
 <li class="toctree-l1"><a class="reference internal" href="cache-tool.en.html">Cache Tool</a></li>
 <li class="toctree-l1"><a class="reference internal" href="testing.en.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="errata.en.html">Errata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="body-factory.en.html">Body Factory Refactoring</a></li>
 </ul>
 </div>
 <div class="section" id="layer-7-routing">
@@ -170,21 +169,6 @@ digraph {
 <p class="first admonition-title">Note</p>
 <p class="last">Need to consider the ability to bypass upstream selection for non-caching objects (e.g., skip a second caching layer for requests that will always end up at the origin anyway).</p>
 </div>
-</div>
-<div class="section" id="forwarded-header">
-<h2>Forwarded Header<a class="headerlink" href="#forwarded-header" title="Permalink to this headline">¶</a></h2>
-<p>A basic implementation was done for our fork of ATS 5.3.x. This suffices for internal use for now, but for open source it will have to be done better. I did some design based on Walt’s work and then Walt, Leif, and I had a discussion on future directions for this work. That breaks down in to several steps.</p>
-<ul class="simple">
-<li>Fixed buffer printer class, which takes a buffer and then supports type safe printing on it. See <a class="reference internal" href="buffer-writer.en.html#buffer-writer"><span class="std std-ref">Buffer Writer</span></a>.</li>
-<li>A subclass of the fixed buffer printer which takes a template argument to allocate local (stack) storage for the buffer.</li>
-<li>Update the current Forwarded header logic to use these classes.</li>
-<li>More flexible configuration.</li>
-</ul>
-</div>
-<div class="section" id="body-factory-cleanup">
-<h2>Body Factory Cleanup<a class="headerlink" href="#body-factory-cleanup" title="Permalink to this headline">¶</a></h2>
-<p>The core logic used to generate proxy replies is convoluted and fragile. It has needed to be cleaned up for a long time both to make it more robust and maintainable but also to add features that are currently hard to do. There are also arbitrar internal limits which are entirely artifacts of the implementation.</p>
-<p>The basic plan is to extend the fixed buffer printer classes to have one that takes an <code class="code docutils literal"><span class="pre">MIOBuffer</span></code> as its output. This would make it basically equivalent to C++ I/O stream operators but using Traffic Server core mechanisms. Then a new “Format” class would be done which processes the current log style format strings in a generic and modular way. The body factory would be updated to use these new classes.</p>
 </div>
 <div class="section" id="logging-tags-from-plugins">
 <h2>Logging tags from plugins<a class="headerlink" href="#logging-tags-from-plugins" title="Permalink to this headline">¶</a></h2>
