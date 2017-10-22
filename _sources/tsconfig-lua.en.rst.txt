@@ -82,8 +82,8 @@ This creates a container class.
 .. code-block:: cpp
 
    class CounterConfig : public TsConfigBase {
-      CounterConfig() : TsConfigbase(_DESCRIPTOR),
-                        _meta_counter(counter, COUNTER_DESCRIPTOR)
+      CounterConfig() : TsConfigbase{_DESCRIPTOR},
+                        _meta_counter{counter, COUNTER_DESCRIPTOR}
       {}
 
       /// Load from the file at @a path.
@@ -295,6 +295,13 @@ In the long run it would desirable to have a single Lua configuration file for a
 
 There is a difficult question on how ``traffic_ctl`` interacts with Lua based configuration. That is
 not specific to this configuration system but is a more general problem.
+
+Some consideration must be given to whether variants should be supported. This would allow a
+configuration value to be listed as multiple types and any of the types would be acceptable. It's
+unclear how useful this would be. The most common case I can think of is enabling singletons vs.
+arrays, but it would be easier to just do that directly in the validation stage. That is, if a type
+is described as "array of T" and the value is a single T, convert it to an array of size 1. This
+seems obvious and non confusing and I'm not sure there are any other good use cases.
 
 History
 =======

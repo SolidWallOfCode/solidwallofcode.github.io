@@ -5,9 +5,12 @@
 Traffic Server Projects
 ***********************
 
-Diagram.
+These are my personal projects for |TS|. These vary from very personal ones to collaborative work. A
+large diagram of the projects and their dependencies is `here <_images/ts-projects.png>`__.
 
-.. graphviz:: dot/ats-projects.dot
+==============
+Projects
+==============
 
 .. toctree::
    :maxdepth: 1
@@ -18,6 +21,12 @@ Diagram.
    testing.en
    errata.en
    body-factory.en
+
+======================
+Less Detailed Projects
+======================
+
+Most these should be in separate pages but I have not yet had time to properly document them.
 
 Layer 7 Routing
 ===============
@@ -83,15 +92,12 @@ As a side project, there is currently a roughly 5 second delay in communications
 Traffic Server Core
 ===================
 
-Restructure the overridable configs to remove cyclic dependencies. Already discussed with community and I have a design.
-
-Event loop changes - put in our 5.3.x fork but never contributed to open source. This will be necessary relatively soon in the internal 7.1.x codebase. Unfortunately this requires the TS-4265 thread initialization changes first.
+Restructure the overridable configs to remove cyclic dependencies. Already discussed with community
+and I have a design.
 
 Potentially the "proxy-protocol" extension.
 
-Internal version of C++17 :code:`filesystem` library.
-
-Internal version of C++17 :code:`string_view` library and |TS| specialized version :code:`StringView`.
+Internal version of the `C++17 filesystem library <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0218r0.html>`__.
 
 Fix :code:`TSNetConnect` to have options instead of a multiplying set of API calls.
 
@@ -99,22 +105,11 @@ Make remap rules be pure first match (long term).
 
 The crypto hash support needs to be cleaned up.
 
-Look at using `TBB <https://www.threadingbuildingblocks.org>`_ for thread safe containers.
-
 Add log tags to dump transaction headers in full. This would be useful for the operations teams. The
 idea is a custom log is setup that logs the full headers but is filtered by error return codes. The
 result is a log of full headers only for failed transactions. We had originally looked at doing this
 with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing
 logging mechanisms.
-
-TLS Session re-use updates. Currently TLS session re-use is done by having the plugin directly
-control the openSSL callbacks. This leads to conflicts and also requires some custom core changes
-used only internally to update some core state. It would be much better to have the |TS| core
-control the openSSL callbacks and farm out the work to plugins as needed. This would not only reduce
-plugin conflict and remove the need for custom core changes but also would let our plugin take
-advantage of the openSSL session table while still sharing them across a pod. Additionally we should
-look at removing the use of MDBM both for reliability and the potential to contribute the TLS
-session resuse plugin to open source.
 
 Use :code:`std::chrono`.
 
@@ -123,6 +118,28 @@ Prevent restart on cache failure (bad disks).
 Transaction arenas for plugin use.
 
 Pending event counting at base event loop / continuation.
+
+Concurrent Containers
++++++++++++++++++++++
+
+We should look at importing concurrent containers. Some options are
+
+TBB
+   Thread Building Blocks. The primary issue is this does a lot more than just concurrent containers.
+
+ConcurrencyKit
+   A excellent set of concurrent containers. The issue is this doesn't compile in C++ and would need to
+   be forked and have an API makeover.
+
+Concurrent Data Structures
+   This was suggested on the mailing list. I'm not familiar with it. See `here <https://github.com/khizmax/libcds>`__.
+
+TLS Extensions
+++++++++++++++
+
+It would be interesting in terms of L4 routing to be enable TLS clients to send a |TS| specialized
+TLS extension to provide addition L4 routing information or other control data. This needs to be
+design carefully to avoid security issues but I think it could be very powerful.
 
 Dynamic Cert Loader
 ===================

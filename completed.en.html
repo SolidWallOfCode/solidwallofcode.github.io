@@ -87,6 +87,12 @@ are listed in this section.</p>
 <dd>Implemented for 8.0.</dd>
 <dt>BufferWriter</dt>
 <dd>Implemented for 8.0. Still need to move the documentation to ASF.</dd>
+<dt>C++17 <code class="code docutils literal"><span class="pre">string_view</span></code></dt>
+<dd>Implement as <cite>ts::string_view</cite> and <cite>ts::TextView</cite>.</dd>
+<dt>Thread Initialization</dt>
+<dd>Do thread initialization through continuations executed at the start of a thread, instead of post facto cleanup.</dd>
+<dt>Event Loop Changes</dt>
+<dd>Change the event loop to be able to wait on I/O instead of condition variables.</dd>
 </dl>
 </div>
 

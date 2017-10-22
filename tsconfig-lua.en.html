@@ -162,8 +162,8 @@ members of the configuration class for easier access. Consider a schema that is 
 </div>
 <p>This creates a container class.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CounterConfig</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TsConfigBase</span> <span class="p">{</span>
-   <span class="n">CounterConfig</span><span class="p">()</span> <span class="o">:</span> <span class="n">TsConfigbase</span><span class="p">(</span><span class="n">_DESCRIPTOR</span><span class="p">),</span>
-                     <span class="n">_meta_counter</span><span class="p">(</span><span class="n">counter</span><span class="p">,</span> <span class="n">COUNTER_DESCRIPTOR</span><span class="p">)</span>
+   <span class="n">CounterConfig</span><span class="p">()</span> <span class="o">:</span> <span class="n">TsConfigbase</span><span class="p">{</span><span class="n">_DESCRIPTOR</span><span class="p">},</span>
+                     <span class="n">_meta_counter</span><span class="p">{</span><span class="n">counter</span><span class="p">,</span> <span class="n">COUNTER_DESCRIPTOR</span><span class="p">}</span>
    <span class="p">{}</span>
 
    <span class="c1">/// Load from the file at @a path.</span>
@@ -380,9 +380,10 @@ from the configuration file.</p>
 </div>
 <p>The schema to describe this configuration is</p>
 <div class="highlight-lua"><div class="highlight"><pre><span></span><span class="p">{</span>
-   <span class="p">[</span><span class="s2">&quot;$scheme&quot;</span><span class="p">]</span><span class="o">=</span> <span class="s2">&quot;http://trafficserver.apache.org/config/sni-remap&quot;</span><span class="p">,</span>
+   <span class="p">[</span><span class="s2">&quot;$schema&quot;</span><span class="p">]</span><span class="o">=</span> <span class="s2">&quot;http://trafficserver.apache.org/config/sni-remap&quot;</span><span class="p">,</span>
    <span class="n">name</span><span class="o">=</span> <span class="s2">&quot;SNIConfig&quot;</span><span class="p">,</span>
    <span class="n">global</span><span class="o">=</span> <span class="s2">&quot;sni_config&quot;</span><span class="p">,</span>
+   <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
    <span class="n">properties</span><span class="o">=</span> <span class="p">{</span>
       <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;array&quot;</span><span class="p">,</span>
       <span class="n">items</span><span class="o">=</span> <span class="p">{</span>
@@ -403,13 +404,13 @@ from the configuration file.</p>
       <span class="n">tls_action</span><span class="o">=</span><span class="p">{</span>
          <span class="n">key</span><span class="o">=</span><span class="s1">&#39;string&#39;</span><span class="p">,</span>
          <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;integer&#39;</span><span class="p">,</span>
-         <span class="n">global</span><span class="o">=</span><span class="s1">&#39;TLS.ACTION&#39;</span><span class="p">,</span><span class="n">y</span>
+         <span class="n">lua</span><span class="o">=</span><span class="s1">&#39;TLS.ACTION&#39;</span><span class="p">,</span>
          <span class="n">kv</span><span class="o">=</span><span class="p">{</span><span class="n">NONE</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">TUNNEL</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">CLOSE</span><span class="o">=</span><span class="mi">2</span><span class="p">}</span>
       <span class="p">},</span>
       <span class="n">cert_verification</span><span class="o">=</span><span class="p">{</span>
          <span class="n">key</span><span class="o">=</span><span class="s1">&#39;string&#39;</span><span class="p">,</span>
          <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;integer&#39;</span><span class="p">,</span>
-         <span class="n">global</span><span class="o">=</span><span class="s1">&#39;TLS.VERIFICATION&#39;</span><span class="p">,</span>
+         <span class="n">lua</span><span class="o">=</span><span class="s1">&#39;TLS.VERIFICATION&#39;</span><span class="p">,</span>
          <span class="n">kv</span><span class="o">=</span><span class="p">{</span><span class="n">NONE</span><span class="p">,</span> <span class="n">WARN</span><span class="p">,</span> <span class="n">REQUIRE</span><span class="p">}</span>
       <span class="p">}</span>
    <span class="p">}</span>
@@ -457,6 +458,12 @@ from the configuration file.</p>
 <p>In the long run it would desirable to have a single Lua configuration file for all configurations.</p>
 <p>There is a difficult question on how <code class="docutils literal"><span class="pre">traffic_ctl</span></code> interacts with Lua based configuration. That is
 not specific to this configuration system but is a more general problem.</p>
+<p>Some consideration must be given to whether variants should be supported. This would allow a
+configuration value to be listed as multiple types and any of the types would be acceptable. It’s
+unclear how useful this would be. The most common case I can think of is enabling singletons vs.
+arrays, but it would be easier to just do that directly in the validation stage. That is, if a type
+is described as “array of T” and the value is a single T, convert it to an array of size 1. This
+seems obvious and non confusing and I’m not sure there are any other good use cases.</p>
 </div>
 <div class="section" id="history">
 <h2>History<a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h2>
