@@ -126,6 +126,8 @@ large diagram of the projects and their dependencies is <a class="reference exte
 <li class="toctree-l1"><a class="reference internal" href="testing.en.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="errata.en.html">Errata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="body-factory.en.html">Body Factory Refactoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tls-bridge.en.html">TLS Bridge</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vconn-args.en.html">TSVConn Arguments</a></li>
 </ul>
 </div>
 </div>
@@ -202,6 +204,7 @@ logging mechanisms.</p>
 <p>Prevent restart on cache failure (bad disks).</p>
 <p>Transaction arenas for plugin use.</p>
 <p>Pending event counting at base event loop / continuation.</p>
+<p>Look at allocating SDK Handles from the transaction arena instead of a global allocator, to avoid cleanup issues.</p>
 <div class="section" id="concurrent-containers">
 <h4>Concurrent Containers<a class="headerlink" href="#concurrent-containers" title="Permalink to this headline">¶</a></h4>
 <p>We should look at importing concurrent containers. Some options are</p>
@@ -288,6 +291,8 @@ design carefully to avoid security issues but I think it could be very powerful.
 multi-process. To make this more feasible the access would be single writer and the control of
 writing would pass from the old process to the new process. This may mean terminating cache writes
 in the old process.</p>
+<div class="toctree-wrapper compound">
+</div>
 </div>
 </div>
 </div>

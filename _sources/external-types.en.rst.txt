@@ -16,8 +16,12 @@ Traffic Server
 .. c:type:: TSIOBufferReader
 .. c:type:: TSIOBufferBlock
 .. c:type:: TSIOBuffer
+.. c:type:: TSVConn
 .. c:function:: void * TSmalloc(size_t n)
 .. c:function:: char * TSstrdup(char * str)
+
+.. class:: NetVConnection
+.. class:: INKVConnInternal
 
 .. type:: ts
 .. namespace:: ts
