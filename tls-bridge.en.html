@@ -96,30 +96,248 @@ tunnel can be easily controlled for all communications across the tunnels.</p>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>The tunnel is sustained by two instances of Traffic Server.</p>
-<img alt="_images/TLS-Bridge-Structure.png" class="align-center" src="_images/TLS-Bridge-Structure.png" />
-<p>The inbound Traffic Server accepts a connection from the Client. This connection gets intercepted by the
-TLS Bridge plugin inside Traffic Server. The plugin then makes a TLS connection to the outbound Traffic Server using the
-configured level of security. The original request from the Client to the inbound Traffic Server is then sent
-to the outbound Traffic Server to create a connection from the outbound Traffic Server to the Service. After this the
-Client has a virtual circut to the Service and can use any TCP based communication (including TLS).</p>
-<p>The plugin is configured with a mapping of Service names to outbound Traffic Server instances. The Service
+<div class="figure align-center">
+<p class="plantuml">
+<img src="_images/plantuml-d58acf61f6dfed13e41d9d262f5e80b8dd44859a.png" alt="&#64;startuml
+
+hide empty members
+
+cloud &quot;Cloud\nUntrusted\nNetworks&quot; as Cloud
+node &quot;Ingress ATS&quot;
+node &quot;Peer ATS&quot;
+
+[Client] &lt;--&gt; [Ingress ATS] : Unsecure
+[Ingress ATS] &lt;-&gt; [Cloud] : Secure
+[Cloud] &lt;-&gt; [Peer ATS] : Secure
+[Peer ATS] &lt;-u-&gt; [Service] : Unsecure
+
+[Ingress ATS] ..&gt; [tls_bridge\nPlugin] : Uses
+
+&#64;enduml
+" />
+</p>
+</div>
+<p>The ingress Traffic Server accepts a connection from the Client. This connection gets intercepted by the
+TLS Bridge plugin inside Traffic Server. The plugin then makes a TLS connection to the peer Traffic Server using the
+configured level of security. The original request from the Client to the ingress Traffic Server is then sent
+to the peer Traffic Server to create a connection from the peer Traffic Server to the Service. After this the
+Client has a virtual circut to the Service and can use any TCP based communication (including TLS).
+Effectively the plugin causes the connectivity to work as if the Client had done the <code class="docutils literal"><span class="pre">CONNECT</span></code>
+directly to the peer Traffic Server. Note this means the DNS lookup for the Service is done by the peer Traffic Server,
+not the ingress Traffic Server.</p>
+<p>The plugin is configured with a mapping of Service names to peer Traffic Server instances. The Service
 names are URLs which will in the original HTTP request made by the Client after connecting to the
-inbound Traffic Server. This means the FQDN for the Service is not resolved in the environment of the outbound
-Traffic Server and not the inbound Traffic Server.</p>
+ingress Traffic Server. This means the FQDN for the Service is not resolved in the environment of the peer
+Traffic Server and not the ingress Traffic Server.</p>
 </div>
 <div class="section" id="implementation">
 <h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
-<p>The TLS Bridge plugin uses <code class="code docutils literal"><span class="pre">TSHttpTxnIntercept</span></code> to gain control of the inbound client session.
-If the session is valid then a separate connection to the outbound Traffic Server is created using
+<p>The TLS Bridge plugin uses <code class="code docutils literal"><span class="pre">TSHttpTxnIntercept</span></code> to gain control of the ingress Client session.
+If the session is valid then a separate connection to the peer Traffic Server is created using
 <code class="code docutils literal"><span class="pre">TSHttpConnect</span></code>.</p>
-<p>After the inbound Traffic Server connects to the outound Traffic Server it sends a duplicate of the client request. This
-is processe by the outbound Traffic Server to connect on to the target service. After this both Traffic Server instances
-then tunnel data between the client and the service, in effect becoming a transparent tunnel.</p>
-<p>For the particular use case currently planned the client will send a <code class="docutils literal"><span class="pre">CONNECT</span></code> which will then be
-sent to the outbound Traffic Server. This will result in blind tunnels in both the inbound and outbound Traffic Server
-instances giving the client a byte level secured connection to the service. Note there is no plugin
-in the outbound Traffic Server - it only needs to be configured appropriately.</p>
-<img alt="_images/TLS-Bridge-Sequence.png" class="align-center" src="_images/TLS-Bridge-Sequence.png" />
+<p>After the ingress Traffic Server connects to the peer Traffic Server it sends a duplicate of the Client <code class="docutils literal"><span class="pre">CONNECT</span></code>
+request. This is processed by the peer Traffic Server to connect on to the Service. After this both Traffic Server
+instances then tunnel data between the Client and the Service, in effect becoming a transparent
+tunnel.</p>
+<p>The overall exchange looks like the following:</p>
+<div class="figure align-center">
+<p class="plantuml">
+<img src="_images/plantuml-62dbdeea7c9421c00d00042765db76085b401d4b.png" alt="&#64;startuml
+
+box &quot;Client Network&quot; #EEFFEE
+actor Client
+entity &quot;User Agent\nVConn&quot; as lvc
+participant &quot;Ingress ATS&quot; as ingress
+entity &quot;Upstream\nVConn&quot; as rvc
+end box
+box &quot;Corporate Network&quot; #EEEEFF
+participant &quot;Peer ATS&quot; as peer
+database Service
+end box
+
+Client -&gt; ingress : TCP or TLS connect
+activate lvc
+Client -&gt; ingress : HTTP CONNECT
+ingress -&gt; lvc : Intercept Transaction
+ingress -&gt; peer : TLS connect
+activate rvc
+note over ingress,peer : Secure Tunnel
+ingress -&gt; peer : HTTP CONNECT
+note over peer : DNS for Service is\ndone here.
+peer -&gt; Service : TCP Connect
+
+note over Client, Service : At this point data can flow between the Client and Server\nover the secure link as a virtual connection, including any TLS handshake.
+Client &lt;--&gt; Service
+lvc &lt;-&gt; ingress : &lt;&amp;arrow-thick-left&gt; Move data &lt;&amp;arrow-thick-right&gt;
+ingress &lt;-&gt; rvc : &lt;&amp;arrow-thick-left&gt; Move data &lt;&amp;arrow-thick-right&gt;
+note over ingress : Plugin explicitlys moves this data.
+
+&#64;enduml
+" />
+</p>
+</div>
+<p>A detailed view of the plugin operation.</p>
+<div class="figure align-center">
+<p class="plantuml">
+<img src="_images/plantuml-76170b67ed8103a714191e02da81d4e81f1c9f41.png" alt="&#64;startuml
+
+ReadRequestHdr : Check for &quot;&quot;CONNECT&quot;&quot;
+ReadRequestHdr : =====
+ReadRequestHdr : Find Peer for Service.
+
+Intercept : Intercept Client Transaction.
+Intercept : =====
+Intercept : Initialize Bridge Context.
+
+Accept : Initialize &quot;&quot;VConn&quot;&quot; data.
+Accept : =====
+Accept : Create internal transaction.
+Accept : =====
+Accept : Set up Client side tunnel.
+Accept : =====
+Accept : &quot;&quot;CONNECT&quot;&quot; to Peer via internal transaction.
+
+Tunnel : Move data.
+
+state &quot;Flow To Peer&quot; as FlowToPeer
+FlowToPeer : Move data from Client &quot;&quot;TSIOBufferReader&quot;&quot;\nto Peer &quot;&quot;TSIOBuffer&quot;&quot;.
+FlowToPeer : =====
+FlowToPeer : Reenable VIOs
+
+state &quot;Flow To Client&quot; as FlowToClient
+FlowToClient : Move data from Peer &quot;&quot;TSIOBufferReader&quot;&quot;\nto Client &quot;&quot;TSIOBuffer&quot;&quot;.
+FlowToClient : =====
+FlowToClient : Reenable VIOs
+
+state &quot;Wait For Peer Response&quot; as WaitForPeerResponse {
+  WaitForStatusCode : Parse for status code.
+
+  WaitForResponseEnd : Parse for double newline.
+
+  BadStatus : Set error data\nin Client Response.
+
+  PeerReady : Update Client Response.
+  PeerReady : =====
+  PeerReady : Set up peer tunnel.
+  PeerReady : =====
+  PeerReady : Start Tunneling.
+
+  [*] --&gt; WaitForStatusCode
+  WaitForStatusCode --&gt; WaitForResponseEnd
+  WaitForStatusCode --&gt; BadStatus
+  BadStatus --&gt; [*]
+  WaitForResponseEnd --&gt; PeerReady
+  PeerReady --&gt; [*]
+}
+
+[*] --&gt; ReadRequestHdr : &quot;&quot;CONNECT&quot;&quot; Service
+ReadRequestHdr --&gt; [*] : Not matched.
+ReadRequestHdr --&gt; Intercept
+Intercept --&gt; Accept : &quot;&quot;TS_EVENT_NET_ACCEPT&quot;&quot;
+Accept -r-&gt; WaitForPeerResponse
+WaitForPeerResponse --&gt; WaitForPeerResponse : &quot;&quot;TS_EVENT_VCONN_READ_READY&quot;&quot;
+WaitForPeerResponse --&gt; Tunnel : 200 OK
+WaitForPeerResponse -u-&gt; [*] : Peer connect failure
+
+Tunnel --&gt; FlowToClient : &quot;&quot;TS_EVENT_VCONN_READ_READY&quot;&quot;\nPeer VIO
+FlowToClient --&gt; Tunnel
+Tunnel --&gt; FlowToPeer : &quot;&quot;TS_EVENT_VCONN_READY_READY&quot;&quot;\nClient VIO
+FlowToPeer --&gt; Tunnel
+
+Tunnel -right-&gt; Shutdown : &quot;&quot;TS_EVENT_VCONN_EOS&quot;&quot;
+
+Shutdown : Close Client VConn
+Shutdown : =====
+Shutdown : Close Upstream VConn
+
+&#64;enduml
+" />
+</p>
+</div>
+<p>A sequence diagram focusing on the request / response data flow. There is a <code class="code docutils literal"><span class="pre">NetVConn</span></code> for the
+connection to the Peer Traffic Server which is omitted for clarity.</p>
+<ul class="simple">
+<li>Blue dotted lines are request or response data</li>
+<li>Green lines are network connections.</li>
+<li>Red lines are programmatic interactions.</li>
+<li>Black lines are hook call backs.</li>
+</ul>
+<p>The <code class="code docutils literal"><span class="pre">200</span> <span class="pre">OK</span></code> sent from the Peer Traffic Server is parsed and consumed by the plugin. An non-<code class="code docutils literal"><span class="pre">200</span></code> response
+means there was an error and the tunnel is shut down. To deal with the Client response clean up the
+response code is stored and used later during cleanup.</p>
+<div class="figure align-center">
+<p class="plantuml">
+<img src="_images/plantuml-d3593ff53c3f0e65a26cfc02746c870f1a829ecb.png" alt="&#64;startuml
+
+actor Client
+box &quot;Ingress ATS&quot; #EEFFEE
+entity &quot;Client\nNetVConn&quot; as uanet
+participant &quot;Ingress\nATS&quot; as ingress
+entity &quot;Client\nVConn&quot; as uavc
+entity &quot;TLS Bridge&quot; as plugin
+entity &quot;Peer\nVConn&quot; as peervc
+end box
+box &quot;Peer ATS&quot; #EEEEFF
+participant &quot;Peer\nATS&quot; as peer
+end box
+participant Service
+
+Client &lt;-[#green]&gt; ingress : //TCP Connect//
+activate uanet
+Client -[#blue]-&gt; uanet : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
+uanet -&gt; ingress : //Parse request//
+ingress -[#black]&gt; plugin : &quot;&quot;READ_REQUEST_HDR_HOOK&quot;&quot;
+plugin -&gt; ingress : //TSHttpTxnIntercept()//
+ingress -&gt; uavc : //Create//
+activate uavc
+uanet -[#blue]-&gt; ingress : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
+ingress -[#blue]-&gt; uavc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
+ingress -[#black]&gt; plugin : &quot;&quot;TS_EVENT_NET_ACCEPT&quot;&quot;
+note right : Client VConn is passed in event data.
+
+plugin -\ ingress : //TSHttpConnect()//
+ingress -&gt; peervc : //create//
+activate peervc
+ingress -/ plugin : //return Peer VConn//
+
+plugin -[#blue]-&gt; peervc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Peer&lt;/font&gt;
+peervc -&gt; ingress : //parse request//
+ingress &lt;-[#green]&gt; peer : //TLS Connect//
+ingress -[#blue]-&gt; peervc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
+peervc -[#blue]-&gt; plugin : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
+note left
+This signals a raw TLS connection
+nto the Peer ATS. The response is
+parsed and consumed by Plugin.
+end note
+
+note over plugin : Plugin switches to byte forwarding.
+uavc -[#blue]-&gt; plugin : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
+note left: Original Client Request.
+plugin -[#blue]-&gt; peervc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
+peervc -[#blue]-&gt; peer : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
+peer &lt;-[#green]&gt; Service : //TCP/TLS Connect//
+peer -[#blue]-&gt; peervc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
+peervc -[#blue]-&gt; plugin : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
+plugin -[#blue]-&gt; uavc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
+uavc -[#blue]-&gt; ingress : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
+note left
+ATS updates the incoming response based on
+local configuration. This means what goes out
+to the Client may be different than what the
+plugin wrote (forwarded from Peer ATS).
+end note
+ingress -[#black]&gt; plugin : &quot;&quot;SEND_RESPONSE_HDR_HOOK&quot;&quot;
+note right : Plugin cleans up response here.
+ingress -[#blue]-&gt; uanet : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
+uanet -[#blue]-&gt; Client : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
+
+Client &lt;-[#green]&gt; Service : //TCP/TLS Connect//
+
+&#64;enduml
+" />
+</p>
+</div>
 </div>
 </div>
 

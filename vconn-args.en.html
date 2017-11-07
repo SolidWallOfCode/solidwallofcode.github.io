@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="TSVConnArgs" href="api/TSVConnArgs.en.html" />
+    <link rel="next" title="Multiplexer" href="multiplexer.en.html" />
     <link rel="prev" title="TLS Bridge" href="tls-bridge.en.html" /> 
   </head>
   <body>
@@ -34,7 +34,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
+          <a href="multiplexer.en.html" title="Multiplexer"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="tls-bridge.en.html" title="TLS Bridge"
@@ -52,8 +52,8 @@
   <p class="topless"><a href="tls-bridge.en.html"
                         title="previous chapter">TLS Bridge</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="api/TSVConnArgs.en.html"
-                        title="next chapter">TSVConnArgs</a></p>
+  <p class="topless"><a href="multiplexer.en.html"
+                        title="next chapter">Multiplexer</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -83,14 +83,14 @@
 <span id="vconn-args"></span><h1>TSVConn Arguments<a class="headerlink" href="#tsvconn-arguments" title="Permalink to this headline">¶</a></h1>
 <p>To enable better Layer 4 routing it would be very helpful to be extend the transaction and session
 rguments to virtual connections. Plugins can then easily pass data from early intervention (layer 4)
-callbacks to transaction (layer 7) callbacks. For plugins such arguments are only needed to be
-attached to <code class="code docutils literal"><span class="pre">INKVConnInternal</span></code> and <code class="code docutils literal"><span class="pre">NetVConnection</span></code> as there aren’t any other virtual
-connection types accessible from the plugin API.</p>
+callbacks to transaction (layer 7) callbacks. For plugins such arguments only needto be attached to
+<code class="code docutils literal"><span class="pre">INKVConnInternal</span></code> and <code class="code docutils literal"><span class="pre">NetVConnection</span></code> as there aren’t any other virtual connection
+types accessible from the plugin API.</p>
 <p>In terms of implementation the primary issue is adding a hook that a plugin can use to clean up
 resources. There are already sufficient early intervention hooks to set the data but both
-<code class="code docutils literal"><span class="pre">TS_HTTP_TXN_CLOSE</span></code> and <code class="code docutils literal"><span class="pre">TS_HTTP_SSN_CLOSE</span></code> hooks are insufficient in case of error
-before the client session is constructed. A new hook, <code class="code docutils literal"><span class="pre">TS_VCONN_CLOSE</span></code>, is needed to do this
-cleanup. We should rename <code class="code docutils literal"><span class="pre">TS_VCONN_PRE_ACCEPT_HOOK</span></code> to <code class="code docutils literal"><span class="pre">TS_VCONN_START</span></code>.</p>
+<code class="code docutils literal"><span class="pre">TS_HTTP_TXN_CLOSE_HOOK</span></code> and <code class="code docutils literal"><span class="pre">TS_HTTP_SSN_CLOSE_HOOK</span></code> hooks are insufficient in case of
+error before the client session is constructed. A new hook, <code class="code docutils literal"><span class="pre">TS_VCONN_CLOSE</span></code>, is needed to do
+this cleanup. We should rename <code class="code docutils literal"><span class="pre">TS_VCONN_PRE_ACCEPT_HOOK</span></code> to <code class="code docutils literal"><span class="pre">TS_VCONN_START_HOOK</span></code>.</p>
 <p>In terms of implementation we would add a <code class="code docutils literal"><span class="pre">std::vector</span></code> to a class which would be inherited by
 <a class="reference internal" href="external-types.en.html#_CPPv216INKVConnInternal" title="INKVConnInternal"><code class="xref cpp cpp-class docutils literal"><span class="pre">INKVConnInternal</span></code></a> and <a class="reference internal" href="external-types.en.html#_CPPv214NetVConnection" title="NetVConnection"><code class="xref cpp cpp-class docutils literal"><span class="pre">NetVConnection</span></code></a>. This has a size of 24 bytes default
 constructed. When needed the vector would be extended to a compile time constant number of entries.
@@ -114,7 +114,7 @@ reducing the overall memory footprint.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
+          <a href="multiplexer.en.html" title="Multiplexer"
              >next</a> |</li>
         <li class="right" >
           <a href="tls-bridge.en.html" title="TLS Bridge"

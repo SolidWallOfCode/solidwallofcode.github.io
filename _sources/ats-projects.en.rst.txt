@@ -23,6 +23,7 @@ Projects
    body-factory.en
    tls-bridge.en
    vconn-args.en
+   multiplexer.en
 
 ======================
 Less Detailed Projects
@@ -220,4 +221,3 @@ in the old process.
    :hidden:
 
    api/TSVConnArgs.en
-
