@@ -1,0 +1,131 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>TSVConn Arguments &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Multiplexer" href="multiplexer.en.html" />
+    <link rel="prev" title="TLS Bridge" href="tls-bridge.en.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="multiplexer.en.html" title="Multiplexer"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tls-bridge.en.html" title="TLS Bridge"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tls-bridge.en.html"
+                        title="previous chapter">TLS Bridge</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="multiplexer.en.html"
+                        title="next chapter">Multiplexer</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/vconn-args.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tsvconn-arguments">
+<span id="vconn-args"></span><h1>TSVConn Arguments<a class="headerlink" href="#tsvconn-arguments" title="Permalink to this headline">¶</a></h1>
+<p>To enable better Layer 4 routing it would be very helpful to be extend the transaction and session
+rguments to virtual connections. Plugins can then easily pass data from early intervention (layer 4)
+callbacks to transaction (layer 7) callbacks. For plugins such arguments only needto be attached to
+<code class="code docutils literal"><span class="pre">INKVConnInternal</span></code> and <code class="code docutils literal"><span class="pre">NetVConnection</span></code> as there aren’t any other virtual connection
+types accessible from the plugin API.</p>
+<p>In terms of implementation the primary issue is adding a hook that a plugin can use to clean up
+resources. There are already sufficient early intervention hooks to set the data but both
+<code class="code docutils literal"><span class="pre">TS_HTTP_TXN_CLOSE_HOOK</span></code> and <code class="code docutils literal"><span class="pre">TS_HTTP_SSN_CLOSE_HOOK</span></code> hooks are insufficient in case of
+error before the client session is constructed. A new hook, <code class="code docutils literal"><span class="pre">TS_VCONN_CLOSE</span></code>, is needed to do
+this cleanup. We should rename <code class="code docutils literal"><span class="pre">TS_VCONN_PRE_ACCEPT_HOOK</span></code> to <code class="code docutils literal"><span class="pre">TS_VCONN_START_HOOK</span></code>.</p>
+<p>In terms of implementation we would add a <code class="code docutils literal"><span class="pre">std::vector</span></code> to a class which would be inherited by
+<a class="reference internal" href="external-types.en.html#_CPPv216INKVConnInternal" title="INKVConnInternal"><code class="xref cpp cpp-class docutils literal"><span class="pre">INKVConnInternal</span></code></a> and <a class="reference internal" href="external-types.en.html#_CPPv214NetVConnection" title="NetVConnection"><code class="xref cpp cpp-class docutils literal"><span class="pre">NetVConnection</span></code></a>. This has a size of 24 bytes default
+constructed. When needed the vector would be extended to a compile time constant number of entries.
+This is a trade off from a constant sized array in that it is expected most instances will not have
+the arguments in which no memory is allocated. Only instances that need the data will allocate,
+reducing the overall memory footprint.</p>
+<p>A sample man page is <a class="reference internal" href="api/TSVConnArgs.en.html#tsvconnargs"><span class="std std-ref">here</span></a>.</p>
+<p>The original discussion is <a class="reference external" href="https://github.com/apache/trafficserver/issues/2388">here</a>.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="multiplexer.en.html" title="Multiplexer"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tls-bridge.en.html" title="TLS Bridge"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,223 @@
+.. include:: common.defs
+
+.. _ats-projects:
+
+Traffic Server Projects
+***********************
+
+These are my personal projects for |TS|. These vary from very personal ones to collaborative work. A
+large diagram of the projects and their dependencies is `here <_images/ts-projects.png>`__.
+
+==============
+Projects
+==============
+
+.. toctree::
+   :maxdepth: 1
+
+   buffer-writer.en
+   tsconfig-lua.en
+   cache-tool.en
+   testing.en
+   errata.en
+   body-factory.en
+   tls-bridge.en
+   vconn-args.en
+   multiplexer.en
+
+======================
+Less Detailed Projects
+======================
+
+Most these should be in separate pages but I have not yet had time to properly document them.
+
+Layer 7 Routing
+===============
+
+Select upstream target based on the HTTP header information.
+
+.. note::
+
+   Need to consider the ability to bypass upstream selection for non-caching objects (e.g., skip a second caching layer for requests that will always end up at the origin anyway).
+
+Logging tags from plugins
+=========================
+
+This has been a desire for a long time but the implementation is a bit tricky with regard to timing, due to logging being done as the transaction is being terminated and data may have already disappeared. I have some ideas but those would require some additional infrastructure such as better arenas.
+
+C++ ABI to Core
+===============
+
+There is currently a C++ API for plugins but this is really a wrapper on the C API. It would be good
+to be able to have actual C++ APIs in to the core. There are a number of core features that should
+be made available to plugins, such as the network address handling code and the string view classes.
+The primary problem is the fragility of the C++ ABI, some mechanism would be needed to deal with
+this.
+
+Plugin C++ API
+==============
+
+The plugin C++ API needs a lot of polishing and updating.
+
+Bijection
+=========
+
+Bijection is a class I wrote for my own product software long ago, but it depends on some sophisticated Boost library support and so could not be easily ported to |TS|. It was a very useful class, particularly for configuration work and enumeration support. It is a goal of mine because building will create a good amount of powerful infrastructure which will be useful in other situations.
+
+Compacting Arena
+++++++++++++++++
+
+Memory arena support should be formalized in to a support class. Having a better string arena for
+transactions would be a clear improvement in memory handling. The compacting arena is one that does
+standard memory arena support but also enables compacting / coalescing its in use memory in to a
+single block. This is very useful for data constructed at process start time and then not updated.
+
+Replace TCL hash maps
++++++++++++++++++++++
+
+There is currently a templated hash map table but it requires externally allocated memory. This has its benefits in complex situations but is simply annoying for basic hash table use. Adding the compacting arena to the current :code:`TSHashTable` would yield an easily usable hash table with the desired memory allocation properties.
+
+Bijection
++++++++++
+
+Given the compacting arena and :code:`TSHashTable` buidling the bijection class is straightforward. Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is the essential technique.
+
+RPC Refactoring
+===============
+
+The current RPC mechanism used to communicate between command line tools and :code:`traffic_manager` is rather a mess and implemented in a assymmetric way. It should be refactored in two steps.
+
+*  Move the RPC logic to separate library.
+*  Make the RPC symmetric / bidirectional.
+
+As a side project, there is currently a roughly 5 second delay in communications for no apparent reason. As best as I can tell it is a deliberate pause to avoid :code:`epoll`. This should be fixed.
+
+Traffic Server Core
+===================
+
+Restructure the overridable configs to remove cyclic dependencies. Already discussed with community
+and I have a design.
+
+Potentially the "proxy-protocol" extension.
+
+Internal version of the `C++17 filesystem library <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0218r0.html>`__.
+
+Fix :code:`TSNetConnect` to have options instead of a multiplying set of API calls.
+
+Make remap rules be pure first match (long term).
+
+The crypto hash support needs to be cleaned up.
+
+Add log tags to dump transaction headers in full. This would be useful for the operations teams. The
+idea is a custom log is setup that logs the full headers but is filtered by error return codes. The
+result is a log of full headers only for failed transactions. We had originally looked at doing this
+with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing
+logging mechanisms.
+
+Use :code:`std::chrono`.
+
+Prevent restart on cache failure (bad disks).
+
+Transaction arenas for plugin use.
+
+Pending event counting at base event loop / continuation.
+
+Look at allocating SDK Handles from the transaction arena instead of a global allocator, to avoid cleanup issues.
+
+Concurrent Containers
++++++++++++++++++++++
+
+We should look at importing concurrent containers. Some options are
+
+TBB
+   Thread Building Blocks. The primary issue is this does a lot more than just concurrent containers.
+
+ConcurrencyKit
+   A excellent set of concurrent containers. The issue is this doesn't compile in C++ and would need to
+   be forked and have an API makeover.
+
+Concurrent Data Structures
+   This was suggested on the mailing list. I'm not familiar with it. See `here <https://github.com/khizmax/libcds>`__.
+
+TLS Extensions
+++++++++++++++
+
+It would be interesting in terms of L4 routing to be enable TLS clients to send a |TS| specialized
+TLS extension to provide addition L4 routing information or other control data. This needs to be
+design carefully to avoid security issues but I think it could be very powerful.
+
+Dynamic Cert Loader
+===================
+
+An open source plugin that does dynamic certificate loading / management. This is to avoid a huge delay at process start and instead load certificates as needed. We are likely to be using a lot more distinct certificates in the future and this is also a feature that will be important in comparing to VDMS. There are two phases for this
+
+* Load certificates on demand, and release unused certificates.
+* Dynamically generate impersonation certificates.
+
+.. note::
+   A dynamic certificate loader could also make rotating certificates easier. Although |TS| can be provided with updated certificates will running this will reload all certificates which is even worse than the start up problem. In addition a certificate loader could respond to plugin messages or check files times to reload only changed certificates, or permite revocation without a reload.
+
+Plugin Coordination
+===================
+
+There is a consistent need for coordination among plugins. At one point (Feb 2016) I had a working prototype of plugin priorities based on Y! 5.3.x which assigned priorities to plugin callbacks along with an API to manipulate not just the current plugins priorities but that of other plugins. That would be very useful although priorities of themselves are only one approach to this problem. Based on that work I have a technology ladder to climb to provide this capability.
+
+Modular hook dispatch.
+   Create a class to handle the hook dispatching to provide a level of consistency needed later.
+Continuation tracking
+  Associate every continuation with a "root" plugin. This would be very valuable in debugging plugin problems and would result in significantly less developer time spent with faster results for customer support.
+TS API to probe hooks for callbacks.
+   Allow plugins to check the callbacks on a hook.
+TS API to manipulate callbacks on hooks
+   Allow plugins to alter the callbacks on a hook, either in terms of priorities, dependency, or direct access by plugin.
+
+HTTP/2 Outbound
+===============
+
+|TS| should be able to use HTTP/2 outbound. This will require some restructuring of the internal classes used to model outbound connections (similar to the restructuring needed for inbound HTTP/2 as expressed in TS-3612).
+
+jemalloc and memory allocators
+==============================
+
+We need to proceed with work on testing :code:`jemalloc` and its interaction with |TS| memory allocation.
+
+TLS
+===
+
+openSSL 1.1
+   |TS| needs to be compatible with the openSSL 1.1 library. This is mostly done, it should be primarily verification at this point.
+
+TLS/1.3
+   This is a soon to be standard. We should start planning for it.
+
+Cache API Toolkit
+=================
+
+This is a restructuring of how the cache to enable fine grained control by plugins. Put in a reference to the summit presentation on this.
+
+Live Restart
+============
+
+A long running request is to be able to do a live restart of |TS|. The mechanism would be
+
+*  Start new |TS| process.
+*  New process starts accepting connections.
+*  Old process stops accepting connections.
+*  Old process shuts down.
+
+   *  When all inbound connections have terminated.
+   *  When there are less than a specified number of inbound connections.
+   *  After a specific amount of time.
+   *  When explicitly requested by the administrator.
+
+The main difficulty for this is handling the cache. To some extent the cache would need to be
+multi-process. To make this more feasible the access would be single writer and the control of
+writing would pass from the old process to the new process. This may mean terminating cache writes
+in the old process.
+
+.. Files referenced but not to be in a TOC.
+
+.. toctree::
+   :hidden:
+
+   api/TSVConnArgs.en

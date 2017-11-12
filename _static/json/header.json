@@ -1,0 +1,39 @@
+{
+    "$schema": "http://solidwallofcode.github.io/_static/json/header.json",
+    "title": "Transaction Header",
+    "description": "Data for the headers in an HTTP transaction.",
+    "type": "object",
+    "properties": {
+        "scheme": {
+            "description": "HTTP scheme.",
+            "type": "string"
+        },
+        "method": {
+            "description": "HTTP method",
+            "type": "string"
+        },
+        "encoding": {
+            "description": "Encoding for the fields.",
+            "type": "string",
+            "enum": [ "plain", "uri"]
+        },
+        "headers": {
+            "description": "HTTP header fields.",
+            "type": "array",
+            "items": {
+                "description": "HTTP field.",
+                "type": "array",
+                "items": [
+                    {
+                        "description": "Name of the field.",
+                        "type": "string"
+                    },
+                    {
+                        "description": "Value of the field.",
+                        "type": "string"
+                    }
+                ]
+            }
+        }
+    }
+}

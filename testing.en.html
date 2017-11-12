@@ -1,0 +1,198 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Testing &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Errata" href="errata.en.html" />
+    <link rel="prev" title="Command Registration" href="command-registration.en.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="errata.en.html" title="Errata"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="command-registration.en.html" title="Command Registration"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Testing</a><ul>
+<li><a class="reference internal" href="#pure-replay-testing">Pure Replay testing</a></li>
+<li><a class="reference internal" href="#header-comparators">Header Comparators</a></li>
+<li><a class="reference internal" href="#traffic-capture-sampling">Traffic Capture / Sampling</a></li>
+<li><a class="reference internal" href="#production-verification">Production Verification</a></li>
+<li><a class="reference internal" href="#configuration-verification">Configuration Verification</a></li>
+<li><a class="reference internal" href="#replay-file-format">Replay File Format</a></li>
+<li><a class="reference internal" href="#diagrams">Diagrams</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="command-registration.en.html"
+                        title="previous chapter">Command Registration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="errata.en.html"
+                        title="next chapter">Errata</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/testing.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="testing">
+<span id="id1"></span><h1>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h1>
+<p>I have a number of additional projects to improve the AuTest framework for use with Traffic Server.</p>
+<div class="section" id="pure-replay-testing">
+<h2>Pure Replay testing<a class="headerlink" href="#pure-replay-testing" title="Permalink to this headline">¶</a></h2>
+<p>It should be possible to have run tests using only a replay file and potentially some configuration
+information, without any Python code at all. This requires the micro-DNS server.</p>
+</div>
+<div class="section" id="header-comparators">
+<h2>Header Comparators<a class="headerlink" href="#header-comparators" title="Permalink to this headline">¶</a></h2>
+<p>Frequently the literalness of the gold testing is a problem. AUTest should have comparators that are specialized for HTTP headers. This could be worked in to the replay file format with metadata indicating which headers should be literal, vs. present/absent vs. irrelevant. Replay file based testing would greatly benefit from this.</p>
+</div>
+<div class="section" id="traffic-capture-sampling">
+<h2>Traffic Capture / Sampling<a class="headerlink" href="#traffic-capture-sampling" title="Permalink to this headline">¶</a></h2>
+<p>At one point the technology existed to capture traffic for traffic replay. This should be
+resurrected and improved. After discussion among the group it seems that for replay purposes literal
+content is unnecessary, only the size matters. It is still debated if full capture is useful for
+debugging purposes. My opinion is it is not and complicates the capture process unnecessarily.</p>
+<p>I think in terms of building out the replay tooling we need a plugin that can to some extent record
+traffic. The data recorded should be in the replay file format and contain</p>
+<ul class="simple">
+<li>Each session and the transactions in the session.</li>
+<li>Timestamps.</li>
+<li>The four headers.</li>
+<li>The protocol stack for the user agent.</li>
+<li>The transaction count for the outbound session.</li>
+<li>The content block sizes.</li>
+</ul>
+<p>The plugin should record samples rather than all sessions as the latter isn’t possible on most
+production machines. The plugin should have some sampling percentage and sample that fraction of
+<em>sessions</em>. For content, the actual content isn’t particularly useful but the I/O operation sizes
+could be significant. The plugin should record the number of bytes in each chunk of data that passes
+through the transaction in both directions.</p>
+</div>
+<div class="section" id="production-verification">
+<h2>Production Verification<a class="headerlink" href="#production-verification" title="Permalink to this headline">¶</a></h2>
+<p>It would be nice to be able to run AUTest against live production systems to verify behavior,
+particularly with regard to paranoid requirements.</p>
+</div>
+<div class="section" id="configuration-verification">
+<h2>Configuration Verification<a class="headerlink" href="#configuration-verification" title="Permalink to this headline">¶</a></h2>
+<p>AuTest could be integrated with configuration management. This would involve setting up a Traffic Server
+instance with a proposed configuration deployment in a non-production environment and then verifying
+various functional properties. This would similar to production verification but presumably more
+thorough and focused on operatoinsl needs.</p>
+</div>
+<div class="section" id="replay-file-format">
+<h2>Replay File Format<a class="headerlink" href="#replay-file-format" title="Permalink to this headline">¶</a></h2>
+<p>The replay file is basically a list of sessions. Each session contains connection information and a
+list of transactions. Each transaction contains some meta data and set of our transaction headers.
+These are the inbound request, the outbound request, the upstream response, and the inbound
+response.</p>
+<p>Each transaction can also have a UUID which can be used to specify the appropriate response. The
+UUID can be sent along with the transaction as an extra header if needed. Otherwise the transactions
+must be matched up based on other data in the request.</p>
+<ul class="simple">
+<li><a class="reference external" href="_static/json/replay-file.json">File schema</a>.</li>
+<li><a class="reference external" href="_static/json/header.json">Transaction header schema</a>.</li>
+</ul>
+</div>
+<div class="section" id="diagrams">
+<h2>Diagrams<a class="headerlink" href="#diagrams" title="Permalink to this headline">¶</a></h2>
+<img src="_images/graphviz-7fc48beb5dd194f68bf303d4f31ec6e66fc3417c.png" alt="digraph {
+    testing_project [label=&quot;Testing&quot; shape=folder];
+    replay_file_design [label=&quot;Replay File\nDesign&quot; shape=rect style=rounded];
+    replay_file_testing [label=&quot;Replay File\nBased Testing&quot; shape=rect style=rounded]
+    configuration_verification [label=&quot;Configuration\nVerification&quot; shape=rect style=rounded]
+    production_verification [label=&quot;Production\nVerification&quot; shape=rect style=rounded]
+
+    testing_project -&gt; {replay_file_design};
+    replay_file_design -&gt; {production_verification, configuration_verification, replay_file_testing}
+}" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="errata.en.html" title="Errata"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="command-registration.en.html" title="Command Registration"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

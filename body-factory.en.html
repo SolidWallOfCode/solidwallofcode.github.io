@@ -1,0 +1,365 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Body Factory Refactoring &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TLS Bridge" href="tls-bridge.en.html" />
+    <link rel="prev" title="Errata" href="errata.en.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tls-bridge.en.html" title="TLS Bridge"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="errata.en.html" title="Errata"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Body Factory Refactoring</a><ul>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+<li><a class="reference internal" href="#further-work">Further Work</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#tshttptxnapplylogformat">TSHttpTxnApplyLogFormat</a><ul>
+<li><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li><a class="reference internal" href="#description">Description</a></li>
+<li><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tshttptxnerrorbodyset">TSHttpTxnErrorBodySet</a><ul>
+<li><a class="reference internal" href="#id1">Synopsis</a></li>
+<li><a class="reference internal" href="#id2">Description</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tsiobufferreader">TSIOBufferReader</a><ul>
+<li><a class="reference internal" href="#id3">Synopsis</a></li>
+<li><a class="reference internal" href="#id4">Description</a></li>
+<li><a class="reference internal" href="#id5">See also</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="errata.en.html"
+                        title="previous chapter">Errata</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tls-bridge.en.html"
+                        title="next chapter">TLS Bridge</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/body-factory.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="body-factory-refactoring">
+<h1>Body Factory Refactoring<a class="headerlink" href="#body-factory-refactoring" title="Permalink to this headline">¶</a></h1>
+<p>The core logic used to generate proxy replies is convoluted and fragile. It has needed to be cleaned
+up for a long time both to make it more robust and maintainable but also to add features that are
+currently hard to do. There are also arbitrary internal limits which are entirely artifacts of the
+implementation.</p>
+<p>The goal is to replace all of this with <code class="code docutils literal"><span class="pre">MIOBuffer</span></code> to get the following benefits:</p>
+<ul class="simple">
+<li>Remove arbitrary limits.</li>
+<li>Remove all direct memory allocation, use only <code class="code docutils literal"><span class="pre">IOBufferBlock</span></code> based allocations.</li>
+<li>Reduce costs of using the generated bodies later. An <code class="code docutils literal"><span class="pre">MIOBuffer</span></code> can be directly fed to an
+output tunnel or even a socket without additional copies or allocations.</li>
+<li>Simplify the code. All output is done directly to an <code class="code docutils literal"><span class="pre">MIOBuffer</span></code>.</li>
+</ul>
+<p>The basic plan is to extend the <code class="code docutils literal"><span class="pre">BufferWriter</span></code> class to have one that takes an
+<code class="code docutils literal"><span class="pre">MIOBuffer</span></code> as its output target. This would make it basically equivalent to C++ I/O stream operators
+but using Traffic Server core mechanisms.</p>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>The starting change is</p>
+<ol class="arabic simple">
+<li>change <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_buffer</span></code> from a <code class="code docutils literal"><span class="pre">char*</span></code> to :<cite>MIOBuffer</cite></li>
+<li>remove <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_size</span></code></li>
+<li>remove <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_size_fast_allocator_size</span></code></li>
+<li>change <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_buffer_type</span></code> to <code class="code docutils literal"><span class="pre">ats_scoped_str</span></code>. This is
+used to populate the <code class="docutils literal"><span class="pre">Content-Type</span></code> header and so doesn’t need to be a variable sized buffer.
+It could probably be made a fixed size string of some reasonable length (~128 bytes) without loss
+of generality.</li>
+</ol>
+<p>This has a large and extensive ripple of changes that achieve the
+goals of this project. Chasing these down and fixing them will be the bulk of the effort. There are
+a few others issues to be careful about</p>
+<ul class="simple">
+<li>Some mark is needed to track if there is a body at all - there is a semantic difference between a
+body of length zero and no body at all.</li>
+</ul>
+</div>
+<div class="section" id="further-work">
+<h2>Further Work<a class="headerlink" href="#further-work" title="Permalink to this headline">¶</a></h2>
+<p>A new “Format” class could be done which processes the current log style format strings in a generic
+and modular way. The body factory would be updated to use these new classes.</p>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>The following sections are intended as documentation to be added to the Traffic Server documentation set.</p>
+</div>
+<div class="section" id="tshttptxnapplylogformat">
+<h2>TSHttpTxnApplyLogFormat<a class="headerlink" href="#tshttptxnapplylogformat" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="synopsis">
+<h3>Synopsis<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h3>
+<p><cite>#include &lt;ts/ts.h&gt;</cite></p>
+<dl class="function">
+<dt id="c.TSHttpTxnApplyLogFormat">
+<a class="reference internal" href="external-types.en.html#c.TSReturnCode" title="TSReturnCode">TSReturnCode</a> <code class="descname">TSHttpTxnApplyLogFormat</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSHttpTxn" title="TSHttpTxn">TSHttpTxn</a><em>&nbsp;txnp</em>, char const*<em>&nbsp;format</em>, <a class="reference internal" href="external-types.en.html#c.TSIOBuffer" title="TSIOBuffer">TSIOBuffer</a><em>&nbsp;out</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSHttpTxnApplyLogFormat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="description">
+<h3>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h3>
+<p>Apply the log <em>format</em> string to the transaction <em>txnp</em> placing the result in the buffer
+<em>out</em>. The format is identical to <a class="reference internal" href="external-types.en.html#custom-logging-fields"><span class="std std-ref">custom log formats</span></a>. The result
+is appended to <em>out</em> in ASCII format. <em>out</em> must be created by the plugin.</p>
+</div>
+<div class="section" id="see-also">
+<h3>See also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h3>
+<p><em class="manpage">TSIOBufferCreate(3ts)</em>, <em class="manpage">TSIOBufferReaderAlloc(3ts)</em></p>
+</div>
+</div>
+<div class="section" id="tshttptxnerrorbodyset">
+<h2>TSHttpTxnErrorBodySet<a class="headerlink" href="#tshttptxnerrorbodyset" title="Permalink to this headline">¶</a></h2>
+<p>Sets an error type body to a transaction.</p>
+<div class="section" id="id1">
+<h3>Synopsis<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p><cite>#include &lt;ts/ts.h&gt;</cite></p>
+<dl class="function">
+<dt id="c.TSHttpTxnErrorBodySet">
+void <code class="descname">TSHttpTxnErrorBodySet</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSHttpTxn" title="TSHttpTxn">TSHttpTxn</a><em>&nbsp;txnp</em>, char *<em>&nbsp;buf</em>, size_t<em>&nbsp;buflength</em>, char *<em>&nbsp;mimetype</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSHttpTxnErrorBodySet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="id2">
+<h3>Description<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>Note that both string arguments must be allocated with <a class="reference internal" href="external-types.en.html#c.TSmalloc" title="TSmalloc"><code class="xref c c-func docutils literal"><span class="pre">TSmalloc()</span></code></a> or
+<a class="reference internal" href="external-types.en.html#c.TSstrdup" title="TSstrdup"><code class="xref c c-func docutils literal"><span class="pre">TSstrdup()</span></code></a>.  The <em>mimetype</em> is optional, and if not provided it
+defaults to <code class="docutils literal"><span class="pre">text/html</span></code>. Sending an empty string would prevent setting
+a content type header (but that is not adviced).</p>
+</div>
+</div>
+<div class="section" id="tsiobufferreader">
+<h2>TSIOBufferReader<a class="headerlink" href="#tsiobufferreader" title="Permalink to this headline">¶</a></h2>
+<p>Traffic Server IO buffer reader API.</p>
+<div class="section" id="id3">
+<h3>Synopsis<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p><cite>#include &lt;ts/ts.h&gt;</cite></p>
+<dl class="function">
+<dt id="c.TSIOBufferReaderAlloc">
+<a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a> <code class="descname">TSIOBufferReaderAlloc</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSIOBuffer" title="TSIOBuffer">TSIOBuffer</a><em>&nbsp;bufp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSIOBufferReaderAlloc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="c.TSIOBufferReaderClone">
+<a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a> <code class="descname">TSIOBufferReaderClone</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a><em>&nbsp;readerp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSIOBufferReaderClone" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="c.TSIOBufferReaderFree">
+void <code class="descname">TSIOBufferReaderFree</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a><em>&nbsp;readerp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSIOBufferReaderFree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="c.TSIOBufferReaderConsume">
+void <code class="descname">TSIOBufferReaderConsume</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a><em>&nbsp;readerp</em>, <a class="reference internal" href="external-types.en.html#c.int64_t" title="int64_t">int64_t</a><em>&nbsp;nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSIOBufferReaderConsume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="c.TSIOBufferReaderStart">
+<a class="reference internal" href="external-types.en.html#c.TSIOBufferBlock" title="TSIOBufferBlock">TSIOBufferBlock</a> <code class="descname">TSIOBufferReaderStart</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a><em>&nbsp;readerp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSIOBufferReaderStart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="c.TSIOBufferReaderAvail">
+<a class="reference internal" href="external-types.en.html#c.int64_t" title="int64_t">int64_t</a> <code class="descname">TSIOBufferReaderAvail</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a><em>&nbsp;readerp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSIOBufferReaderAvail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="c.TSIOBufferReaderIsAvailAtLeast">
+int <code class="descname">TSIOBufferReaderIsAvailAtLeast</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a>, <a class="reference internal" href="external-types.en.html#c.int64_t" title="int64_t">int64_t</a><em>&nbsp;nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSIOBufferReaderIsAvailAtLeast" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="c.TSIOBufferReaderRead">
+<a class="reference internal" href="external-types.en.html#c.int64_t" title="int64_t">int64_t</a> <code class="descname">TSIOBufferReaderRead</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a><em>&nbsp;reader</em>, const void *<em>&nbsp;buf</em>, <a class="reference internal" href="external-types.en.html#c.int64_t" title="int64_t">int64_t</a><em>&nbsp;length</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSIOBufferReaderRead" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="c.TSIOBufferReaderIterate">
+int <code class="descname">TSIOBufferReaderIterate</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader">TSIOBufferReader</a><em>&nbsp;reader</em>, <a class="reference internal" href="#c.TSIOBufferBlockFunc" title="TSIOBufferBlockFunc">TSIOBufferBlockFunc</a>*<em>&nbsp;func</em>, void*<em>&nbsp;context</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSIOBufferReaderIterate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt id="c.TSIOBufferBlockFunc">
+<code class="descname">TSIOBufferBlockFunc</code><a class="headerlink" href="#c.TSIOBufferBlockFunc" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">int</span> <span class="pre">(*TSIOBufferBlockFunc)(void</span> <span class="pre">const*</span> <span class="pre">data,</span> <span class="pre">int64_t</span> <span class="pre">nbytes,</span> <span class="pre">void*</span> <span class="pre">context)</span></code></p>
+<p><em>data</em> is the data in the <a class="reference internal" href="external-types.en.html#c.TSIOBufferBlock" title="TSIOBufferBlock"><code class="xref c c-type docutils literal"><span class="pre">TSIOBufferBlock</span></code></a> and is <em>nbytes</em> long. <em>context</em> is
+opaque data provided to the API call along with this function and passed on to the function. This
+function should return <code class="docutils literal"><span class="pre">true</span></code> to continue iteration or <code class="docutils literal"><span class="pre">false</span></code> to terminate iteration.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id4">
+<h3>Description<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader"><code class="xref c c-type docutils literal"><span class="pre">TSIOBufferReader</span></code></a> is an read accessor for <a class="reference internal" href="external-types.en.html#c.TSIOBuffer" title="TSIOBuffer"><code class="xref c c-type docutils literal"><span class="pre">TSIOBuffer</span></code></a>. It represents a location in
+the contents of the buffer. A buffer can have multiple readers and each reader consumes data in the
+buffer independently. Data which for which there are no readers is discarded from the buffer. This
+has two very important consequences –</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>Data for which there are no readers and no writer will be discarded. In effect this means without</dt>
+<dd>any readers only the current write buffer block will be maintained, older buffer blocks will
+disappear.</dd>
+</dl>
+</li>
+<li>Conversely keeping a reader around unused will pin the buffer data in memory. This can be useful or harmful.</li>
+</ul>
+<p>A buffer has a fixed amount of possible readers (currently 5) which is determined at compile
+time. Reader allocation is fast and cheap until this maxium is reached at which point it fails.</p>
+<dl class="docutils">
+<dt><a class="reference internal" href="#c.TSIOBufferReaderAlloc" title="TSIOBufferReaderAlloc"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderAlloc()</span></code></a> allocates a reader for the IO buffer <em>bufp</em>. This should only be</dt>
+<dd>called on a newly allocated buffer. If not the location of the reader in the buffer will be
+indeterminate. Use <a class="reference internal" href="#c.TSIOBufferReaderClone" title="TSIOBufferReaderClone"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderClone()</span></code></a> to get another reader if the buffer is
+already in use.</dd>
+</dl>
+<p><a class="reference internal" href="#c.TSIOBufferReaderClone" title="TSIOBufferReaderClone"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderClone()</span></code></a> allocates a reader and sets its position in the buffer to be the same as <em>reader</em>.</p>
+<dl class="docutils">
+<dt><a class="reference internal" href="#c.TSIOBufferReaderFree" title="TSIOBufferReaderFree"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderFree()</span></code></a> de-allocates the reader. Any data referenced only by this reader is</dt>
+<dd>discarded from the buffer.</dd>
+<dt><a class="reference internal" href="#c.TSIOBufferReaderConsume" title="TSIOBufferReaderConsume"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderConsume()</span></code></a> advances the position of <em>reader</em> in its IO buffer by the</dt>
+<dd>the smaller of <em>nbytes</em> and the maximum available in the buffer.</dd>
+</dl>
+<p><a class="reference internal" href="#c.TSIOBufferReaderStart" title="TSIOBufferReaderStart"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderStart()</span></code></a> returns the IO buffer block containing the position of
+<em>reader</em>.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The byte at the position of <em>reader</em> is in the block but is not necessarily the first byte of the block.</p>
+</div>
+</div></blockquote>
+<dl class="docutils">
+<dt><a class="reference internal" href="#c.TSIOBufferReaderAvail" title="TSIOBufferReaderAvail"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderAvail()</span></code></a> returns the number of bytes which <em>reader</em> could consume. That is</dt>
+<dd>the number of bytes in the IO buffer starting at the current position of <em>reader</em>.</dd>
+<dt><a class="reference internal" href="#c.TSIOBufferReaderIsAvailAtLeast" title="TSIOBufferReaderIsAvailAtLeast"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderIsAvailAtLeast()</span></code></a> return <code class="docutils literal"><span class="pre">true</span></code> if the available number of bytes for</dt>
+<dd><em>reader</em> is at least <em>nbytes</em>, <code class="docutils literal"><span class="pre">false</span></code> if not. This can be more efficient than
+<a class="reference internal" href="#c.TSIOBufferReaderAvail" title="TSIOBufferReaderAvail"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderAvail()</span></code></a> because the latter must walk all the IO buffer blocks in the IO
+buffer. This function returns as soon as the return value can be determined. In particular a
+value of <code class="docutils literal"><span class="pre">1</span></code> for <em>nbytes</em> means only the first buffer block will be checked.</dd>
+<dt><a class="reference internal" href="#c.TSIOBufferReaderRead" title="TSIOBufferReaderRead"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderRead()</span></code></a> reads data from <em>reader</em>. This first copies data from the IO</dt>
+<dd>buffer for <em>reader</em> to the target buffer <em>bufp</em>, starting at <em>reader`s
+position, and then advances (as with :func:`TSIOBufferReaderConsume</em>) <em>reader`s
+position past the copied data. The amount of data read in this fashion is the smaller of the
+amount of data available in the IO buffer for :arg:`reader</em> and the size of the target buffer
+(<em>length</em>).</dd>
+</dl>
+<p><a class="reference internal" href="#c.TSIOBufferReaderIterate" title="TSIOBufferReaderIterate"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderIterate()</span></code></a> iterates over the blocks for <em>reader</em>. For each block
+<em>func</em> is called with with the data for the block and <em>context</em>. The <em>context</em> is an
+opaque type to this function and is passed unchanged to <em>func</em>. It is intended to be used as
+context for <em>func</em>. If <em>func</em> returns <code class="docutils literal"><span class="pre">false</span></code> the iteration terminates. If <em>func</em>
+returns true the block is consumed. The return value for <a class="reference internal" href="#c.TSIOBufferReaderIterate" title="TSIOBufferReaderIterate"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderIterate()</span></code></a> is the
+return value from the last call to <em>func</em>.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If it would be a problem for the iteration to consume the data (especially in cases where
+<code class="docutils literal"><span class="pre">false</span></code> might be returned) the reader can be cloned via <a class="reference internal" href="#c.TSIOBufferReaderClone" title="TSIOBufferReaderClone"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderClone()</span></code></a> to
+keep the data in the IO buffer and available. If not needed the reader can be destroyed or
+if needed the original reader can be destroyed and replaced by the clone.</p>
+</div>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Destroying a <a class="reference internal" href="external-types.en.html#c.TSIOBuffer" title="TSIOBuffer"><code class="xref c c-type docutils literal"><span class="pre">TSIOBuffer</span></code></a> will de-allocate and destroy all readers for that buffer.</p>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>See also<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p><em class="manpage">TSIOBufferCreate(3ts)</em></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tls-bridge.en.html" title="TLS Bridge"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="errata.en.html" title="Errata"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>
