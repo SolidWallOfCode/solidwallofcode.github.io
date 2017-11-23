@@ -3,7 +3,7 @@
 .. highlight:: cpp
 .. default-domain:: cpp
 
-.. _guides:
+.. _reference:
 
 Diagrams
 *************************

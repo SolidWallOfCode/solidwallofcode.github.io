@@ -68,7 +68,6 @@
 <li><a class="reference internal" href="#tls-extensions">TLS Extensions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#dynamic-cert-loader">Dynamic Cert Loader</a></li>
 <li><a class="reference internal" href="#plugin-coordination">Plugin Coordination</a></li>
 <li><a class="reference internal" href="#http-2-outbound">HTTP/2 Outbound</a></li>
 <li><a class="reference internal" href="#jemalloc-and-memory-allocators">jemalloc and memory allocators</a></li>
@@ -129,6 +128,8 @@ large diagram of the projects and their dependencies is <a class="reference exte
 <li class="toctree-l1"><a class="reference internal" href="tls-bridge.en.html">TLS Bridge</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vconn-args.en.html">TSVConn Arguments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="multiplexer.en.html">Multiplexer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="certifier.en.html">Certifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l4r.en.html">Layer 4 Routing</a></li>
 </ul>
 </div>
 </div>
@@ -224,18 +225,6 @@ be forked and have an API makeover.</dd>
 <p>It would be interesting in terms of L4 routing to be enable TLS clients to send a Traffic Server specialized
 TLS extension to provide addition L4 routing information or other control data. This needs to be
 design carefully to avoid security issues but I think it could be very powerful.</p>
-</div>
-</div>
-<div class="section" id="dynamic-cert-loader">
-<h3>Dynamic Cert Loader<a class="headerlink" href="#dynamic-cert-loader" title="Permalink to this headline">¶</a></h3>
-<p>An open source plugin that does dynamic certificate loading / management. This is to avoid a huge delay at process start and instead load certificates as needed. We are likely to be using a lot more distinct certificates in the future and this is also a feature that will be important in comparing to VDMS. There are two phases for this</p>
-<ul class="simple">
-<li>Load certificates on demand, and release unused certificates.</li>
-<li>Dynamically generate impersonation certificates.</li>
-</ul>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">A dynamic certificate loader could also make rotating certificates easier. Although Traffic Server can be provided with updated certificates will running this will reload all certificates which is even worse than the start up problem. In addition a certificate loader could respond to plugin messages or check files times to reload only changed certificates, or permite revocation without a reload.</p>
 </div>
 </div>
 <div class="section" id="plugin-coordination">

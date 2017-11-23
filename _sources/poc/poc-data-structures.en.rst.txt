@@ -23,6 +23,20 @@ Cache Data Structures
 Diagrams
 ========
 
+Class diagram.
+
+.. uml::
+
+   class OpenDirEntry {
+      CacheVC* open_writer
+   }
+
+   class CacheVC {
+
+   }
+
+   OpenDirEntry::open_writer *- CacheVC
+
 .. graphviz::
 
    digraph data {

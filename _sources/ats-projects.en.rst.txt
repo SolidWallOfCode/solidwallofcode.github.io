@@ -24,6 +24,8 @@ Projects
    tls-bridge.en
    vconn-args.en
    multiplexer.en
+   certifier.en
+   l4r.en
 
 ======================
 Less Detailed Projects
@@ -145,17 +147,6 @@ TLS Extensions
 It would be interesting in terms of L4 routing to be enable TLS clients to send a |TS| specialized
 TLS extension to provide addition L4 routing information or other control data. This needs to be
 design carefully to avoid security issues but I think it could be very powerful.
-
-Dynamic Cert Loader
-===================
-
-An open source plugin that does dynamic certificate loading / management. This is to avoid a huge delay at process start and instead load certificates as needed. We are likely to be using a lot more distinct certificates in the future and this is also a feature that will be important in comparing to VDMS. There are two phases for this
-
-* Load certificates on demand, and release unused certificates.
-* Dynamically generate impersonation certificates.
-
-.. note::
-   A dynamic certificate loader could also make rotating certificates easier. Although |TS| can be provided with updated certificates will running this will reload all certificates which is even worse than the start up problem. In addition a certificate loader could respond to plugin messages or check files times to reload only changed certificates, or permite revocation without a reload.
 
 Plugin Coordination
 ===================

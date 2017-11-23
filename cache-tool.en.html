@@ -52,6 +52,15 @@
   <ul>
 <li><a class="reference internal" href="#">Cache Tool</a><ul>
 <li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#implementation">Implementation</a><ul>
+<li><a class="reference internal" href="#directory-free-lists">Directory Free Lists</a></li>
+<li><a class="reference internal" href="#rate-limiting">Rate Limiting</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#future-work">Future Work</a><ul>
+<li><a class="reference internal" href="#content-scanning">Content Scanning</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -146,8 +155,79 @@ subsubcommands, etc.), modeled on <strong class="program">traffic_ctl</strong>.<
 </dl>
 </dd>
 <dt><code class="docutils literal"><span class="pre">alloc</span></code></dt>
-<dd>Allocate cache space to stripes.</dd>
+<dd><p class="first">Allocate cache space to stripes.</p>
+<dl class="last docutils">
+<dt><code class="docutils literal"><span class="pre">free</span></code></dt>
+<dd>Allocate all free space to volumes.</dd>
+<dt><code class="docutils literal"><span class="pre">sim</span></code></dt>
+<dd>Simulate a full allocation of space to volumes.</dd>
 </dl>
+</dd>
+<dt><code class="docutils literal"><span class="pre">dir</span></code></dt>
+<dd><p class="first">Stripe directory operations.</p>
+<dl class="last docutils">
+<dt><code class="docutils literal"><span class="pre">freelist</span></code></dt>
+<dd>Scan and fix segment free lists in the stripe.</dd>
+<dt><code class="docutils literal"><span class="pre">stats</span></code></dt>
+<dd>Print analytical data about the stripe directory.</dd>
+</dl>
+</dd>
+</dl>
+<p><code class="docutils literal"><span class="pre">span</span></code></p>
+<blockquote>
+<div><dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">clear</span></code></dt>
+<dd><p class="first">Clear a span. All space in the stripe is consolidated in a single free block.
+This command takes a list of span identifiers, each of which is cleared.</p>
+<dl class="last docutils">
+<dt><code class="docutils literal"><span class="pre">all</span></code></dt>
+<dd>Clear all spans.</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+</div>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>This section has internal implementation notes.</p>
+<div class="section" id="directory-free-lists">
+<h3>Directory Free Lists<a class="headerlink" href="#directory-free-lists" title="Permalink to this headline">¶</a></h3>
+<p>Each segment in a directory has a free list. It is possible for this to become corrupted and have a
+loop in the list. There is some logic which can be conditionally compiled in the Traffic Server core that will
+place a maximum length on the free list. Upon detection an error is generated.</p>
+<p>The CacheTool will detect free list loops more directly by using a <code class="code docutils literal"><span class="pre">std::bitset</span></code> to mark
+directory entries that have been encountered while walking the free list. If a duplicate is detected
+(indicating a loop) then rather than attempt any sort of complex repair, the CacheTool will clear
+and then reconstruct the free list in a way similar to how the free list was constructed during
+stripe initialization. This is primarily constructing the list so that directories at higher layers
+in the buckets are earlier in the free list.</p>
+</div>
+<div class="section" id="rate-limiting">
+<h3>Rate Limiting<a class="headerlink" href="#rate-limiting" title="Permalink to this headline">¶</a></h3>
+<p>While in general the CacheTool will be run while Traffic Server is offline it will frequently be desirable to
+be able to run CacheTool while Traffic Server is also running. To make this possible CacheTool will need to be
+able to rate limit its disk reading. This will be specified by placing a limit on the number of
+bytes per second that will be read. It is not expected this limiting will be exact but it should be
+reasonably close. An possible implementation is to start with the per second limit as a read limit
+and then after the read completes, subtract the size of the read and add the limit value for each
+second that has passed. It may also be good to limit the addition to a maximum number of seconds to
+further restrict I/O when the disks are under excessive load.</p>
+</div>
+</div>
+<div class="section" id="future-work">
+<h2>Future Work<a class="headerlink" href="#future-work" title="Permalink to this headline">¶</a></h2>
+<p>This section contains some of the larger work planned for the CacheTool.</p>
+<div class="section" id="content-scanning">
+<h3>Content Scanning<a class="headerlink" href="#content-scanning" title="Permalink to this headline">¶</a></h3>
+<p>A key feature is the ability to scan content stored in the cache. This is extremely expensive in
+terms of disk I/O. This is of less concern if the system is offline, in which case CacheTool can
+consume all availale disk I/O. Even in that case, however, the amount of data to be read can still
+large enough to make the overall runtime too large if the data is read in a simplistic fashion.</p>
+<p>The primary purpose of cache scanning is to extract the request and response headers. All of this
+data is contained in the first fragment of the cached object. This is noted in the directory entry
+which means disk reads can be restricted to only these fragments rather than a full scan of the
+content area.</p>
+</div>
 </div>
 </div>
 

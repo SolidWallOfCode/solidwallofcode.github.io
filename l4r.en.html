@@ -1,0 +1,150 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Layer 4 Routing &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TSVConnArgs" href="api/TSVConnArgs.en.html" />
+    <link rel="prev" title="Certifier" href="certifier.en.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="certifier.en.html" title="Certifier"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Layer 4 Routing</a><ul>
+<li><a class="reference internal" href="#transparency">Transparency</a></li>
+<li><a class="reference internal" href="#sni-routing">SNI Routing</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="certifier.en.html"
+                        title="previous chapter">Certifier</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api/TSVConnArgs.en.html"
+                        title="next chapter">TSVConnArgs</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/l4r.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="layer-4-routing">
+<h1>Layer 4 Routing<a class="headerlink" href="#layer-4-routing" title="Permalink to this headline">¶</a></h1>
+<p>Layer 4 routing is the capability to handle inbound connects at the TCP or TLS level. This is
+becoming a desirable capability with the increased use of TLS. While as a standalone capability it
+is not particularly useful, it is becoming commonly the case that given an existing Traffic Server based
+infrastructure, adding layer 4 routing to it is useful.</p>
+<div class="section" id="transparency">
+<h2>Transparency<a class="headerlink" href="#transparency" title="Permalink to this headline">¶</a></h2>
+<p>Transparent connections are related to layer 4 routing. The normal transparent case isn’t, because
+it involves full participation by the HTTP state machine, but the blind tunnel option is in effect
+layer 4 routing. The actual contents of the byte stream are not examined but are simply forwarded
+based on the addresses provided by the TCP layer. While a start, this is not at all adequate for
+current use cases.</p>
+</div>
+<div class="section" id="sni-routing">
+<h2>SNI Routing<a class="headerlink" href="#sni-routing" title="Permalink to this headline">¶</a></h2>
+<p>This is a first pass at providing some useful layer 4 routing. It has several issues which need to be fixed.</p>
+<ul class="simple">
+<li>The destination address and the URL for the <code class="docutils literal"><span class="pre">CONNECT</span></code> should be separately specifiable.
+Otherwise a plugin is required in order to successfully use the functionality.</li>
+<li>It should be possible to specify a direct connection and not one via an HTTP <code class="docutils literal"><span class="pre">CONNECT</span></code> request.</li>
+</ul>
+<p>With regard to the latter, the primary implementation problem is resolving an address for the
+upstream destination. In the transparent case there is no need for such resolution as the address is
+implicit in the inbound connection. This does not seem insurmountable, however. The main requirement
+to do the resolution is a continuation to which the HostDB invocation can signal when the address is
+ready. For possible existing code that accomplishes something similar we should check the
+transparent bypass logic.</p>
+<p>Separating the upstream destination and the URL for the <code class="docutils literal"><span class="pre">CONNECT</span></code> seems very straight forward.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="certifier.en.html" title="Certifier"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

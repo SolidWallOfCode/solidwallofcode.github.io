@@ -53,6 +53,7 @@
 <li><a class="reference internal" href="#">TLS Bridge</a><ul>
 <li><a class="reference internal" href="#description">Description</a></li>
 <li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
 <li><a class="reference internal" href="#implementation">Implementation</a></li>
 </ul>
 </li>
@@ -99,9 +100,8 @@ tunnel can be easily controlled for all communications across the tunnels.</p>
 <p>The tunnel is sustained by two instances of Traffic Server.</p>
 <div class="figure align-center">
 <p class="plantuml">
-<img src="_images/plantuml-d58acf61f6dfed13e41d9d262f5e80b8dd44859a.png" alt="&#64;startuml
-
-hide empty members
+<object data="_images/plantuml-739cef185f7f9f9991dec8305523e17c55c33ec3.svg" type="image/svg+xml" style="width:505px;height:330px;">
+<img src="_images/plantuml-739cef185f7f9f9991dec8305523e17c55c33ec3.png" alt="hide empty members
 
 cloud &quot;Cloud\nUntrusted\nNetworks&quot; as Cloud
 node &quot;Ingress ATS&quot;
@@ -112,11 +112,9 @@ node &quot;Peer ATS&quot;
 [Cloud] &lt;-&gt; [Peer ATS] : Secure
 [Peer ATS] &lt;-u-&gt; [Service] : Unsecure
 
-[Ingress ATS] ..&gt; [tls_bridge\nPlugin] : Uses
+[Ingress ATS] ..&gt; [tls_bridge\nPlugin] : Uses" />
 
-&#64;enduml
-" />
-</p>
+</object></p>
 </div>
 <p>The ingress Traffic Server accepts a connection from the Client. This connection gets intercepted by the
 TLS Bridge plugin inside Traffic Server. The plugin then makes a TLS connection to the peer Traffic Server using the
@@ -199,6 +197,38 @@ peer argument would be “peer.example.com:4443”. In <code class="docutils lit
 </li>
 </ol>
 </div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>TLS Bridge is distinct from more basic Layer 4 Routing available in Traffic Server. For the latter there is no
+intercept or change of the TLS exchange between the Client and the Service. The exchange looks like
+this</p>
+<div class="figure align-center">
+<p class="plantuml">
+<object data="_images/plantuml-7eba0a8a7c47b32c4fc6d579cae723f8767b095e.svg" type="image/svg+xml" style="width:574px;height:412px;">
+<img src="_images/plantuml-7eba0a8a7c47b32c4fc6d579cae723f8767b095e.png" alt="actor Client
+participant &quot;Ingress TS&quot; as Ingress
+participant Service
+
+Client &lt;-[#green]&gt; Ingress : //TCP Connect//
+Client -[#blue]-&gt; Ingress : &lt;font color=&quot;blue&quot;&gt;TLS: &quot;&quot;CLIENT HELLO&quot;&quot;&lt;/font&gt;
+note over Ingress : Map SNI to upstream Service
+Ingress &lt;-[#green]&gt; Service : //TCP Connect//
+Ingress -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;TLS: &quot;&quot;CLIENT HELLO&quot;&quot;&lt;/font&gt;
+note right : Duplicate of data from Client.
+note over Ingress : Forward bytes between Client &lt;&amp;arrow-thick-left&gt; &lt;&amp;arrow-thick-right&gt; Service
+Client &lt;--&gt; Service" />
+
+</object></p>
+</div>
+<p>The key points are</p>
+<ul class="simple">
+<li>Traffic Server does no TLS negotiation at all. The properties of the connection between the Ingress Traffic Server
+and the Service are completely determined by the Client and Server negotation.</li>
+<li>No packets are modified, the “”CLIENT HELLO”” sent by the Ingress Traffic Server is an exact copy of that
+sent to the Ingress Traffic Server by the Client. It is only examined for the SNI data in order to select
+the Service.</li>
+</ul>
+</div>
 <div class="section" id="implementation">
 <h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
 <p>The TLS Bridge plugin uses <code class="code docutils literal"><span class="pre">TSHttpTxnIntercept</span></code> to gain control of the ingress Client session.
@@ -211,15 +241,16 @@ tunnel.</p>
 <p>The overall exchange looks like the following:</p>
 <div class="figure align-center">
 <p class="plantuml">
-<img src="_images/plantuml-62dbdeea7c9421c00d00042765db76085b401d4b.png" alt="&#64;startuml
+<object data="_images/plantuml-f08cfcf8f12ba6ec5dcf2063de47ce9a939be24f.svg" type="image/svg+xml" style="width:641px;height:657px;">
+<img src="_images/plantuml-f08cfcf8f12ba6ec5dcf2063de47ce9a939be24f.png" alt="&#64;startuml
 
-box &quot;Client Network&quot; #EEFFEE
+box &quot;Client Network&quot; #DDFFDD
 actor Client
 entity &quot;User Agent\nVConn&quot; as lvc
 participant &quot;Ingress ATS&quot; as ingress
 entity &quot;Upstream\nVConn&quot; as rvc
 end box
-box &quot;Corporate Network&quot; #EEEEFF
+box &quot;Corporate Network&quot; #DDDDFF
 participant &quot;Peer ATS&quot; as peer
 database Service
 end box
@@ -241,14 +272,17 @@ lvc &lt;-&gt; ingress : &lt;&amp;arrow-thick-left&gt; Move data &lt;&amp;arrow-t
 ingress &lt;-&gt; rvc : &lt;&amp;arrow-thick-left&gt; Move data &lt;&amp;arrow-thick-right&gt;
 note over ingress : Plugin explicitlys moves this data.
 
-&#64;enduml
-" />
-</p>
+&#64;enduml" />
+
+</object></p>
 </div>
 <p>A detailed view of the plugin operation.</p>
 <div class="figure align-center">
 <p class="plantuml">
-<img src="_images/plantuml-76170b67ed8103a714191e02da81d4e81f1c9f41.png" alt="&#64;startuml
+<object data="_images/plantuml-08fa73bf403bfd757846fd100a332f4621114eec.svg" type="image/svg+xml" style="width:710px;height:915px;">
+<img src="_images/plantuml-08fa73bf403bfd757846fd100a332f4621114eec.png" alt="&#64;startuml
+
+scale max 720 width
 
 ReadRequestHdr : Check for &quot;&quot;CONNECT&quot;&quot;
 ReadRequestHdr : =====
@@ -321,7 +355,8 @@ Shutdown : Close Upstream VConn
 
 &#64;enduml
 " />
-</p>
+
+</object></p>
 </div>
 <p>A sequence diagram focusing on the request / response data flow. There is a <code class="code docutils literal"><span class="pre">NetVConn</span></code> for the
 connection to the Peer Traffic Server which is omitted for clarity.</p>
@@ -336,22 +371,25 @@ means there was an error and the tunnel is shut down. To deal with the Client re
 response code is stored and used later during cleanup.</p>
 <div class="figure align-center">
 <p class="plantuml">
-<img src="_images/plantuml-d3593ff53c3f0e65a26cfc02746c870f1a829ecb.png" alt="&#64;startuml
+<object data="_images/plantuml-48a838e1bddfa2e2e0914c5d872c3623fc7dfccb.svg" type="image/svg+xml" style="width:723px;height:867px;">
+<img src="_images/plantuml-48a838e1bddfa2e2e0914c5d872c3623fc7dfccb.png" alt="&#64;startuml
+
+scale max 720 width
 
 actor Client
-box &quot;Ingress ATS&quot; #EEFFEE
+box &quot;Ingress ATS&quot; #DDFFDD
 entity &quot;Client\nNetVConn&quot; as uanet
 participant &quot;Ingress\nATS&quot; as ingress
 entity &quot;Client\nVConn&quot; as uavc
 entity &quot;TLS Bridge&quot; as plugin
 entity &quot;Peer\nVConn&quot; as peervc
 end box
-box &quot;Peer ATS&quot; #EEEEFF
+box &quot;Peer ATS&quot; #DDDDFF
 participant &quot;Peer\nATS&quot; as peer
 end box
 participant Service
 
-Client &lt;-[#green]&gt; ingress : //TCP Connect//
+Client &lt;-[#green]&gt; ingress : &lt;font color=&quot;green&quot;&gt;//TCP//&lt;/font&gt; Handshake
 activate uanet
 Client -[#blue]-&gt; uanet : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
 uanet -&gt; ingress : //Parse request//
@@ -371,7 +409,8 @@ ingress -/ plugin : //return Peer VConn//
 
 plugin -[#blue]-&gt; peervc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Peer&lt;/font&gt;
 peervc -&gt; ingress : //parse request//
-ingress &lt;-[#green]&gt; peer : //TLS Connect//
+ingress &lt;-[#green]&gt; peer : &lt;font color=&quot;green&quot;&gt;//TCP//&lt;/font&gt; Handshake
+ingress &lt;-[#green]&gt; peer : &lt;font color=&quot;green&quot;&gt;//TLS//&lt;/font&gt; Handshake
 ingress -[#blue]-&gt; peervc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
 peervc -[#blue]-&gt; plugin : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
 note left
@@ -385,7 +424,9 @@ uavc -[#blue]-&gt; plugin : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNE
 note left: Original Client Request.
 plugin -[#blue]-&gt; peervc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
 peervc -[#blue]-&gt; peer : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
-peer &lt;-[#green]&gt; Service : //TCP/TLS Connect//
+peer &lt;-[#green]&gt; Service : &lt;font color=&quot;green&quot;&gt;//TCP//&lt;/font&gt; Handshake
+peer &lt;-[#green]&gt; Service : &lt;font color=&quot;green&quot;&gt;//TLS//&lt;/font&gt; Handshake
+note left : Optional, based on 'Service'
 peer -[#blue]-&gt; peervc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
 peervc -[#blue]-&gt; plugin : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
 plugin -[#blue]-&gt; uavc : &lt;font color=&quot;blue&quot;&gt;&quot;&quot;200 OK&quot;&quot;&lt;/font&gt;
@@ -405,7 +446,30 @@ Client &lt;-[#green]&gt; Service : //TCP/TLS Connect//
 
 &#64;enduml
 " />
-</p>
+
+</object></p>
+</div>
+<p>A restartable state machine is used to recognize the end of the Peer Traffic Server response. The initial part
+of the response is easy because all that is needed is to wait until there is sufficient data for a
+minimal parse. The end can be an arbitrary distance in to the stream and may not all be in the same
+socket read.</p>
+<div class="figure align-center">
+<p class="plantuml">
+<object data="_images/plantuml-103de8d97260ab437f05de350ef7f2de2e8e1113.svg" type="image/svg+xml" style="width:223px;height:450px;">
+<img src="_images/plantuml-103de8d97260ab437f05de350ef7f2de2e8e1113.png" alt="&#64;startuml
+[*] -r&gt; State_0
+State_0 --&gt; State_1 : CR
+State_1 --&gt; State_0 : *
+State_1 --&gt; State_1 : CR
+State_1 --&gt; State_2 : LF
+State_2 --&gt; State_3 : CR
+State_2 --&gt; State_0 : *
+State_3 -r&gt; [*] : LF
+State_3 --&gt; State_1 : CR
+State_3 --&gt; State_0 : *
+&#64;enduml" />
+
+</object></p>
 </div>
 </div>
 </div>

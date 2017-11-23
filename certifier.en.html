@@ -1,0 +1,186 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Certifier &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Layer 4 Routing" href="l4r.en.html" />
+    <link rel="prev" title="Multiplexer" href="multiplexer.en.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="l4r.en.html" title="Layer 4 Routing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="multiplexer.en.html" title="Multiplexer"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Certifier</a><ul>
+<li><a class="reference internal" href="#description">Description</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+<li><a class="reference internal" href="#future-work">Future Work</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="multiplexer.en.html"
+                        title="previous chapter">Multiplexer</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="l4r.en.html"
+                        title="next chapter">Layer 4 Routing</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/certifier.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="name">
+<h1>Certifier<a class="headerlink" href="#name" title="Permalink to this headline">¶</a></h1>
+<p>This plugin performs two basic tasks -</p>
+<ul class="simple">
+<li>Load SSL certificates from file storage on demand. The total number of loaded certificates can be
+configured.</li>
+<li>Generates SSL certificates on demand.</li>
+</ul>
+<p>Generated certificates can be written to file storage for later retrieval.</p>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Certifier manages SSL certificates for Traffic Server. There are two sources for certificates, certificate files
+in the file system and dynamically generated certificates. Dynamic certificates can be stored to
+the file system to avoid generating them again.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>Certifier is a global plugin and is configured by arguments in <code class="file docutils literal"><span class="pre">plugin.config</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">|Name|</span></code></p>
+<dl class="option">
+<dt id="cmdoption-name-sign-using">
+<code class="descname">--sign-using</code><code class="descclassname"> &lt;path&gt;</code><a class="headerlink" href="#cmdoption-name-sign-using" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify the signing certificate for dynamically generated certificates. <em>path</em> should be the
+path and file name of the certificate. If it is relative it is relative to the Traffic Server configuration
+directory. If this is not specified then dynamic certificate generation is disabled.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-name-max">
+<code class="descname">--max</code><code class="descclassname"> &lt;N&gt;</code><a class="headerlink" href="#cmdoption-name-max" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum number of certificates to keep in memory. If more certificates are loaded the least
+recently used certificates are deleted from memory. This is intended to control the amount of
+memory used by the in memory certificate store.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-name-store">
+<code class="descname">--store</code><code class="descclassname"> &lt;path&gt;</code><a class="headerlink" href="#cmdoption-name-store" title="Permalink to this definition">¶</a></dt>
+<dd><p>The directory to use as the root of file system certificate store.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="future-work">
+<h2>Future Work<a class="headerlink" href="#future-work" title="Permalink to this headline">¶</a></h2>
+<p>It might be useful at some point to enable Certifier to fetch certificates remotely as needed.</p>
+<p>Certifier should monitor plugin messages to drop a specific certificate from memory. This makes real
+time updating simple - the certificate in the file system store is replaced then Certifier signaled to
+drop that certificate from the in memory store. The (new) certificate will then be loaded on next use.</p>
+<p>At some point there will be a need to have a sweeper that scans the file system store and removes
+certificates that have expired before some specified time point. In practice this is likely to
+be specified as a duration before the present time.</p>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>The current work on this is in conjunction with a transaction monitor which records data from
+transactions. This is used for generating replay data and to monitor third party appliances in
+sensitive locations. That funcationality and all of this is wrapped in a single plugin. The best
+plan going forward maybe to have the transaction monitor presume the transactions are decrypted and
+use Certifier if it is necessary to do dynamic certificate generation.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="l4r.en.html" title="Layer 4 Routing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="multiplexer.en.html" title="Multiplexer"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>
