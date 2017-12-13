@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>TSVConn Arguments &#8212; AMC Traffic Server Documentation</title>
+    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -26,7 +29,7 @@
     <link rel="next" title="Multiplexer" href="multiplexer.en.html" />
     <link rel="prev" title="TLS Bridge" href="tls-bridge.en.html" /> 
   </head>
-  <body>
+  <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -84,7 +87,7 @@
 <p>To enable better Layer 4 routing it would be very helpful to be extend the transaction and session
 rguments to virtual connections. Plugins can then easily pass data from early intervention (layer 4)
 callbacks to transaction (layer 7) callbacks. For plugins such arguments only needto be attached to
-<code class="code docutils literal"><span class="pre">INKVConnInternal</span></code> and <code class="code docutils literal"><span class="pre">NetVConnection</span></code> as there aren’t any other virtual connection
+<code class="code docutils literal"><span class="pre">INKVConnInternal</span></code> and <code class="code docutils literal"><span class="pre">NetVConnection</span></code> as there aren&#8217;t any other virtual connection
 types accessible from the plugin API.</p>
 <p>In terms of implementation the primary issue is adding a hook that a plugin can use to clean up
 resources. There are already sufficient early intervention hooks to set the data but both
@@ -125,7 +128,7 @@ reducing the overall memory footprint.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>

@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Buffer Writer &#8212; AMC Traffic Server Documentation</title>
+    
+    <title>BufferWriter &#8212; AMC Traffic Server Documentation</title>
+    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -26,7 +29,7 @@
     <link rel="next" title="TSConfig / Lua" href="tsconfig-lua.en.html" />
     <link rel="prev" title="Traffic Server Projects" href="ats-projects.en.html" /> 
   </head>
-  <body>
+  <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -50,8 +53,13 @@
             </a></p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Buffer Writer</a><ul>
-<li><a class="reference internal" href="#stream-operators">Stream Operators</a></li>
+<li><a class="reference internal" href="#">BufferWriter</a><ul>
+<li><a class="reference internal" href="#description">Description</a><ul>
+<li><a class="reference internal" href="#writing">Writing</a></li>
+<li><a class="reference internal" href="#reading">Reading</a></li>
+<li><a class="reference internal" href="#advanced">Advanced</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#reference">Reference</a></li>
 <li><a class="reference internal" href="#futures">Futures</a></li>
 </ul>
@@ -89,11 +97,21 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="buffer-writer">
-<span id="id1"></span><h1>Buffer Writer<a class="headerlink" href="#buffer-writer" title="Permalink to this headline">¶</a></h1>
-<p>Buffer writer is a project to improve writting text data to buffers. Currently this is done by code that looks like</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="o">*</span><span class="n">via_string</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39; &#39;</span><span class="p">;</span>
-<span class="o">*</span><span class="n">via_string</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;[&#39;</span><span class="p">;</span>
+  <div class="section" id="bufferwriter">
+<span id="id1"></span><h1>BufferWriter<a class="headerlink" href="#bufferwriter" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> is a class to write text to a buffer. The design goals are to be fast and
+provide buffer overrrun protection. There is a large amount of code in Traffic Server that currently uses
+<code class="code docutils literal"><span class="pre">memcpy</span></code> and similar mechanisms for fast string generation. <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> should be
+as almost as fast while simplifying code and preventing memory corruption.</p>
+<p>For example, error prone code that looks like</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">char</span> <span class="n">new_via_string</span><span class="p">[</span><span class="mi">1024</span><span class="p">];</span> <span class="c1">// 512-bytes for hostname+via string, 512-bytes for the debug info</span>
+<span class="kt">char</span> <span class="o">*</span> <span class="n">via_string</span> <span class="o">=</span> <span class="n">new_via_string</span><span class="p">;</span>
+<span class="kt">char</span> <span class="o">*</span> <span class="n">via_limit</span>  <span class="o">=</span> <span class="n">via_string</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">new_via_string</span><span class="p">);</span>
+
+<span class="c1">// ...</span>
+
+<span class="o">*</span> <span class="n">via_string</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39; &#39;</span><span class="p">;</span>
+<span class="o">*</span> <span class="n">via_string</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;[&#39;</span><span class="p">;</span>
 
 <span class="c1">// incoming_via can be max MAX_VIA_INDICES+1 long (i.e. around 25 or so)</span>
 <span class="k">if</span> <span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Highest verbosity</span>
@@ -103,102 +121,85 @@
    <span class="n">via_string</span> <span class="o">+=</span> <span class="n">VIA_SERVER</span> <span class="o">-</span> <span class="n">VIA_CLIENT</span><span class="p">;</span>
 <span class="p">}</span>
 <span class="o">*</span><span class="n">via_string</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;]&#39;</span><span class="p">;</span>
-
-<span class="c1">// reserve 4 for &quot; []&quot; and 3 for &quot;])&quot;.</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">via_limit</span> <span class="o">-</span> <span class="n">via_string</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="o">&amp;&amp;</span> <span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Ultra highest verbosity</span>
-   <span class="o">*</span><span class="n">via_string</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39; &#39;</span><span class="p">;</span>
-   <span class="o">*</span><span class="n">via_string</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;[&#39;</span><span class="p">;</span>
-   <span class="n">via_string</span> <span class="o">+=</span> <span class="n">write_via_protocol_stack</span><span class="p">(</span><span class="n">via_string</span><span class="p">,</span> <span class="n">via_limit</span> <span class="o">-</span> <span class="n">via_string</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span>
-   <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">);</span>
-   <span class="o">*</span><span class="n">via_string</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;]&#39;</span><span class="p">;</span>
-<span class="p">}</span>
 </pre></div>
 </div>
-<p>This is ugly, error prone, and unsafe. Most instances of this style just hope there is no buffer overflow. We need to do better.</p>
-<p>The idea is to use C++ eleventy features to build a more robust approach. This is based on a family
-of classes that control the output buffer and manage the offset tracking. The base is <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> which enables writing to the buffer. Assuming there is an instance of a concrete subclass of <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> named <code class="code docutils literal"><span class="pre">w</span></code> which controls the <em>via_string</em> buffer, the equivalent of the above code would be</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">);</span>
+<p>becomes</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">LocalBufferWriter</span><span class="o">&lt;</span><span class="mi">1024</span><span class="o">&gt;</span> <span class="n">w</span><span class="p">;</span> <span class="c1">// 1K internal buffer.</span>
+
+<span class="c1">// ...</span>
+
+<span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; [&quot;</span><span class="p">;</span>
 <span class="k">if</span> <span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Highest verbosity</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">incoming_via</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">incoming_via</span><span class="p">));</span>
+   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="n">incoming_via</span><span class="p">;</span>
 <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">((</span><span class="n">incoming_via</span> <span class="o">+</span> <span class="n">VIA_CLIENT</span><span class="p">,</span> <span class="n">VIA_SERVER</span> <span class="o">-</span> <span class="n">VIA_CLIENT</span><span class="p">);</span>
+   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="n">ts</span><span class="o">::</span><span class="n">string_view</span><span class="p">{</span><span class="n">incoming_via</span> <span class="o">+</span> <span class="n">VIA_CLIENT</span><span class="p">,</span> <span class="n">VIA_SERVER</span> <span class="o">-</span> <span class="n">VIA_CLIENT</span><span class="p">};</span>
 <span class="p">}</span>
-<span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span>
-
-<span class="c1">// reserve 4 for &quot; []&quot; and 3 for &quot;])&quot;.</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="o">&amp;&amp;</span> <span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Ultra highest verbosity</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">);</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// reserve a byte for closing bracket.</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">write_via_protocol_stack</span><span class="p">(</span>
-      <span class="n">w</span><span class="p">.</span><span class="n">auxBuffer</span><span class="p">(),</span> <span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">()</span> <span class="o">-</span> <span class="mi">3</span><span class="p">),</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">));</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">write</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">error</span><span class="p">())</span> <span class="n">Warning</span><span class="p">(</span><span class="s">&quot;VIA: static buffer overflow&quot;</span><span class="p">);</span>
+<span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;]&#39;</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>In addition to being shorter and cleaner, the latter is also far more robust in that if the buffer
-overflows there will be no memory corruption because <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> will avoid doing the
-overflowing writes, and stop output at the last element that fits in the target buffer.</p>
-<p>If <code class="code docutils literal"><span class="pre">write_via_protocol_stack</span></code> were changed a bit to have the signature</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">size_t</span> <span class="n">write_via_protocol_stack</span><span class="p">(</span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="kt">bool</span><span class="p">,</span> <span class="n">ts</span><span class="o">::</span><span class="n">StringView</span> <span class="o">*</span> <span class="n">proto</span> <span class="kt">int</span> <span class="n">n_proto</span><span class="p">)</span>
+<p>Note that in addition there will be no overrun on the memory buffer in <em>w</em>, in strong contrast
+to the original code.</p>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> is an abstract super class, in the style of <code class="code docutils literal"><span class="pre">std::ostream</span></code>. There are several subclasses for various use cases.</p>
+<p><a class="reference internal" href="#_CPPv217FixedBufferWriter" title="FixedBufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">FixedBufferWriter</span></code></a> writes to an external provided buffer of a fixed length. The buffer must
+be provided to the constructor. This will generally be used in a function where the target buffer is
+external to the function.</p>
+<p><a class="reference internal" href="#_CPPv2I_6size_tE17LocalBufferWriter" title="LocalBufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">LocalBufferWriter</span></code></a> is a templated class whose template argument is the size of an internal buffer.
+This is useful when the buffer is local to a function and the results will be transferred from the buffer to other storage after the output is assembled. E.g. code such as</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">char</span> <span class="n">buff</span><span class="p">[</span><span class="mi">1024</span><span class="p">];</span>
+<span class="n">ts</span><span class="o">::</span><span class="n">FixedBufferWriter</span> <span class="n">w</span><span class="p">(</span><span class="n">buff</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buff</span><span class="p">));</span>
 </pre></div>
 </div>
-<p>then the code can be simplified to</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot; [&quot;</span><span class="p">);</span>
-<span class="n">w</span><span class="p">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span> <span class="c1">// reserver a byte for closing bracket</span>
-<span class="n">write_via_protocol_stack</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buff</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">);</span>
-<span class="n">w</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">write</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span> <span class="c1">// always succeeds because we checked for space earlier.</span>
+<p>is better done as</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">LocalBufferWriter</span><span class="o">&lt;</span><span class="mi">1024</span><span class="o">&gt;</span> <span class="n">w</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>This allows an instance of <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> to be passed in place of a buffer pointer and
-length making the code simpler and more robust, making clear the intent to have the buffer written.
-Size updates are then handled internally without need for explicit return values.</p>
-<div class="section" id="stream-operators">
-<h2>Stream Operators<a class="headerlink" href="#stream-operators" title="Permalink to this headline">¶</a></h2>
-<p>A remaining issue is how non-string data is provided to <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. This should be
-sufficiently generic that new types can be supported without changing <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> while
-also not bloating the class. It has been suggested the standard stream operators be overloaded to
-work with a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>, e.g.</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="k">operator</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="n">SomeSpecificType</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">t</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+<div class="section" id="writing">
+<h3>Writing<a class="headerlink" href="#writing" title="Permalink to this headline">¶</a></h3>
+<p>The basic mechanism for writing to a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> is <a class="reference internal" href="#_CPPv2N12BufferWriter5writeEPv6size_t" title="BufferWriter::write"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::write()</span></code></a>.
+This is an overloaded method for a character (<code class="code docutils literal"><span class="pre">char</span></code>), a buffer (<code class="code docutils literal"><span class="pre">void</span> <span class="pre">*,</span> <span class="pre">size_t</span></code>)
+and a string view (<code class="code docutils literal"><span class="pre">ts::string_view</span></code>).</p>
+<p>On top of this mechanism are stream operators in the style of C++ stream I/O. The basic template
+is</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span> <span class="k">typename</span> <span class="n">T</span> <span class="o">&gt;</span> <span class="n">ts</span><span class="o">::</span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="k">operator</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">ts</span><span class="o">::</span><span class="n">BufferWriter</span><span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">t</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>This can be done independently as <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> provides sufficient functionality to
-implement these stream operators if desired. <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> itself should have few methods to
-actually write to the buffer, just enough to make it possible to write stream operators for it.
-Those stream operators should be defined outside of the <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> header so that
-<a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> does not need to be updated to add additional IO stream operators for new
-types.</p>
-<p>For instance if I wanted to make <code class="code docutils literal"><span class="pre">ts::StringView</span></code> work with <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> I would add
-to the <code class="code docutils literal"><span class="pre">ts::StringView</span></code> header the code</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="k">operator</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="n">ts</span><span class="o">::</span><span class="n">StringView</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">sv</span><span class="p">)</span> <span class="p">{</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">sv</span><span class="p">.</span><span class="n">ptr</span><span class="p">(),</span> <span class="n">sv</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+<p>Most basic types are overloaded and it is easy to extend. For instance, to make <code class="code docutils literal"><span class="pre">ts::TextView</span></code> work with <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>, the code would be</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="k">operator</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">ts</span><span class="o">::</span><span class="n">BufferWriter</span> <span class="o">&amp;</span> <span class="n">w</span><span class="p">,</span> <span class="n">ts</span><span class="o">::</span><span class="n">TextView</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">sv</span><span class="p">)</span> <span class="p">{</span>
+   <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">sv</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">sv</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
    <span class="k">return</span> <span class="n">w</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Using IO stream style operators (presuming they have been defined for the relevant types), the example could would look like</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; [&quot;</span><span class="p">;</span>
-
-<span class="c1">// incoming_via can be max MAX_VIA_INDICES+1 long (i.e. around 25 or so)</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Highest verbosity</span>
-   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="n">incoming_via</span><span class="p">;</span>
-<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="n">string_view</span><span class="p">(</span><span class="n">incoming_via</span> <span class="o">+</span> <span class="n">VIA_CLIENT</span><span class="p">,</span> <span class="n">VIA_SERVER</span> <span class="o">-</span> <span class="n">VIA_CLIENT</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;]&#39;</span><span class="p">;</span>
-
-<span class="c1">// reserve 4 for &quot; []&quot; and 3 for &quot;])&quot;.</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="o">&amp;&amp;</span> <span class="n">s</span><span class="o">-&gt;</span><span class="n">txn_conf</span><span class="o">-&gt;</span><span class="n">insert_request_via_string</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Ultra highest verbosity</span>
-   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; [&quot;</span><span class="p">;</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-   <span class="n">write_via_protocol_stack</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="nb">true</span><span class="p">,</span> <span class="n">proto_buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">n_proto</span><span class="p">);</span>
-   <span class="n">w</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-   <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;]&#39;</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">error</span><span class="p">())</span> <span class="n">Warning</span><span class="p">(</span><span class="s">&quot;VIA: static buffer overflow&quot;</span><span class="p">);</span>
+</div>
+<div class="section" id="reading">
+<h3>Reading<a class="headerlink" href="#reading" title="Permalink to this headline">¶</a></h3>
+<p>The data in the buffer can be extracted using <a class="reference internal" href="#_CPPv2NK12BufferWriter4dataEv" title="BufferWriter::data"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::data()</span></code></a>. This and <a class="reference internal" href="#_CPPv2NK12BufferWriter4sizeEv" title="BufferWriter::size"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::size()</span></code></a>
+return a pointer to the start of the buffer and the amount of data written to the buffer. Calling <a class="reference internal" href="#_CPPv2NK12BufferWriter5errorEv" title="BufferWriter::error"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::error()</span></code></a> will indicate if more data than space available was written. <a class="reference internal" href="#_CPPv2NK12BufferWriter6extentEv" title="BufferWriter::extent"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::extent()</span></code></a> returns the amount of data written to the <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. This can be used in a two pass style with a small buffer to determine the buffer size required for the full output.</p>
+</div>
+<div class="section" id="advanced">
+<h3>Advanced<a class="headerlink" href="#advanced" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#_CPPv2N12BufferWriter4clipE6size_t" title="BufferWriter::clip"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::clip()</span></code></a> and <a class="reference internal" href="#_CPPv2N12BufferWriter6extendE6size_t" title="BufferWriter::extend"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::extend()</span></code></a> methods can be used to reserve space in the buffer. A common use case for this is to guarantee matching delimiters in output if buffer space is exhausted.
+<a class="reference internal" href="#_CPPv2N12BufferWriter4clipE6size_t" title="BufferWriter::clip"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::clip()</span></code></a> can be used to temporarily reduce the buffer size by an amount large enough to hold
+the terminal delimiter. After writing the contained output, <a class="reference internal" href="#_CPPv2N12BufferWriter6extendE6size_t" title="BufferWriter::extend"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::extend()</span></code></a> can be used to restore
+the capacity and then output the terminal delimiter.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last"><strong>Never</strong> call <a class="reference internal" href="#_CPPv2N12BufferWriter6extendE6size_t" title="BufferWriter::extend"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::extend()</span></code></a> without previoiusly calling <a class="reference internal" href="#_CPPv2N12BufferWriter4clipE6size_t" title="BufferWriter::clip"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::clip()</span></code></a> and always pass the same argument value.</p>
+</div>
+<p><a class="reference internal" href="#_CPPv2NK12BufferWriter8capacityEv" title="BufferWriter::capacity"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::capacity()</span></code></a> returns the amount of buffer space not yet consumed.</p>
+<p><a class="reference internal" href="#_CPPv2NK12BufferWriter9auxBufferEv" title="BufferWriter::auxBuffer"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::auxBuffer()</span></code></a> returns a pointer to the first byte of the buffer not yet used. This is useful to do speculative output. A new <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> instance can be constructed with</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">FixedBufferWriter</span> <span class="n">subw</span><span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">auxBuffer</span><span class="p">(),</span> <span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">());</span>
 </pre></div>
+</div>
+<p>Output can be written to <em>subw</em>. If successful, then <code class="code docutils literal"><span class="pre">w.write(subw.size())</span></code> will add that output to the main buffer. If there is an error then <em>subw</em> can be ignored and some suitable error output written to <em>w</em> instead. A common use case is to verify there is sufficient space in the buffer and create a &#8220;not enough space&#8221; message if not. E.g.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">FixedBufferWriter</span> <span class="n">subw</span><span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">auxBuffer</span><span class="p">(),</span> <span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">());</span>
+<span class="k">this</span><span class="o">-&gt;</span><span class="n">write_some_output</span><span class="p">(</span><span class="n">subw</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">subw</span><span class="p">.</span><span class="n">error</span><span class="p">())</span> <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">subw</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+<span class="k">else</span> <span class="n">w</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Insufficient space&quot;</span><span class="n">_sv</span><span class="p">;</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="reference">
@@ -239,6 +240,12 @@ is not written.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv2NK12BufferWriter4dataEv">
+<span id="BufferWriter::dataC"></span>char *<code class="descclassname"></code><code class="descname">data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter4dataEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Return a pointer to start of the buffer.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_CPPv2NK12BufferWriter4sizeEv">
 <span id="BufferWriter::sizeC"></span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter4sizeEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Return the number of valid (written) bytes in the buffer.</p>
@@ -251,9 +258,15 @@ is not written.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2N12BufferWriter6resizeE6size_t">
-<span id="BufferWriter::resize__s"></span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">resize</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12BufferWriter6resizeE6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Set the number of bytes of valid (written) data.</p>
+<dt id="_CPPv2NK12BufferWriter8capacityEv">
+<span id="BufferWriter::capacityC"></span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">capacity</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter8capacityEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Return the number of bytes in the buffer.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2NK12BufferWriter9auxBufferEv">
+<span id="BufferWriter::auxBufferC"></span>char *<code class="descclassname"></code><code class="descname">auxBuffer</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter9auxBufferEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Return a pointer to the first byte in the buffer not yet consumed.</p>
 </dd></dl>
 
 <dl class="function">
@@ -283,8 +296,8 @@ even if part of the string is not.</p>
 <dt id="_CPPv2NK12BufferWriter6extentEv">
 <span id="BufferWriter::extentC"></span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">extent</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter6extentEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Return the total number of bytes in all attempted writes to this buffer. This value allows a
-successful retry in case of overflow, presuming the output data doesn’t change. This works
-well with the standard “try before you buy” approach of attempting to write output, counting
+successful retry in case of overflow, presuming the output data doesn&#8217;t change. This works
+well with the standard &#8220;try before you buy&#8221; approach of attempting to write output, counting
 the characters needed, then allocating a sufficiently sized buffer and actually writing.</p>
 </dd></dl>
 
@@ -298,9 +311,9 @@ the characters needed, then allocating a sufficiently sized buffer and actually 
 <dt id="_CPPv2N17FixedBufferWriter17FixedBufferWriterEPv6size_t">
 <span id="FixedBufferWriter::FixedBufferWriter__voidP.s"></span><code class="descclassname"></code><code class="descname">FixedBufferWriter</code><span class="sig-paren">(</span>void *<em>buffer</em>, <a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N17FixedBufferWriter17FixedBufferWriterEPv6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Construct an instance that will write to <em>buffer</em> at most <em>length</em> bytes. Individual
-items are either written or not - if the item doesn’t fit nothing is written and the instance
+items are either written or not - if the item doesn&#8217;t fit nothing is written and the instance
 goes in to an error state the prevents additional output. This is so that if a large item
-doesn’t fit a following smaller item isn’t output out of order.</p>
+doesn&#8217;t fit a following smaller item isn&#8217;t output out of order.</p>
 </dd></dl>
 
 </dd></dl>
@@ -355,7 +368,7 @@ instances, most specifically in the body factory logic.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>

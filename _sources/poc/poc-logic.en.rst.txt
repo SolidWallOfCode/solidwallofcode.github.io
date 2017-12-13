@@ -4,12 +4,35 @@
 Cache Logic / Operations
 ************************
 
+When an object in cache (or potentiallyin cache) is active in a transaction, it is tracked by an
+*ODE*, which is an instance of :class:`OpenDirEntry` [#f1]_. For any cache oject the first operation is
+always a read.
+
+.. uml::
+
+   state open_read : create ODE
+   state read_first : altvec_read := true
+   state dir_probe : loop on collision
+   state altvec_update : altvec_update := true
+   state alt_select : wait on altvec_update
+
+   [*] --> open_read
+   open_read --> dir_probe : !altvec_read
+   open_read -> wait_altvec_read : altvec_read
+   wait_altvec_read -> dir_probe : wake up
+   dir_probe -l> read_first : dir hit
+   read_first -> dir_probe : IO complete
+   dir_probe --> alt_select : doc hit
+   alt_select --> altvec_update : fail
+   alt_select -> serve : fresh & covered
+   alt_select -> slice_fill : fresh & !covered
+   alt_select -l> slice_update : !fresh
+
+
 Cache Startup
 =============
 
 .. uml::
-
-   @startuml
 
    hide empty members
    hide empty methods
@@ -32,8 +55,6 @@ Cache Startup
    CacheProcessor --> Cache : [5] open()
    Cache --> VolInit : [6] mainEvent()
    VolInit --> Vol : [7] init()
-
-   @enduml
 
 State machine.
 
@@ -74,3 +95,7 @@ tend to be less closely coupled to HTTP state machine instances.
 
 Write Operations
 ================
+
+.. rubric:: Footnotes
+
+.. [#f1] Previously an ODE was opened only for a write operation. This was workable when only one write operation per cache object could be active at a time. The current architecture has a much more complex relationship between reading and writing cache objects and so requires tracking to start earlier. This is also necessary for collapsed forwarding so that multiple readers are detected before a write is started.

@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Plugin Coordination &#8212; AMC Traffic Server Documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TSVConnArgs" href="api/TSVConnArgs.en.html" />
+    <link rel="prev" title="Layer 4 Routing" href="l4r.en.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="l4r.en.html" title="Layer 4 Routing"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Plugin Coordination</a><ul>
+<li><a class="reference internal" href="#phases">Phases</a></li>
+<li><a class="reference internal" href="#history">History</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="l4r.en.html"
+                        title="previous chapter">Layer 4 Routing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api/TSVConnArgs.en.html"
+                        title="next chapter">TSVConnArgs</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/plugin-coordination.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="plugin-coordination">
+<span id="id1"></span><h1>Plugin Coordination<a class="headerlink" href="#plugin-coordination" title="Permalink to this headline">¶</a></h1>
+<p>It has been requested for a long time to be able to have coordination among plugins. The two most
+commonly requested capabilities are</p>
+<ul class="simple">
+<li>Force the callback for plugin A to run before / after the callback for plugin B on a specific hook.</li>
+<li>Disable a plugin and / or callback for a specific hook for a specific transaction.</li>
+</ul>
+<p>I had a version of this ready for production testing, based on the Yahoo! 5.3 fork of Traffic Server. Based on
+that work there are a number of other features that are implicit in making the primary capabilities
+possible.</p>
+<dl class="docutils">
+<dt>Modular hook dispatch.</dt>
+<dd>To make this work consistently, it is very desirable to create a class to handle the hook
+dispatching. This provides a uniform code base to handle callback dispatch.</dd>
+<dt>Continuation tracking</dt>
+<dd>Each continuation needs to be tracked back to the original plugin (or core) that created it in
+order to correctly handle when or if the callback is dispatched. This has the ancillary benefit
+of being able to provide more detailed debugging and failure messages when something goes wrong
+with a continuation. In theory this may also make it possible to handle plugin reload so that
+events for continuations associated with an unloaded plugin can be dropped instead of brokenly
+dispatched.</dd>
+<dt>Plugin API to probe hooks for callbacks.</dt>
+<dd>If callbacks are going to be controllable from plugins, it is also needful to allow plugins to check the callbackson a hook. This is another plugin developer request that has been around for a while.</dd>
+<dt>Plugin API to manipulate callbacks on hooks</dt>
+<dd>Once callbacks are accessible via inspection from the previous point, a request for the ability
+to manipulate them is inevitable.</dd>
+</dl>
+<div class="section" id="phases">
+<h2>Phases<a class="headerlink" href="#phases" title="Permalink to this headline">¶</a></h2>
+<p>The full change is large and should be broken up into smaller updates, each of which provides some
+independent value. The natural progression is basically the feature list from the previous section. In this progression each update depends on the previous one.</p>
+<ol class="arabic simple">
+<li>Modularize the callback dispatch. Handle the three levels of dispatch (global, session,
+transaction) in a consistent way.</li>
+<li>Track continuations. Each continuation is either from the core or from a plugin. Associate the
+data for this with each continuation and whenever a continuation is created use the current plugin
+context to mark it.</li>
+<li>Plugin priorities, implementation and configuration. This assigns priorities to plugins and
+dispatches callbacks in priority order. This must also include the capability to configure at
+least statically the priorities for the plugins.</li>
+<li>Plugin priority API. This enables plugins to manipulate plugin priorities in code. This includes
+both adjusting priorities and enabling / disabling plugins for a transaction, and setting the
+priority threshold for a hook.</li>
+<li>Callback inspection plugin API. Enable plugins to examine the callbacks associated with a hook.</li>
+<li>Callback manipluation plugin API. Enable plugins to manipulate the callbacks on a hook, including
+changing priorities and enabling / disabling specific callbacks or plugins for a hook.</li>
+</ol>
+</div>
+<div class="section" id="history">
+<h2>History<a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h2>
+<p>At one point (Feb 2016) I had a working prototype of plugin priorities based on the YahoO! 5.3.x
+fork which assigned priorities to plugin callbacks along with an API to manipulate not just the
+current plugins priorities but that of other plugins. Although useful, to make it work in production
+it was necessary to add plugin level enable / disable. The code for this is
+<a class="reference external" href="https://github.com/SolidWallOfCode/trafficserver/tree/plugin-coordination">here</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="l4r.en.html" title="Layer 4 Routing"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div>
+  </body>
+</html>

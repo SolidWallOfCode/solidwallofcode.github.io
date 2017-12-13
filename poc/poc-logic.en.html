@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>Cache Logic / Operations &#8212; AMC Traffic Server Documentation</title>
+    
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -26,7 +29,7 @@
     <link rel="next" title="Cache Data Structures" href="poc-data-structures.en.html" />
     <link rel="prev" title="Partial Object Caching" href="poc-index.html" /> 
   </head>
-  <body>
+  <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -91,13 +94,35 @@
             
   <div class="section" id="cache-logic-operations">
 <h1>Cache Logic / Operations<a class="headerlink" href="#cache-logic-operations" title="Permalink to this headline">¶</a></h1>
+<p>When an object in cache (or potentiallyin cache) is active in a transaction, it is tracked by an
+<em>ODE</em>, which is an instance of <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> <a class="footnote-reference" href="#f1" id="id1">[1]</a>. For any cache oject the first operation is
+always a read.</p>
+<p class="plantuml">
+<object data="../_images/plantuml-b40dd2ab55fead8ad0e89f35173772430bc3ff58.svg" type="image/svg+xml" style="width:718px;height:564px;">
+<img src="../_images/plantuml-b40dd2ab55fead8ad0e89f35173772430bc3ff58.png" alt="state open_read : create ODE
+state read_first : altvec_read := true
+state dir_probe : loop on collision
+state altvec_update : altvec_update := true
+state alt_select : wait on altvec_update
+
+[*] --&gt; open_read
+open_read --&gt; dir_probe : !altvec_read
+open_read -&gt; wait_altvec_read : altvec_read
+wait_altvec_read -&gt; dir_probe : wake up
+dir_probe -l&gt; read_first : dir hit
+read_first -&gt; dir_probe : IO complete
+dir_probe --&gt; alt_select : doc hit
+alt_select --&gt; altvec_update : fail
+alt_select -&gt; serve : fresh &amp; covered
+alt_select -&gt; slice_fill : fresh &amp; !covered
+alt_select -l&gt; slice_update : !fresh" />
+
+</object></p>
 <div class="section" id="cache-startup">
 <h2>Cache Startup<a class="headerlink" href="#cache-startup" title="Permalink to this headline">¶</a></h2>
 <p class="plantuml">
-<object data="../_images/plantuml-cbd2dfbd975b802c758a981ddcf8ef7faa93aa2b.svg" type="image/svg+xml" style="width:602px;height:451px;">
-<img src="../_images/plantuml-cbd2dfbd975b802c758a981ddcf8ef7faa93aa2b.png" alt="&#64;startuml
-
-hide empty members
+<object data="../_images/plantuml-24a9bccb13092e69c932aace8d6de1c3502bbb03.svg" type="image/svg+xml" style="width:602px;height:451px;">
+<img src="../_images/plantuml-24a9bccb13092e69c932aace8d6de1c3502bbb03.png" alt="hide empty members
 hide empty methods
 skinparam defaultTextAlignment left
 
@@ -117,9 +142,7 @@ CacheDisk --&gt; CacheProcessor : [4] diskInitialized()
 
 CacheProcessor --&gt; Cache : [5] open()
 Cache --&gt; VolInit : [6] mainEvent()
-VolInit --&gt; Vol : [7] init()
-
-&#64;enduml" />
+VolInit --&gt; Vol : [7] init()" />
 
 </object></p>
 <p>State machine.</p>
@@ -286,6 +309,13 @@ tend to be less closely coupled to HTTP state machine instances.</p>
 </div>
 <div class="section" id="write-operations">
 <h2>Write Operations<a class="headerlink" href="#write-operations" title="Permalink to this headline">¶</a></h2>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Previously an ODE was opened only for a write operation. This was workable when only one write operation per cache object could be active at a time. The current architecture has a much more complex relationship between reading and writing cache objects and so requires tracking to start earlier. This is also necessary for collapsed forwarding so that multiple readers are detected before a write is started.</td></tr>
+</tbody>
+</table>
 </div>
 </div>
 
@@ -313,7 +343,7 @@ tend to be less closely coupled to HTTP state machine instances.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>

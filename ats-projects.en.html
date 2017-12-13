@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>Traffic Server Projects &#8212; AMC Traffic Server Documentation</title>
+    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -23,10 +26,10 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Buffer Writer" href="buffer-writer.en.html" />
+    <link rel="next" title="BufferWriter" href="buffer-writer.en.html" />
     <link rel="prev" title="Solid Wall Of Code Documents" href="index.html" /> 
   </head>
-  <body>
+  <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -34,7 +37,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="buffer-writer.en.html" title="Buffer Writer"
+          <a href="buffer-writer.en.html" title="BufferWriter"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Solid Wall Of Code Documents"
@@ -68,7 +71,6 @@
 <li><a class="reference internal" href="#tls-extensions">TLS Extensions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#plugin-coordination">Plugin Coordination</a></li>
 <li><a class="reference internal" href="#http-2-outbound">HTTP/2 Outbound</a></li>
 <li><a class="reference internal" href="#jemalloc-and-memory-allocators">jemalloc and memory allocators</a></li>
 <li><a class="reference internal" href="#tls">TLS</a></li>
@@ -85,7 +87,7 @@
                         title="previous chapter">Solid Wall Of Code Documents</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="buffer-writer.en.html"
-                        title="next chapter">Buffer Writer</a></p>
+                        title="next chapter">BufferWriter</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -119,7 +121,7 @@ large diagram of the projects and their dependencies is <a class="reference exte
 <h2>Projects<a class="headerlink" href="#projects" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="buffer-writer.en.html">Buffer Writer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="buffer-writer.en.html">BufferWriter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tsconfig-lua.en.html">TSConfig / Lua</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cache-tool.en.html">Cache Tool</a></li>
 <li class="toctree-l1"><a class="reference internal" href="testing.en.html">Testing</a></li>
@@ -130,6 +132,7 @@ large diagram of the projects and their dependencies is <a class="reference exte
 <li class="toctree-l1"><a class="reference internal" href="multiplexer.en.html">Multiplexer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="certifier.en.html">Certifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="l4r.en.html">Layer 4 Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin-coordination.en.html">Plugin Coordination</a></li>
 </ul>
 </div>
 </div>
@@ -192,7 +195,7 @@ single block. This is very useful for data constructed at process start time and
 <h3>Traffic Server Core<a class="headerlink" href="#traffic-server-core" title="Permalink to this headline">¶</a></h3>
 <p>Restructure the overridable configs to remove cyclic dependencies. Already discussed with community
 and I have a design.</p>
-<p>Potentially the “proxy-protocol” extension.</p>
+<p>Potentially the &#8220;proxy-protocol&#8221; extension.</p>
 <p>Internal version of the <a class="reference external" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0218r0.html">C++17 filesystem library</a>.</p>
 <p>Fix <code class="code docutils literal"><span class="pre">TSNetConnect</span></code> to have options instead of a multiplying set of API calls.</p>
 <p>Make remap rules be pure first match (long term).</p>
@@ -214,10 +217,10 @@ logging mechanisms.</p>
 <dt>TBB</dt>
 <dd>Thread Building Blocks. The primary issue is this does a lot more than just concurrent containers.</dd>
 <dt>ConcurrencyKit</dt>
-<dd>A excellent set of concurrent containers. The issue is this doesn’t compile in C++ and would need to
+<dd>A excellent set of concurrent containers. The issue is this doesn&#8217;t compile in C++ and would need to
 be forked and have an API makeover.</dd>
 <dt>Concurrent Data Structures</dt>
-<dd>This was suggested on the mailing list. I’m not familiar with it. See <a class="reference external" href="https://github.com/khizmax/libcds">here</a>.</dd>
+<dd>This was suggested on the mailing list. I&#8217;m not familiar with it. See <a class="reference external" href="https://github.com/khizmax/libcds">here</a>.</dd>
 </dl>
 </div>
 <div class="section" id="tls-extensions">
@@ -226,20 +229,6 @@ be forked and have an API makeover.</dd>
 TLS extension to provide addition L4 routing information or other control data. This needs to be
 design carefully to avoid security issues but I think it could be very powerful.</p>
 </div>
-</div>
-<div class="section" id="plugin-coordination">
-<h3>Plugin Coordination<a class="headerlink" href="#plugin-coordination" title="Permalink to this headline">¶</a></h3>
-<p>There is a consistent need for coordination among plugins. At one point (Feb 2016) I had a working prototype of plugin priorities based on Y! 5.3.x which assigned priorities to plugin callbacks along with an API to manipulate not just the current plugins priorities but that of other plugins. That would be very useful although priorities of themselves are only one approach to this problem. Based on that work I have a technology ladder to climb to provide this capability.</p>
-<dl class="docutils">
-<dt>Modular hook dispatch.</dt>
-<dd>Create a class to handle the hook dispatching to provide a level of consistency needed later.</dd>
-<dt>Continuation tracking</dt>
-<dd>Associate every continuation with a “root” plugin. This would be very valuable in debugging plugin problems and would result in significantly less developer time spent with faster results for customer support.</dd>
-<dt>TS API to probe hooks for callbacks.</dt>
-<dd>Allow plugins to check the callbacks on a hook.</dd>
-<dt>TS API to manipulate callbacks on hooks</dt>
-<dd>Allow plugins to alter the callbacks on a hook, either in terms of priorities, dependency, or direct access by plugin.</dd>
-</dl>
 </div>
 <div class="section" id="http-2-outbound">
 <h3>HTTP/2 Outbound<a class="headerlink" href="#http-2-outbound" title="Permalink to this headline">¶</a></h3>
@@ -300,7 +289,7 @@ in the old process.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="buffer-writer.en.html" title="Buffer Writer"
+          <a href="buffer-writer.en.html" title="BufferWriter"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Solid Wall Of Code Documents"
@@ -310,7 +299,7 @@ in the old process.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>

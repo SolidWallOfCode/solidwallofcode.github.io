@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>Multiplexer &#8212; AMC Traffic Server Documentation</title>
+    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -26,7 +29,7 @@
     <link rel="next" title="Certifier" href="certifier.en.html" />
     <link rel="prev" title="TSVConn Arguments" href="vconn-args.en.html" /> 
   </head>
-  <body>
+  <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -101,10 +104,10 @@ into the new requests.</p>
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Actions:</p>
 <ol class="arabic simple">
-<li>Adds <code class="docutils literal"><span class="pre">X-Multiplexer:</span> <span class="pre">original</span></code> header into client’s request.</li>
-<li>Copies client’s request (bodies are copied by transforming the request)</li>
+<li>Adds <code class="docutils literal"><span class="pre">X-Multiplexer:</span> <span class="pre">original</span></code> header into client&#8217;s request.</li>
+<li>Copies client&#8217;s request (bodies are copied by transforming the request)</li>
 <li>Changes <code class="docutils literal"><span class="pre">Host</span></code> header of the copy according to <code class="docutils literal"><span class="pre">pparam</span></code> from the remap rule.</li>
-<li>Changes <code class="docutils literal"><span class="pre">X-Multiplexer</span> <span class="pre">header</span></code> to “copy”.</li>
+<li>Changes <code class="docutils literal"><span class="pre">X-Multiplexer</span> <span class="pre">header</span></code> to &#8220;copy&#8221;.</li>
 <li>Sends the copied request with <code class="code docutils literal"><span class="pre">TSHttpConnect</span></code>.</li>
 </ol>
 <p>Multiplexer dispatches the request in background without blocking the original request. Multiplexed
@@ -134,7 +137,7 @@ responses are printed into the logs.</p>
 <h3>Parsing Chunk Encoded Data<a class="headerlink" href="#parsing-chunk-encoded-data" title="Permalink to this headline">¶</a></h3>
 <p>Multiplexer parses chunked data with its own home brew parser. In the parser <code class="code docutils literal"><span class="pre">size_</span></code> is the size of
 a chunk to be consumed. The local variable / parameter <code class="code docutils literal"><span class="pre">size</span></code> is raw input size as read from an
-<code class="code docutils literal"><span class="pre">TSIOBufferBlock</span></code>. The “size states” are marked blue.</p>
+<code class="code docutils literal"><span class="pre">TSIOBufferBlock</span></code>. The &#8220;size states&#8221; are marked blue.</p>
 <div class="figure align-center">
 <p class="plantuml">
 <object data="_images/plantuml-6458582619ff10545b8cd05d88310480a79e0bc7.svg" type="image/svg+xml" style="width:495px;height:894px;">
@@ -213,7 +216,7 @@ kEnd --&gt; [*]
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>

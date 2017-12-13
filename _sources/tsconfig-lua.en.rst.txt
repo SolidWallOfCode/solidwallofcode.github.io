@@ -10,8 +10,9 @@ TSConfig / Lua
 
 |TS| has committed to moving configuration files to be Lua based. While conversion of existing files
 to Lua isn't required, the current view based on mailing list discussions is that new configuration
-files are required to be in Lua. This project is about providing that technology in a generic way to
-make it easier to add configuration for new features.
+files are required to be in Lua. In the long run it is expected all configuration files will be
+converted use Lua. This project is about providing that technology in a generic way to make it
+easier to add configuration for new features.
 
 Current Practice
 ================
@@ -164,6 +165,14 @@ Lua table
 
 The schema data for an enumeration is stored in a static instance of
 :class:`TsConfigEnumDescriptor`. The internal maps are initialized by the constructor.
+
+Generic Data
+============
+
+Not all data can be explicitly described in the configuration schema due to the names or structure
+being generic. In this case an array or object can use set ``additionalProperties`` (for an object)
+or ``additionalItems`` (for an array) to ``true`` to enable generic data. For an object a member is
+generated that contains a mapping from strings to generic values.
 
 Interface
 =========

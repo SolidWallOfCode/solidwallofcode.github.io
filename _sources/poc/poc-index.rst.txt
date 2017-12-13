@@ -3,7 +3,14 @@
 Partial Object Caching
 ****************************
 
-Partial object caching is the ability to cache range requests and assemble full objects from them.
+Partial object caching is the ability to cache and serve range requests. Doing this requires a major restructuring
+of the cache logic. This means this is not a feature that can be turned on or off, even at build time.
+
+Once these changes are made some other significant features become easier to include in
+the overall work. These features include
+
+*  Stale while revalidate support in the core.
+*  Collapsed forwarding.
 
 .. toctree::
    :maxdepth: 2

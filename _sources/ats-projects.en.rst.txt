@@ -26,6 +26,7 @@ Projects
    multiplexer.en
    certifier.en
    l4r.en
+   plugin-coordination.en
 
 ======================
 Less Detailed Projects
@@ -147,20 +148,6 @@ TLS Extensions
 It would be interesting in terms of L4 routing to be enable TLS clients to send a |TS| specialized
 TLS extension to provide addition L4 routing information or other control data. This needs to be
 design carefully to avoid security issues but I think it could be very powerful.
-
-Plugin Coordination
-===================
-
-There is a consistent need for coordination among plugins. At one point (Feb 2016) I had a working prototype of plugin priorities based on Y! 5.3.x which assigned priorities to plugin callbacks along with an API to manipulate not just the current plugins priorities but that of other plugins. That would be very useful although priorities of themselves are only one approach to this problem. Based on that work I have a technology ladder to climb to provide this capability.
-
-Modular hook dispatch.
-   Create a class to handle the hook dispatching to provide a level of consistency needed later.
-Continuation tracking
-  Associate every continuation with a "root" plugin. This would be very valuable in debugging plugin problems and would result in significantly less developer time spent with faster results for customer support.
-TS API to probe hooks for callbacks.
-   Allow plugins to check the callbacks on a hook.
-TS API to manipulate callbacks on hooks
-   Allow plugins to alter the callbacks on a hook, either in terms of priorities, dependency, or direct access by plugin.
 
 HTTP/2 Outbound
 ===============

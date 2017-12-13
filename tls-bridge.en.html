@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>TLS Bridge &#8212; AMC Traffic Server Documentation</title>
+    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -26,7 +29,7 @@
     <link rel="next" title="TSVConn Arguments" href="vconn-args.en.html" />
     <link rel="prev" title="Body Factory Refactoring" href="body-factory.en.html" /> 
   </head>
-  <body>
+  <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -189,8 +192,8 @@ is a directory all of the certificates in the directory are treated as Certifica
 destination is a anchored regular expression which is matched against the host name in the Client
 <code class="docutils literal"><span class="pre">CONNECT</span></code>. The destinations are checked in order and the first match is used to select the Peer
 Traffic Server. The peer should be an FQDN or IP address with an optional port. For the example above, if
-the Peer Traffic Server was named “peer.example.com” on port 4443 and the Service at <code class="docutils literal"><span class="pre">*.service.com</span></code>, the
-peer argument would be “peer.example.com:4443”. In <code class="docutils literal"><span class="pre">plugin.config</span></code> this would be:</p>
+the Peer Traffic Server was named &#8220;peer.example.com&#8221; on port 4443 and the Service at <code class="docutils literal"><span class="pre">*.service.com</span></code>, the
+peer argument would be &#8220;peer.example.com:4443&#8221;. In <code class="docutils literal"><span class="pre">plugin.config</span></code> this would be:</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">tls_bridge</span><span class="p">.</span><span class="n">so</span> <span class="p">.</span><span class="o">*</span><span class="p">[.]</span><span class="n">service</span><span class="p">[.]</span><span class="n">com</span> <span class="n">peer</span><span class="p">.</span><span class="n">example</span><span class="p">.</span><span class="nl">com</span><span class="p">:</span><span class="mi">4443</span>
 </pre></div>
 </div>
@@ -224,7 +227,7 @@ Client &lt;--&gt; Service" />
 <ul class="simple">
 <li>Traffic Server does no TLS negotiation at all. The properties of the connection between the Ingress Traffic Server
 and the Service are completely determined by the Client and Server negotation.</li>
-<li>No packets are modified, the “”CLIENT HELLO”” sent by the Ingress Traffic Server is an exact copy of that
+<li>No packets are modified, the &#8220;&#8221;CLIENT HELLO&#8221;&#8221; sent by the Ingress Traffic Server is an exact copy of that
 sent to the Ingress Traffic Server by the Client. It is only examined for the SNI data in order to select
 the Service.</li>
 </ul>
@@ -498,7 +501,7 @@ State_3 --&gt; State_0 : *
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>

@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>Testing &#8212; AMC Traffic Server Documentation</title>
+    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -26,7 +29,7 @@
     <link rel="next" title="Errata" href="errata.en.html" />
     <link rel="prev" title="Command Registration" href="command-registration.en.html" /> 
   </head>
-  <body>
+  <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -121,9 +124,9 @@ traffic. The data recorded should be in the replay file format and contain</p>
 <li>The transaction count for the outbound session.</li>
 <li>The content block sizes.</li>
 </ul>
-<p>The plugin should record samples rather than all sessions as the latter isn’t possible on most
+<p>The plugin should record samples rather than all sessions as the latter isn&#8217;t possible on most
 production machines. The plugin should have some sampling percentage and sample that fraction of
-<em>sessions</em>. For content, the actual content isn’t particularly useful but the I/O operation sizes
+<em>sessions</em>. For content, the actual content isn&#8217;t particularly useful but the I/O operation sizes
 could be significant. The plugin should record the number of bytes in each chunk of data that passes
 through the transaction in both directions.</p>
 </div>
@@ -192,7 +195,7 @@ must be matched up based on other data in the request.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>

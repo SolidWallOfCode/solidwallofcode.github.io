@@ -3,15 +3,28 @@
 .. highlight:: cpp
 .. default-domain:: cpp
 
-.. _buffer writer:
+.. _BufferWriter:
 
-Buffer Writer
+BufferWriter
 *************
 
-Buffer writer is a project to improve writting text data to buffers. Currently this is done by code that looks like ::
+:class:`BufferWriter` is a class to write text to a buffer. The design goals are to be fast and
+provide buffer overrrun protection. There is a large amount of code in |TS| that currently uses
+:code:`memcpy` and similar mechanisms for fast string generation. :class:`BufferWriter` should be
+as almost as fast while simplifying code and preventing memory corruption.
 
-   *via_string++ = ' ';
-   *via_string++ = '[';
+For example, error prone code that looks like
+
+.. code-block:: cpp
+
+   char new_via_string[1024]; // 512-bytes for hostname+via string, 512-bytes for the debug info
+   char * via_string = new_via_string;
+   char * via_limit  = via_string + sizeof(new_via_string);
+
+   // ...
+
+   * via_string++ = ' ';
+   * via_string++ = '[';
 
    // incoming_via can be max MAX_VIA_INDICES+1 long (i.e. around 25 or so)
    if (s->txn_conf->insert_request_via_string > 2) { // Highest verbosity
@@ -22,105 +35,103 @@ Buffer writer is a project to improve writting text data to buffers. Currently t
    }
    *via_string++ = ']';
 
-   // reserve 4 for " []" and 3 for "])".
-   if (via_limit - via_string > 4 && s->txn_conf->insert_request_via_string > 3) { // Ultra highest verbosity
-      *via_string++ = ' ';
-      *via_string++ = '[';
-      via_string += write_via_protocol_stack(via_string, via_limit - via_string - 3,
-      true, proto_buf.data(), n_proto);
-      *via_string++ = ']';
-   }
+becomes
 
-This is ugly, error prone, and unsafe. Most instances of this style just hope there is no buffer overflow. We need to do better.
+.. code-block:: cpp
 
-The idea is to use C++ eleventy features to build a more robust approach. This is based on a family
-of classes that control the output buffer and manage the offset tracking. The base is :class:`BufferWriter` which enables writing to the buffer. Assuming there is an instance of a concrete subclass of :class:`BufferWriter` named :code:`w` which controls the :arg:`via_string` buffer, the equivalent of the above code would be ::
+   ts::LocalBufferWriter<1024> w; // 1K internal buffer.
 
-   w.write(" [");
-   if (s->txn_conf->insert_request_via_string > 2) { // Highest verbosity
-      w.write(incoming_via, strlen(incoming_via));
-   } else {
-      w.write((incoming_via + VIA_CLIENT, VIA_SERVER - VIA_CLIENT);
-   }
-   w.write(']');
-
-   // reserve 4 for " []" and 3 for "])".
-   if (w.remaining() > 4 && s->txn_conf->insert_request_via_string > 3) { // Ultra highest verbosity
-      w.write(" [");
-      w.clip(1); // reserve a byte for closing bracket.
-      w.write(write_via_protocol_stack(
-         w.auxBuffer(), w.remaining() - 3), true, proto_buf.data(), n_proto));
-      w.extend(1).write(']');
-   }
-
-   if (w.error()) Warning("VIA: static buffer overflow");
-
-In addition to being shorter and cleaner, the latter is also far more robust in that if the buffer
-overflows there will be no memory corruption because :class:`BufferWriter` will avoid doing the
-overflowing writes, and stop output at the last element that fits in the target buffer.
-
-If :code:`write_via_protocol_stack` were changed a bit to have the signature ::
-
-   size_t write_via_protocol_stack(BufferWriter& w, bool, ts::StringView * proto int n_proto)
-
-then the code can be simplified to ::
-
-      w.write(" [");
-      w.clip(3); // reserver a byte for closing bracket
-      write_via_protocol_stack(w, true, proto_buff.data(), n_proto);
-      w.extend(3).write(']'); // always succeeds because we checked for space earlier.
-      
-This allows an instance of :class:`BufferWriter` to be passed in place of a buffer pointer and
-length making the code simpler and more robust, making clear the intent to have the buffer written.
-Size updates are then handled internally without need for explicit return values.
-
-Stream Operators
-++++++++++++++++
-
-A remaining issue is how non-string data is provided to :class:`BufferWriter`. This should be
-sufficiently generic that new types can be supported without changing :class:`BufferWriter` while
-also not bloating the class. It has been suggested the standard stream operators be overloaded to
-work with a :class:`BufferWriter`, e.g. ::
-
-   BufferWriter& operator << (BufferWriter& w, SomeSpecificType const& t) { ... }
-
-This can be done independently as :class:`BufferWriter` provides sufficient functionality to
-implement these stream operators if desired. :class:`BufferWriter` itself should have few methods to
-actually write to the buffer, just enough to make it possible to write stream operators for it.
-Those stream operators should be defined outside of the :class:`BufferWriter` header so that
-:class:`BufferWriter` does not need to be updated to add additional IO stream operators for new
-types.
-
-For instance if I wanted to make :code:`ts::StringView` work with :class:`BufferWriter` I would add
-to the :code:`ts::StringView` header the code ::
-
-   BufferWriter & operator << (BufferWriter & w, ts::StringView const & sv) {
-      w.write(sv.ptr(), sv.size());
-      return w;
-   }
-
-Using IO stream style operators (presuming they have been defined for the relevant types), the example could would look like ::
+   // ...
 
    w << " [";
-
-   // incoming_via can be max MAX_VIA_INDICES+1 long (i.e. around 25 or so)
    if (s->txn_conf->insert_request_via_string > 2) { // Highest verbosity
       w << incoming_via;
    } else {
-      w << string_view(incoming_via + VIA_CLIENT, VIA_SERVER - VIA_CLIENT);
+      w << ts::string_view{incoming_via + VIA_CLIENT, VIA_SERVER - VIA_CLIENT};
    }
    w << ']';
 
-   // reserve 4 for " []" and 3 for "])".
-   if (w.remaining() > 4 && s->txn_conf->insert_request_via_string > 3) { // Ultra highest verbosity
-      w << " [";
-      w.clip(3);
-      write_via_protocol_stack(w, true, proto_buf.data(), n_proto);
-      w.extend(3);
-      w << ']';
+Note that in addition there will be no overrun on the memory buffer in :arg:`w`, in strong contrast
+to the original code.
+
+Description
++++++++++++
+
+:class:`BufferWriter` is an abstract super class, in the style of :code:`std::ostream`. There are several subclasses for various use cases.
+
+:class:`FixedBufferWriter` writes to an external provided buffer of a fixed length. The buffer must
+be provided to the constructor. This will generally be used in a function where the target buffer is
+external to the function.
+
+:class:`LocalBufferWriter` is a templated class whose template argument is the size of an internal buffer.
+This is useful when the buffer is local to a function and the results will be transferred from the buffer to other storage after the output is assembled. E.g. code such as
+
+.. code-block:: cpp
+
+   char buff[1024];
+   ts::FixedBufferWriter w(buff, sizeof(buff));
+
+is better done as
+
+.. code-block:: cpp
+
+   ts::LocalBufferWriter<1024> w;
+
+Writing
+-------
+
+The basic mechanism for writing to a :class:`BufferWriter` is :func:`BufferWriter::write`.
+This is an overloaded method for a character (:code:`char`), a buffer (:code:`void *, size_t`)
+and a string view (:code:`ts::string_view`).
+
+On top of this mechanism are stream operators in the style of C++ stream I/O. The basic template
+is
+
+.. code-block:: cpp
+
+   template < typename T > ts::BufferWriter& operator << (ts::BufferWriter& w, T const& t);
+
+Most basic types are overloaded and it is easy to extend. For instance, to make :code:`ts::TextView` work with :class:`BufferWriter`, the code would be
+
+.. code-block:: cpp
+
+   ts::BufferWriter & operator << (ts::BufferWriter & w, ts::TextView const & sv) {
+      w.write(sv.data(), sv.size());
+      return w;
    }
-   
-   if (w.error()) Warning("VIA: static buffer overflow");
+
+Reading
+-------
+
+The data in the buffer can be extracted using :func:`BufferWriter::data`. This and :func:`BufferWriter::size`
+return a pointer to the start of the buffer and the amount of data written to the buffer. Calling :func:`BufferWriter::error` will indicate if more data than space available was written. :func:`BufferWriter::extent` returns the amount of data written to the :class:`BufferWriter`. This can be used in a two pass style with a small buffer to determine the buffer size required for the full output.
+
+Advanced
+--------
+
+The :func:`BufferWriter::clip` and :func:`BufferWriter::extend` methods can be used to reserve space in the buffer. A common use case for this is to guarantee matching delimiters in output if buffer space is exhausted.
+:func:`BufferWriter::clip` can be used to temporarily reduce the buffer size by an amount large enough to hold
+the terminal delimiter. After writing the contained output, :func:`BufferWriter::extend` can be used to restore
+the capacity and then output the terminal delimiter.
+
+.. warning:: **Never** call :func:`BufferWriter::extend` without previoiusly calling :func:`BufferWriter::clip` and always pass the same argument value.
+
+:func:`BufferWriter::capacity` returns the amount of buffer space not yet consumed.
+
+:func:`BufferWriter::auxBuffer` returns a pointer to the first byte of the buffer not yet used. This is useful to do speculative output. A new :class:`BufferWriter` instance can be constructed with
+
+.. code-block:: cpp
+
+   ts::FixedBufferWriter subw(w.auxBuffer(), w.remaining());
+
+Output can be written to :arg:`subw`. If successful, then :code:`w.write(subw.size())` will add that output to the main buffer. If there is an error then :arg:`subw` can be ignored and some suitable error output written to :arg:`w` instead. A common use case is to verify there is sufficient space in the buffer and create a "not enough space" message if not. E.g.
+
+.. code-block:: cpp
+
+   ts::FixedBufferWriter subw(w.auxBuffer(), w.remaining());
+   this->write_some_output(subw);
+   if (!subw.error()) w.write(subw.size());
+   else w << "Insufficient space"_sv;
 
 Reference
 +++++++++
@@ -152,6 +163,10 @@ Reference
       Write the character :arg:`c` to the buffer. If there is no space in the buffer the character
       is not written.
 
+   .. function:: char * data() const
+
+      Return a pointer to start of the buffer.
+
    .. function:: size_t size() const
 
       Return the number of valid (written) bytes in the buffer.
@@ -160,9 +175,13 @@ Reference
 
       Return the number of available remaining bytes that could be written to the buffer.
 
-   .. function:: BufferWriter & resize(size_t n)
+   .. function:: size_t capacity() const
 
-      Set the number of bytes of valid (written) data.
+      Return the number of bytes in the buffer.
+
+   .. function:: char * auxBuffer() const
+
+      Return a pointer to the first byte in the buffer not yet consumed.
 
    .. function:: BufferWriter & clip(size_t n)
 
