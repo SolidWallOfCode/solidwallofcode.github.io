@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Open Source Contributions &#8212; AMC Traffic Server Documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -29,7 +26,7 @@
     <link rel="next" title="Completed Projects" href="completed.en.html" />
     <link rel="prev" title="Diagrams" href="reference.en.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -110,21 +107,21 @@ classes / technology / support is required for a pull request, it is almost alwa
 contribute it in a separate, prior pull request. Pull requests that have a lot of new classes and
 other things have a very difficult time, both because the additional support obscures the real
 point of the pull request and that discussions can get bogged down on details in the support that
-aren&#8217;t critical for the overall work.</dd>
+aren’t critical for the overall work.</dd>
 <dt>Parsimony</dt>
 <dd>There is a general concern about code bloat and much effort has been made in the past to decrease
 the over all code size. For what Traffic Server can do it has a remarkably small code base. This is not an
 accident. For this reason think twice, then reconsider again, if you really need to add a support
 class. Avoid this if you can, especially if the class is used only once or in limited
-circumstances. Also avoid putting classes in separate files if the class isn&#8217;t used in other file
+circumstances. Also avoid putting classes in separate files if the class isn’t used in other file
 scopes. See if there are existing classes or other techniques which, with a bit of work, could be
 made to suffice.</dd>
 <dt>Consistency</dt>
 <dd>Traffic Server is an old project with people who have been working on it for over a decade. They are
-comfortable with where things are and how things are done. This doesn&#8217;t mean it&#8217;s perfect but
+comfortable with where things are and how things are done. This doesn’t mean it’s perfect but
 unless there is a strong reason to change, you should peruse the code and try to do things in a
 similar way. One example would be initialization. There are various ways to do this in C++, most
-of which result in the same machine code. Therefore it&#8217;s a reasonable expectation that you will
+of which result in the same machine code. Therefore it’s a reasonable expectation that you will
 do this in the same way as the existing code. As a newcomer to the community, try to show a bit
 of respect for existing customs and habits, <em>especially</em> when such things have no real impact on
 code quality.</dd>
@@ -172,7 +169,7 @@ can be put in stack allocated buffer of that length without any memory allocatio
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

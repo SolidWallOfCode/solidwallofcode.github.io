@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>BufferWriter &#8212; AMC Traffic Server Documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -29,7 +26,7 @@
     <link rel="next" title="TSConfig / Lua" href="tsconfig-lua.en.html" />
     <link rel="prev" title="Traffic Server Projects" href="ats-projects.en.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -193,7 +190,7 @@ the capacity and then output the terminal delimiter.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">FixedBufferWriter</span> <span class="n">subw</span><span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">auxBuffer</span><span class="p">(),</span> <span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">());</span>
 </pre></div>
 </div>
-<p>Output can be written to <em>subw</em>. If successful, then <code class="code docutils literal"><span class="pre">w.write(subw.size())</span></code> will add that output to the main buffer. If there is an error then <em>subw</em> can be ignored and some suitable error output written to <em>w</em> instead. A common use case is to verify there is sufficient space in the buffer and create a &#8220;not enough space&#8221; message if not. E.g.</p>
+<p>Output can be written to <em>subw</em>. If successful, then <code class="code docutils literal"><span class="pre">w.write(subw.size())</span></code> will add that output to the main buffer. If there is an error then <em>subw</em> can be ignored and some suitable error output written to <em>w</em> instead. A common use case is to verify there is sufficient space in the buffer and create a “not enough space” message if not. E.g.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">FixedBufferWriter</span> <span class="n">subw</span><span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">auxBuffer</span><span class="p">(),</span> <span class="n">w</span><span class="p">.</span><span class="n">remaining</span><span class="p">());</span>
 <span class="k">this</span><span class="o">-&gt;</span><span class="n">write_some_output</span><span class="p">(</span><span class="n">subw</span><span class="p">);</span>
 <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">subw</span><span class="p">.</span><span class="n">error</span><span class="p">())</span> <span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">subw</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
@@ -296,8 +293,8 @@ even if part of the string is not.</p>
 <dt id="_CPPv2NK12BufferWriter6extentEv">
 <span id="BufferWriter::extentC"></span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">extent</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriter6extentEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Return the total number of bytes in all attempted writes to this buffer. This value allows a
-successful retry in case of overflow, presuming the output data doesn&#8217;t change. This works
-well with the standard &#8220;try before you buy&#8221; approach of attempting to write output, counting
+successful retry in case of overflow, presuming the output data doesn’t change. This works
+well with the standard “try before you buy” approach of attempting to write output, counting
 the characters needed, then allocating a sufficiently sized buffer and actually writing.</p>
 </dd></dl>
 
@@ -311,9 +308,9 @@ the characters needed, then allocating a sufficiently sized buffer and actually 
 <dt id="_CPPv2N17FixedBufferWriter17FixedBufferWriterEPv6size_t">
 <span id="FixedBufferWriter::FixedBufferWriter__voidP.s"></span><code class="descclassname"></code><code class="descname">FixedBufferWriter</code><span class="sig-paren">(</span>void *<em>buffer</em>, <a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N17FixedBufferWriter17FixedBufferWriterEPv6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Construct an instance that will write to <em>buffer</em> at most <em>length</em> bytes. Individual
-items are either written or not - if the item doesn&#8217;t fit nothing is written and the instance
+items are either written or not - if the item doesn’t fit nothing is written and the instance
 goes in to an error state the prevents additional output. This is so that if a large item
-doesn&#8217;t fit a following smaller item isn&#8217;t output out of order.</p>
+doesn’t fit a following smaller item isn’t output out of order.</p>
 </dd></dl>
 
 </dd></dl>
@@ -368,7 +365,7 @@ instances, most specifically in the body factory logic.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

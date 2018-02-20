@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Cache Tool &#8212; AMC Traffic Server Documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -29,7 +26,7 @@
     <link rel="next" title="Command Registration" href="command-registration.en.html" />
     <link rel="prev" title="TSConfig / Lua" href="tsconfig-lua.en.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -105,18 +102,18 @@
 <h1>Cache Tool<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
 <p>CacheTool is a command line tool for interacting with the Traffic Server cache. CacheTool started as a side
 project to not only explore the Traffic Server cache but as a test bed for various other technologies of
-interest to me, some of which are not really cache related. The goal was for the eventual release
-these other technologies to open source as they matured. My view was the ancillary software
-would be of better quality if validated in actual use first.</p>
+interest to me, some of which are not really cache related. The goal is for the eventual release
+of these other technologies to open source as they mature. My view was the ancillary software would
+be of better quality if validated in actual use first.</p>
 <ul class="simple">
 <li><a class="reference external" href="https://docs.trafficserver.apache.org/en/latest/developer-guide/internal-libraries/scalar.en.html">TS.Scalar</a>: a template for creating quantized integral types. This has been contributed to open source.</li>
-<li><a class="reference external" href="https://docs.trafficserver.apache.org/en/latest/developer-guide/internal-libraries/memview.en.html">StringView</a>: read only view of string data. This has been contributed to open source.</li>
+<li><a class="reference external" href="https://docs.trafficserver.apache.org/en/latest/developer-guide/internal-libraries/memview.en.html">TextView</a>: read only view of string data. This has been contributed to open source.</li>
 <li>Better <a class="reference internal" href="command-registration.en.html#command-registration"><span class="std std-ref">command line parsing</span></a> for action oriented tools like CacheTool and <strong class="program">traffic_ctl</strong>.</li>
 <li>File system path and file handling class.</li>
 <li>New data structures for the cache, as part of a larger scale redesign.</li>
 <li>Improved stripe allocation algorithms.</li>
 </ul>
-<p>In addition to being a test bed, Cache Tool was intended to do useful work. An early  feature, stripe
+<p>In addition to being a test bed, Cache Tool was intended to do useful work. An early feature, stripe
 re-allocation, was built to get around a bug in Traffic Server where a disk that was replaced would not
 actually be used by the cache. This was originally a request from the Oath operations team but it
 was sufficiently useful to another member of the community that I was persuaded to make CacheTool
@@ -148,7 +145,7 @@ possible to run 8.0 on a box and revert to 7.X without clearing the cache.</li>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p>CacheTool has an action oriented interface with commands and subcommands (and possibly
-subsubcommands, etc.), modeled on <strong class="program">traffic_ctl</strong>.</p>
+subsubcommands, etc.), modeled on <strong class="program">traffic_ctl</strong> but with a much better internal implementation.</p>
 <dl class="docutils">
 <dt><code class="docutils literal"><span class="pre">list</span></code></dt>
 <dd><p class="first">List information about the cache.</p>
@@ -258,7 +255,7 @@ content area.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

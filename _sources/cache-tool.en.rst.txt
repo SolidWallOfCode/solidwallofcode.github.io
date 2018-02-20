@@ -15,18 +15,18 @@ Cache Tool
 
 CacheTool is a command line tool for interacting with the |TS| cache. CacheTool started as a side
 project to not only explore the |TS| cache but as a test bed for various other technologies of
-interest to me, some of which are not really cache related. The goal was for the eventual release
-these other technologies to open source as they matured. My view was the ancillary software
-would be of better quality if validated in actual use first.
+interest to me, some of which are not really cache related. The goal is for the eventual release
+of these other technologies to open source as they mature. My view was the ancillary software would
+be of better quality if validated in actual use first.
 
 *  `TS.Scalar <https://docs.trafficserver.apache.org/en/latest/developer-guide/internal-libraries/scalar.en.html>`_: a template for creating quantized integral types. This has been contributed to open source.
-*  `StringView <https://docs.trafficserver.apache.org/en/latest/developer-guide/internal-libraries/memview.en.html>`_: read only view of string data. This has been contributed to open source.
+*  `TextView <https://docs.trafficserver.apache.org/en/latest/developer-guide/internal-libraries/memview.en.html>`_: read only view of string data. This has been contributed to open source.
 *  Better :ref:`command line parsing <command registration>` for action oriented tools like CacheTool and :program:`traffic_ctl`.
 *  File system path and file handling class.
 *  New data structures for the cache, as part of a larger scale redesign.
 *  Improved stripe allocation algorithms.
 
-In addition to being a test bed, Cache Tool was intended to do useful work. An early  feature, stripe
+In addition to being a test bed, Cache Tool was intended to do useful work. An early feature, stripe
 re-allocation, was built to get around a bug in |TS| where a disk that was replaced would not
 actually be used by the cache. This was originally a request from the Oath operations team but it
 was sufficiently useful to another member of the community that I was persuaded to make CacheTool
@@ -59,7 +59,7 @@ Usage
 =====
 
 CacheTool has an action oriented interface with commands and subcommands (and possibly
-subsubcommands, etc.), modeled on :program:`traffic_ctl`.
+subsubcommands, etc.), modeled on :program:`traffic_ctl` but with a much better internal implementation.
 
 ``list``
    List information about the cache.

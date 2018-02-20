@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>TSConfig / Lua &#8212; AMC Traffic Server Documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -29,7 +26,7 @@
     <link rel="next" title="Cache Tool" href="cache-tool.en.html" />
     <link rel="prev" title="BufferWriter" href="buffer-writer.en.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -106,7 +103,7 @@
   <div class="section" id="tsconfig-lua">
 <span id="id1"></span><h1>TSConfig / Lua<a class="headerlink" href="#tsconfig-lua" title="Permalink to this headline">¶</a></h1>
 <p>Traffic Server has committed to moving configuration files to be Lua based. While conversion of existing files
-to Lua isn&#8217;t required, the current view based on mailing list discussions is that new configuration
+to Lua isn’t required, the current view based on mailing list discussions is that new configuration
 files are required to be in Lua. In the long run it is expected all configuration files will be
 converted use Lua. This project is about providing that technology in a generic way to make it
 easier to add configuration for new features.</p>
@@ -133,7 +130,7 @@ the data. The schema is a data object written in Lua, modeled on the standard <c
 is generated which contains both the configuration and schema based metadata. This makes schema
 information available for validation and error reporting.</p>
 <p>To use this configuration a schema is written to describe the expected configuration data. During
-build time a C++ container, a &#8220;configuration class&#8221;, is generated from the schema. At run time an
+build time a C++ container, a “configuration class”, is generated from the schema. At run time an
 instance of the configuation class is created and the passed the path to the Lua configuration file.
 The file is read and the data loaded into the configuration class instance. Any errors of the
 configuration data is returned for logging. The calling code needs to do very little validation
@@ -229,7 +226,7 @@ enumeration an entry in the global table. The presumption is the enumeration val
 these are the values passed to the configuration loader, specified by the global value. This is
 intended to minimize undetected typographic errors in the configuration file.</p>
 <p>Enumerations are defined in a top level key of the schema named <code class="docutils literal"><span class="pre">definitions</span></code>. Enumerations are
-restricted to mappings between strings (&#8220;keys&#8221;) and integers (&#8220;values&#8221;). The mapping can be defined
+restricted to mappings between strings (“keys”) and integers (“values”). The mapping can be defined
 in multiple ways.</p>
 <dl class="docutils">
 <dt>Lua array of strings</dt>
@@ -346,14 +343,15 @@ from the configuration file.</p>
 <div class="section" id="schema">
 <h2>Schema<a class="headerlink" href="#schema" title="Permalink to this headline">¶</a></h2>
 <p>A Lua configuration schema has its own schema.</p>
-<div class="highlight-lua"><div class="highlight"><pre><span></span><span class="p">{</span>
-   <span class="p">[</span><span class="s1">&#39;$scheme&#39;</span><span class="p">]</span><span class="o">=</span> <span class="s2">&quot;http://trafficsever.apache.org/config/schema&quot;</span><span class="p">,</span>
+<div class="highlight-lua"><div class="highlight"><pre><span></span><span class="n">schema</span> <span class="o">=</span>
+<span class="p">{</span>
+   <span class="p">[</span><span class="s1">&#39;$schema&#39;</span><span class="p">]</span><span class="o">=</span> <span class="s2">&quot;http://trafficsever.apache.org/config/meta-schema&quot;</span><span class="p">,</span>
    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Lua Configuration MetaSchema&quot;</span><span class="p">,</span>
    <span class="n">global</span> <span class="o">=</span> <span class="s1">&#39;schema&#39;</span><span class="p">,</span>
    <span class="n">class</span> <span class="o">=</span> <span class="s1">&#39;TsLuaMetaConfig&#39;</span><span class="p">,</span>
-   <span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+
    <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
-      <span class="p">[</span><span class="s2">&quot;$schema&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="p">[</span><span class="s1">&#39;$schema&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
          <span class="nb">type</span><span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
          <span class="n">description</span><span class="o">=</span> <span class="s2">&quot;Schema identifier.&quot;</span>
       <span class="p">},</span>
@@ -369,12 +367,7 @@ from the configuration file.</p>
          <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
          <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;C++ class for configuration.&#39;</span>
       <span class="p">},</span>
-      <span class="nb">type</span> <span class="o">=</span> <span class="p">{</span>
-         <span class="nb">type</span><span class="o">=</span> <span class="o">=</span><span class="s1">&#39;string&#39;</span><span class="p">,</span>
-         <span class="n">enum</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;null&#39;</span><span class="p">,</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;enum&#39;</span> <span class="p">}</span>
-      <span class="p">},</span>
-      <span class="n">properties</span><span class="o">=</span><span class="p">{</span>
-         <span class="n">variant</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;object&#39;</span> <span class="p">},</span>
+      <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
          <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span>
          <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;The members of the object.&#39;</span><span class="p">,</span>
          <span class="n">additionalProperties</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span>
@@ -382,12 +375,20 @@ from the configuration file.</p>
          <span class="n">properties</span> <span class="o">=</span> <span class="p">{}</span>
       <span class="p">},</span>
       <span class="n">items</span> <span class="o">=</span> <span class="p">{</span>
-         <span class="n">variant</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;array&#39;</span><span class="p">},</span>
-         <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
+         <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span>
          <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;The items in the array.&#39;</span><span class="p">,</span>
          <span class="n">additionalItems</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span>
          <span class="n">minItems</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
          <span class="n">items</span> <span class="o">=</span> <span class="p">{}</span>
+      <span class="p">},</span>
+      <span class="n">dependencies</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="nb">type</span> <span class="o">=</span> <span class="n">OBJECT</span><span class="p">,</span>
+         <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;List of optional properties for an object.&#39;</span>
+      <span class="p">},</span>
+      <span class="n">one_of</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="nb">type</span> <span class="o">=</span> <span class="n">OBJECT</span><span class="p">,</span>
+         <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Set of mutually exclusive properties, exactly one of which must be present.&#39;</span><span class="p">,</span>
+         <span class="n">items</span> <span class="o">=</span> <span class="n">STRING</span>
       <span class="p">},</span>
       <span class="n">definitions</span> <span class="o">=</span> <span class="p">{</span>
          <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
@@ -396,6 +397,121 @@ from the configuration file.</p>
             <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span>
             <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Description of the definition.&#39;</span><span class="p">,</span>
             <span class="n">additionalProperties</span> <span class="o">=</span> <span class="kc">true</span>
+         <span class="p">}</span>
+      <span class="p">}</span>
+   <span class="p">},</span>
+   <span class="n">dependencies</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="p">[</span><span class="s1">&#39;not&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;items&#39;</span> <span class="p">}</span>
+         <span class="p">},</span>
+      <span class="n">items</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="p">[</span><span class="s1">&#39;not&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;properties&#39;</span> <span class="p">}</span>
+         <span class="p">}</span>
+      <span class="p">}</span>
+   <span class="p">},</span>
+   <span class="n">definitions</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="n">object</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">class</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="nb">type</span> <span class="o">=</span> <span class="n">STRING</span><span class="p">,</span>
+         <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;C++ struct name.&#39;</span>
+        <span class="p">},</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="nb">type</span> <span class="o">=</span> <span class="n">STRING</span><span class="p">,</span>
+         <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Object description.&#39;</span>
+        <span class="p">},</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="p">[</span><span class="s1">&#39;$ref&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#/definitions/object&#39;</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="cm">--[[</span>
+<span class="cm">         It should be possible to specify how to set up an enumeration with just an array,</span>
+<span class="cm">         filling the other values with defaults. E.g. an array of strings or an array of integers.</span>
+<span class="cm">      ]]</span>
+      <span class="n">enum</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="nb">type</span> <span class="o">=</span> <span class="n">OBJECT</span><span class="p">,</span>
+         <span class="n">typeName</span> <span class="o">=</span> <span class="s1">&#39;EnumType&#39;</span><span class="p">,</span>
+         <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Enumeration&#39;</span><span class="p">,</span>
+         <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">typeName</span> <span class="o">=</span> <span class="p">{</span>
+               <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;C++ type name.&#39;</span>
+            <span class="p">},</span>
+            <span class="n">global</span> <span class="o">=</span> <span class="p">{</span>
+               <span class="nb">type</span> <span class="o">=</span> <span class="n">STRING</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Global variable that contains the enumeration values.&#39;</span>
+            <span class="p">},</span>
+            <span class="n">kv</span> <span class="o">=</span> <span class="p">{</span>
+               <span class="nb">type</span> <span class="o">=</span> <span class="n">ARRAY</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Enumeration keys and values&#39;</span><span class="p">,</span>
+               <span class="n">items</span> <span class="o">=</span> <span class="p">{</span>
+                  <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span>
+                  <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Enumeration value&#39;</span><span class="p">,</span>
+                  <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
+                     <span class="n">key</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+                        <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Enumeration key&#39;</span>
+                     <span class="p">},</span>
+                     <span class="n">value</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+                        <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Enumeration value&#39;</span>
+                     <span class="p">},</span>
+                     <span class="n">description</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+                        <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Meaning of this value&#39;</span>
+                     <span class="p">}</span>
+                  <span class="p">}</span>
+               <span class="p">}</span>
+            <span class="p">}</span>
+         <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="n">ValueType</span> <span class="o">=</span> <span class="p">{</span>
+         <span class="nb">type</span> <span class="o">=</span> <span class="n">ENUM</span><span class="p">,</span>
+         <span class="n">typeName</span> <span class="o">=</span> <span class="s1">&#39;ValueType&#39;</span><span class="p">,</span>
+         <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Type of data&#39;</span><span class="p">,</span>
+         <span class="n">global</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span>
+         <span class="n">kv</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="p">{</span>
+               <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;nil&#39;</span><span class="p">,</span>
+               <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Null / invalid value.&#39;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+               <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
+               <span class="n">value</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Boolean (true/false) value.&#39;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+               <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+               <span class="n">value</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;String value.&#39;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+               <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+               <span class="n">value</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Integral value.&#39;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+               <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;number&#39;</span><span class="p">,</span>
+               <span class="n">value</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Numeric value.&#39;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+               <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span>
+               <span class="n">value</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Object - collection of key / value pairs.&#39;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+               <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
+               <span class="n">value</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Array of values.&#39;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+               <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;enum&#39;</span><span class="p">,</span>
+               <span class="n">value</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+               <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;Enumeration&#39;</span>
+            <span class="p">}</span>
          <span class="p">}</span>
       <span class="p">}</span>
    <span class="p">}</span>
@@ -491,11 +607,11 @@ from the configuration file.</p>
 <p>There is a difficult question on how <code class="docutils literal"><span class="pre">traffic_ctl</span></code> interacts with Lua based configuration. That is
 not specific to this configuration system but is a more general problem.</p>
 <p>Some consideration must be given to whether variants should be supported. This would allow a
-configuration value to be listed as multiple types and any of the types would be acceptable. It&#8217;s
+configuration value to be listed as multiple types and any of the types would be acceptable. It’s
 unclear how useful this would be. The most common case I can think of is enabling singletons vs.
 arrays, but it would be easier to just do that directly in the validation stage. That is, if a type
-is described as &#8220;array of T&#8221; and the value is a single T, convert it to an array of size 1. This
-seems obvious and non confusing and I&#8217;m not sure there are any other good use cases.</p>
+is described as “array of T” and the value is a single T, convert it to an array of size 1. This
+seems obvious and non confusing and I’m not sure there are any other good use cases.</p>
 </div>
 <div class="section" id="history">
 <h2>History<a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h2>
@@ -503,7 +619,7 @@ seems obvious and non confusing and I&#8217;m not sure there are any other good 
 abandoned due to concerns about configuration error feedback. TsConfig provides detailed reporting
 for errors but can do that only because it also does the parsing. With the loss of control text
 parsing providing useful feedback becomes effectively impossible. Related to this was the ability to
-detect &#8220;excess&#8221; configuration that didn&#8217;t match what was expected. This is most commonly the result
+detect “excess” configuration that didn’t match what was expected. This is most commonly the result
 of typographic errors and the operator should be informed of this rather the configuration silently
 using defaults. This is something possible with the current system - it can at least warn of ignored
 configuration variables. Once there is a mechanismm for describing which values are expected there
@@ -545,7 +661,7 @@ in the same language.</td></tr>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

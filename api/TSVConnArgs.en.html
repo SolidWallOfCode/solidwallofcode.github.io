@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>TSVConnArgs &#8212; AMC Traffic Server Documentation</title>
-    
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -27,9 +24,9 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Partial Object Caching" href="../poc/poc-index.html" />
-    <link rel="prev" title="Plugin Coordination" href="../plugin-coordination.en.html" /> 
+    <link rel="prev" title="MemArena" href="../MemArena.en.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,7 +37,7 @@
           <a href="../poc/poc-index.html" title="Partial Object Caching"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../plugin-coordination.en.html" title="Plugin Coordination"
+          <a href="../MemArena.en.html" title="MemArena"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
@@ -62,8 +59,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../plugin-coordination.en.html"
-                        title="previous chapter">Plugin Coordination</a></p>
+  <p class="topless"><a href="../MemArena.en.html"
+                        title="previous chapter">MemArena</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../poc/poc-index.html"
                         title="next chapter">Partial Object Caching</a></p>
@@ -141,7 +138,7 @@ a <code class="code docutils literal"><span class="pre">TSVConn</span></code> ar
 found as an owner, the function returns <code class="code docutils literal"><span class="pre">TS_SUCCESS</span></code> and <em>arg_index</em> is updated with the
 index reserved under that name. If <em>description</em> is not <code class="code docutils literal"><span class="pre">nullptr</span></code> then it will be updated
 with the description for that reserved index. This enables communication between plugins where
-plugin &#8220;A&#8221; reserves an index under a well known name and plugin &#8220;B&#8221; locates the index by looking it
+plugin “A” reserves an index under a well known name and plugin “B” locates the index by looking it
 up under that name.</p>
 <p>The owner of a reserved index can be found with <a class="reference internal" href="#c.TSVConnArgIndexLookup" title="TSVConnArgIndexLookup"><code class="xref c c-func docutils literal"><span class="pre">TSVConnArgIndexLookup()</span></code></a>. If <em>arg_index</em> is
 reserved then the function returns <code class="code docutils literal"><span class="pre">TS_SUCCESS</span></code> and <em>name</em> and <em>description</em> are
@@ -183,7 +180,7 @@ has been extended based on discussions with Kees and Leif Hedstrom at the ATS su
           <a href="../poc/poc-index.html" title="Partial Object Caching"
              >next</a> |</li>
         <li class="right" >
-          <a href="../plugin-coordination.en.html" title="Plugin Coordination"
+          <a href="../MemArena.en.html" title="MemArena"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
@@ -191,7 +188,7 @@ has been extended based on discussions with Kees and Leif Hedstrom at the ATS su
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

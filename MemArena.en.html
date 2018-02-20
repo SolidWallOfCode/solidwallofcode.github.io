@@ -1,0 +1,177 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>MemArena &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TSVConnArgs" href="api/TSVConnArgs.en.html" />
+    <link rel="prev" title="Plugin Coordination" href="plugin-coordination.en.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plugin-coordination.en.html" title="Plugin Coordination"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">MemArena</a><ul>
+<li><a class="reference internal" href="#description">Description</a></li>
+<li><a class="reference internal" href="#reference">Reference</a></li>
+<li><a class="reference internal" href="#internals">Internals</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plugin-coordination.en.html"
+                        title="previous chapter">Plugin Coordination</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api/TSVConnArgs.en.html"
+                        title="next chapter">TSVConnArgs</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/MemArena.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="memarena">
+<span id="id1"></span><h1>MemArena<a class="headerlink" href="#memarena" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> provides a memory arena or pool for allocating memory. The intended use is for allocating many small chunks of memory - few, large allocations are best handled independently. The purpose is to amortize the cost of allocation of each chunk across larger allocations in a heap style. In addition the allocated memory is presumed to have similar lifetimes so that all of the memory in the arena can be de-allocatred en masse. This is a memory allocation style used by many cotainers - elements are small and allocated frequently, but all elements are discarded when the container itself is destroyed.</p>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> manages an internal list of memory blocks, out of which it provides allocated
+blocks of memory. When an instance is destructed all the internal blocks are also freed. The
+expected use of this class is as an embedded memory manager for a container class.</p>
+<p>To support coalescence and compaction of memory, the methods <a class="reference internal" href="#_CPPv2N8MemArena6freezeE6size_t" title="MemArena::freeze"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::freeze()</span></code></a> and
+<a class="reference internal" href="#_CPPv2N8MemArena4thawEv" title="MemArena::thaw"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::thaw()</span></code></a> are provided. These create in effect generations of memory allocation.
+Calling <a class="reference internal" href="#_CPPv2N8MemArena6freezeE6size_t" title="MemArena::freeze"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::freeze()</span></code></a> marks a generation. After this call any further allocations will
+be in new internal memory blocks. The corresponding call to <a class="reference internal" href="#_CPPv2N8MemArena4thawEv" title="MemArena::thaw"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::thaw()</span></code></a> cause older
+generations of internal memory to be freed. The general logic for the container would be to freeze,
+re-allocate and copy the container elements, then thaw. This would result in compacted memory
+allocation in a single internal block. The uses cases would be either a process static data
+structure after initialization (coalescing for locality performence) or a container that naturally
+re-allocates (such as a hash table during a bucket expansion). A container could also provide its
+own API for its clients to cause a coalesence.</p>
+<p>Other than freeze / thaw, this class does not offer any mechanism to release memory beyond its destruction. This is not an issue for either process globals or transient arenas.</p>
+</div>
+<div class="section" id="reference">
+<h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="_CPPv28MemArena">
+<span id="MemArena"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">MemArena</code><a class="headerlink" href="#_CPPv28MemArena" title="Permalink to this definition">¶</a><br /></dt>
+<dd><dl class="function">
+<dt id="_CPPv2N8MemArena8MemArenaEv">
+<span id="MemArena::MemArena"></span><code class="descclassname"></code><code class="descname">MemArena</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena8MemArenaEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Construct an empty arena.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N8MemArena5allocE6size_t">
+<span id="MemArena::alloc__s"></span>MemView <code class="descclassname"></code><code class="descname">alloc</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena5allocE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Allocate an <em>n</em> byte chunk of memory in the arena.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N8MemArena6freezeE6size_t">
+<span id="MemArena::freeze__s"></span><a class="reference internal" href="#_CPPv28MemArena" title="MemArena">MemArena</a> &amp;<code class="descclassname"></code><code class="descname">freeze</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena6freezeE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Block all further allocation from any existing internal blocks. If <em>n</em> is zero then on the next allocation request a block sufficiently large to hold all current allocations is created, otherwise the next internal block will be large enough to hold <em>n</em> bytes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N8MemArena4thawEv">
+<span id="MemArena::thaw"></span><a class="reference internal" href="#_CPPv28MemArena" title="MemArena">MemArena</a> &amp;<code class="descclassname"></code><code class="descname">thaw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena4thawEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Unallocate all internal blocks that were allocated before the last called to <a class="reference internal" href="#_CPPv2N8MemArena6freezeE6size_t" title="MemArena::freeze"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::freeze()</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="internals">
+<h2>Internals<a class="headerlink" href="#internals" title="Permalink to this headline">¶</a></h2>
+<p>Each time a new internal block is needed, it should be larger than the previous block by either the square root of 2 or 2. It might be reasonable to use <code class="code docutils literal"><span class="pre">IOBuffer</span></code> instances for bulk memory, which increase by powers of 2.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plugin-coordination.en.html" title="Plugin Coordination"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

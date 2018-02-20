@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Traffic Server Projects &#8212; AMC Traffic Server Documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -29,7 +26,7 @@
     <link rel="next" title="BufferWriter" href="buffer-writer.en.html" />
     <link rel="prev" title="Solid Wall Of Code Documents" href="index.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -127,12 +124,12 @@ large diagram of the projects and their dependencies is <a class="reference exte
 <li class="toctree-l1"><a class="reference internal" href="testing.en.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="errata.en.html">Errata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="body-factory.en.html">Body Factory Refactoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tls-bridge.en.html">TLS Bridge</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vconn-args.en.html">TSVConn Arguments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="multiplexer.en.html">Multiplexer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="certifier.en.html">Certifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="l4r.en.html">Layer 4 Routing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin-coordination.en.html">Plugin Coordination</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MemArena.en.html">MemArena</a></li>
 </ul>
 </div>
 </div>
@@ -195,7 +192,7 @@ single block. This is very useful for data constructed at process start time and
 <h3>Traffic Server Core<a class="headerlink" href="#traffic-server-core" title="Permalink to this headline">¶</a></h3>
 <p>Restructure the overridable configs to remove cyclic dependencies. Already discussed with community
 and I have a design.</p>
-<p>Potentially the &#8220;proxy-protocol&#8221; extension.</p>
+<p>Potentially the “proxy-protocol” extension.</p>
 <p>Internal version of the <a class="reference external" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0218r0.html">C++17 filesystem library</a>.</p>
 <p>Fix <code class="code docutils literal"><span class="pre">TSNetConnect</span></code> to have options instead of a multiplying set of API calls.</p>
 <p>Make remap rules be pure first match (long term).</p>
@@ -217,10 +214,10 @@ logging mechanisms.</p>
 <dt>TBB</dt>
 <dd>Thread Building Blocks. The primary issue is this does a lot more than just concurrent containers.</dd>
 <dt>ConcurrencyKit</dt>
-<dd>A excellent set of concurrent containers. The issue is this doesn&#8217;t compile in C++ and would need to
+<dd>A excellent set of concurrent containers. The issue is this doesn’t compile in C++ and would need to
 be forked and have an API makeover.</dd>
 <dt>Concurrent Data Structures</dt>
-<dd>This was suggested on the mailing list. I&#8217;m not familiar with it. See <a class="reference external" href="https://github.com/khizmax/libcds">here</a>.</dd>
+<dd>This was suggested on the mailing list. I’m not familiar with it. See <a class="reference external" href="https://github.com/khizmax/libcds">here</a>.</dd>
 </dl>
 </div>
 <div class="section" id="tls-extensions">
@@ -299,7 +296,7 @@ in the old process.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Partial Caching Initial Design &#8212; AMC Traffic Server Documentation</title>
-    
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -29,7 +26,7 @@
     <link rel="next" title="Diagrams" href="../reference.en.html" />
     <link rel="prev" title="Partal Object Caching" href="archive-partial-object-caching.en.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -112,7 +109,7 @@
 <li>Minimal additional overhead of data and computation.</li>
 </ul>
 <p>Normally a large object is stored as an ordered list of fragments each of roughly the same size. For a partial object we fix this size for a particular object. Different objects may have different fragment sizes but we require all fragments of specific partial object to be identical in size, except possibly for the last fragment. This is normally the case for all multiple fragment objects although it is not an explicit requirement. The only change here is that we will need to store the fixed fragment size in the metadata of the first fragment per alternate for a partial object.</p>
-<p>Given that fixed fragment size we then (conceptually) divide the object in to ranges of that size and call those &#8220;slices&#8221;. We can then store each slice in a single ATS fragment. We say a slice is <em>touched</em> by a range request if any byte of that request is in the slice. Because we fix the slice size we can skip untouched slices without losing the ability to insert fragments for those slices later.</p>
+<p>Given that fixed fragment size we then (conceptually) divide the object in to ranges of that size and call those “slices”. We can then store each slice in a single ATS fragment. We say a slice is <em>touched</em> by a range request if any byte of that request is in the slice. Because we fix the slice size we can skip untouched slices without losing the ability to insert fragments for those slices later.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Because fragments are computationally chained it is not possible to insert a fragment. The ordering of fragment cache ids is fixed by the cache id of the earliest fragment.</p>
@@ -137,7 +134,7 @@
 <h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>An open question is the handling of 304 responses and object refresh in general. If the client makes a range request that touches previously untouched fragments we can&#8217;t attach an <code class="docutils literal"><span class="pre">If-Modified-Since</span></code> field to it. For a rane request that can be satisfied from data in the cache, I don&#8217;t know if we can attach an <code class="docutils literal"><span class="pre">If-Modified-Since</span></code>. If that is possible then I presume we would treat the entire object uniformly, that is all bytes are valid or stale, not just the fragments touched by the client request.</p>
+<p>An open question is the handling of 304 responses and object refresh in general. If the client makes a range request that touches previously untouched fragments we can’t attach an <code class="docutils literal"><span class="pre">If-Modified-Since</span></code> field to it. For a rane request that can be satisfied from data in the cache, I don’t know if we can attach an <code class="docutils literal"><span class="pre">If-Modified-Since</span></code>. If that is possible then I presume we would treat the entire object uniformly, that is all bytes are valid or stale, not just the fragments touched by the client request.</p>
 <p class="last">A related issue is if we get different expiration data for different requests to the origin server. Should the object be updated with the new expiration data or keep the original?</p>
 </div>
 <div class="admonition note">
@@ -146,11 +143,11 @@
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Although we must rewrite the first fragment on every request that adds fragments to the partial object we still need to be a bit careful about the full size so that we don&#8217;t write a partial fragment in the false belief that it is the last fragment.</p>
+<p class="last">Although we must rewrite the first fragment on every request that adds fragments to the partial object we still need to be a bit careful about the full size so that we don’t write a partial fragment in the false belief that it is the last fragment.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">It is easiest to  use the target fragment size for the fragment size of a partial object but this is in no way required. Currently I don&#8217;t think it is a useful feature to be able to tune this independently but it would require very little extra work to implement. The main concern would be the additional complexity of configuration as seen by the user, although we could default it to zero which would mean &#8220;use the target fragment size&#8221;. Then it would need to be configured only by those who had an interest in doing so.</p>
+<p class="last">It is easiest to  use the target fragment size for the fragment size of a partial object but this is in no way required. Currently I don’t think it is a useful feature to be able to tune this independently but it would require very little extra work to implement. The main concern would be the additional complexity of configuration as seen by the user, although we could default it to zero which would mean “use the target fragment size”. Then it would need to be configured only by those who had an interest in doing so.</p>
 </div>
 </div>
 </div>
@@ -179,7 +176,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

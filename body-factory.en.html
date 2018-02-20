@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Body Factory Refactoring &#8212; AMC Traffic Server Documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -26,10 +23,10 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="TLS Bridge" href="tls-bridge.en.html" />
+    <link rel="next" title="TSVConn Arguments" href="vconn-args.en.html" />
     <link rel="prev" title="Errata" href="errata.en.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -37,7 +34,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="tls-bridge.en.html" title="TLS Bridge"
+          <a href="vconn-args.en.html" title="TSVConn Arguments"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="errata.en.html" title="Errata"
@@ -82,8 +79,8 @@
   <p class="topless"><a href="errata.en.html"
                         title="previous chapter">Errata</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="tls-bridge.en.html"
-                        title="next chapter">TLS Bridge</a></p>
+  <p class="topless"><a href="vconn-args.en.html"
+                        title="next chapter">TSVConn Arguments</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -134,7 +131,7 @@ but using Traffic Server core mechanisms.</p>
 <li>remove <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_size</span></code></li>
 <li>remove <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_size_fast_allocator_size</span></code></li>
 <li>change <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_buffer_type</span></code> to <code class="code docutils literal"><span class="pre">ats_scoped_str</span></code>. This is
-used to populate the <code class="docutils literal"><span class="pre">Content-Type</span></code> header and so doesn&#8217;t need to be a variable sized buffer.
+used to populate the <code class="docutils literal"><span class="pre">Content-Type</span></code> header and so doesn’t need to be a variable sized buffer.
 It could probably be made a fixed size string of some reasonable length (~128 bytes) without loss
 of generality.</li>
 </ol>
@@ -148,7 +145,7 @@ body of length zero and no body at all.</li>
 </div>
 <div class="section" id="further-work">
 <h2>Further Work<a class="headerlink" href="#further-work" title="Permalink to this headline">¶</a></h2>
-<p>A new &#8220;Format&#8221; class could be done which processes the current log style format strings in a generic
+<p>A new “Format” class could be done which processes the current log style format strings in a generic
 and modular way. The body factory would be updated to use these new classes.</p>
 </div>
 <div class="section" id="documentation">
@@ -263,7 +260,7 @@ function should return <code class="docutils literal"><span class="pre">true</sp
 <p><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader"><code class="xref c c-type docutils literal"><span class="pre">TSIOBufferReader</span></code></a> is an read accessor for <a class="reference internal" href="external-types.en.html#c.TSIOBuffer" title="TSIOBuffer"><code class="xref c c-type docutils literal"><span class="pre">TSIOBuffer</span></code></a>. It represents a location in
 the contents of the buffer. A buffer can have multiple readers and each reader consumes data in the
 buffer independently. Data which for which there are no readers is discarded from the buffer. This
-has two very important consequences &#8211;</p>
+has two very important consequences –</p>
 <ul class="simple">
 <li><dl class="first docutils">
 <dt>Data for which there are no readers and no writer will be discarded. In effect this means without</dt>
@@ -351,7 +348,7 @@ if needed the original reader can be destroyed and replaced by the clone.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="tls-bridge.en.html" title="TLS Bridge"
+          <a href="vconn-args.en.html" title="TSVConn Arguments"
              >next</a> |</li>
         <li class="right" >
           <a href="errata.en.html" title="Errata"
@@ -362,7 +359,7 @@ if needed the original reader can be destroyed and replaced by the clone.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>
