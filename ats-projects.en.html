@@ -62,7 +62,6 @@
 <li><a class="reference internal" href="#id1">Bijection</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#rpc-refactoring">RPC Refactoring</a></li>
 <li><a class="reference internal" href="#traffic-server-core">Traffic Server Core</a><ul>
 <li><a class="reference internal" href="#concurrent-containers">Concurrent Containers</a></li>
 <li><a class="reference internal" href="#tls-extensions">TLS Extensions</a></li>
@@ -130,6 +129,7 @@ large diagram of the projects and their dependencies is <a class="reference exte
 <li class="toctree-l1"><a class="reference internal" href="l4r.en.html">Layer 4 Routing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin-coordination.en.html">Plugin Coordination</a></li>
 <li class="toctree-l1"><a class="reference internal" href="MemArena.en.html">MemArena</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RPC.en.html">RPC Refactor</a></li>
 </ul>
 </div>
 </div>
@@ -178,15 +178,6 @@ single block. This is very useful for data constructed at process start time and
 <h4>Bijection<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
 <p>Given the compacting arena and <code class="code docutils literal"><span class="pre">TSHashTable</span></code> buidling the bijection class is straightforward. Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is the essential technique.</p>
 </div>
-</div>
-<div class="section" id="rpc-refactoring">
-<h3>RPC Refactoring<a class="headerlink" href="#rpc-refactoring" title="Permalink to this headline">¶</a></h3>
-<p>The current RPC mechanism used to communicate between command line tools and <code class="code docutils literal"><span class="pre">traffic_manager</span></code> is rather a mess and implemented in a assymmetric way. It should be refactored in two steps.</p>
-<ul class="simple">
-<li>Move the RPC logic to separate library.</li>
-<li>Make the RPC symmetric / bidirectional.</li>
-</ul>
-<p>As a side project, there is currently a roughly 5 second delay in communications for no apparent reason. As best as I can tell it is a deliberate pause to avoid <code class="code docutils literal"><span class="pre">epoll</span></code>. This should be fixed.</p>
 </div>
 <div class="section" id="traffic-server-core">
 <h3>Traffic Server Core<a class="headerlink" href="#traffic-server-core" title="Permalink to this headline">¶</a></h3>

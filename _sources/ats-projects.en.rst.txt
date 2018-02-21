@@ -27,6 +27,7 @@ Projects
    l4r.en
    plugin-coordination.en
    MemArena.en
+   RPC.en
 
 ======================
 Less Detailed Projects
@@ -84,16 +85,6 @@ Bijection
 +++++++++
 
 Given the compacting arena and :code:`TSHashTable` buidling the bijection class is straightforward. Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is the essential technique.
-
-RPC Refactoring
-===============
-
-The current RPC mechanism used to communicate between command line tools and :code:`traffic_manager` is rather a mess and implemented in a assymmetric way. It should be refactored in two steps.
-
-*  Move the RPC logic to separate library.
-*  Make the RPC symmetric / bidirectional.
-
-As a side project, there is currently a roughly 5 second delay in communications for no apparent reason. As best as I can tell it is a deliberate pause to avoid :code:`epoll`. This should be fixed.
 
 Traffic Server Core
 ===================
