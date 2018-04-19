@@ -11,3 +11,11 @@ Errata
 The Errata library is designed to support returning detail diagnostics from functions on error
 conditions with extremely low overhead on success, and without use of exceptions. This is already in
 the core but needs to be refurbished and used more extensively.
+
+.. class:: Errata
+
+   A class to contain a stack of error messages.
+
+   .. member:: int Errata::count()
+
+      Return the number of messages in the stack.
