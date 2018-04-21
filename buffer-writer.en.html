@@ -60,9 +60,15 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#examples">Examples</a></li>
-<li><a class="reference internal" href="#formatted-output">Formatted Output</a></li>
-<li><a class="reference internal" href="#user-defined-formatting">User Defined Formatting</a></li>
+<li><a class="reference internal" href="#formatted-output">Formatted Output</a><ul>
+<li><a class="reference internal" href="#usage-examples">Usage Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#user-defined-formatting">User Defined Formatting</a><ul>
+<li><a class="reference internal" href="#enum-example">Enum Example</a></li>
 <li><a class="reference internal" href="#specialized-types">Specialized Types</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#global-names">Global Names</a></li>
 <li><a class="reference internal" href="#working-with-standard-i-o">Working with standard I/O</a></li>
 <li><a class="reference internal" href="#reference">Reference</a></li>
@@ -316,8 +322,10 @@ formatted out consists of a format string, containing <em>formats</em>, which ar
 with the values of arguments to the print function.</p>
 <p>The primary use case for formatting is formatted output to fixed buffers. This is by far the
 dominant style of output in Traffic Server and during the design phase I was told any performance loss must be
-minimal. While work has and will be done to extent <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> to operate on non-fixed
-buffers such use is secondary to operating directly on memory.</p>
+minimal. While work has and will be done to extend <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> to operate on non-fixed
+buffers, such use is secondary to operating directly on memory.</p>
+<p>The overriding design goal is to provide the type specific formatting and flexibility of C++ stream
+operators with the performance of <code class="code docutils literal"><span class="pre">snprintf</span></code> and <code class="code docutils literal"><span class="pre">memcpy</span></code>.</p>
 <p>Type safe formatting has two major benefits -</p>
 <ul class="simple">
 <li>No mismatch between the format specifier and the argument. Although some modern compilers do
@@ -325,10 +333,11 @@ better at catching this at run time, there is still risk (especially with non-co
 strings) and divergence between operating systems such that there is no <a class="reference external" href="https://github.com/apache/trafficserver/pull/3476/files">universally correct
 choice</a>. In addition the number of
 arguments can be verified to be correct which is often useful.</li>
-<li>Formatting can be customized per type or even per partial type (e.g. <code class="code docutils literal"><span class="pre">T</span> <span class="pre">*</span></code> for generic
+<li>Formatting can be customized per type or even per partial type (e.g. <code class="code docutils literal"><span class="pre">T*</span></code> for generic
 <code class="code docutils literal"><span class="pre">T</span></code>). This enables embedding common formatting work in the format system once, rather than
 duplicating it in many places (e.g. converting enum values to names). This makes it easier for
-developers to make useful error messages.</li>
+developers to make useful error messages. See <a class="reference internal" href="#bwf-http-debug-name-example"><span class="std std-ref">this example</span></a>
+for more detail.</li>
 </ul>
 <p>As a result of these benefits there exist substitutes for <code class="code docutils literal"><span class="pre">printf</span></code>. Unfortunately most of
 these are rather project specific and don’t suit the use case in Traffic Server. The two best options,
@@ -352,6 +361,10 @@ tries to be as similar as language and internal needs allows.</p>
 literal text in which formats are embedded. Each format marks a place where formatted data of
 an argument will be placed, along with argument specific formatting. The format is divided in to
 three parts, separated by colons.</p>
+<p>While this seems a bit complex, all of it is optional. If default output is acceptable, then BWF
+will work with just the format <code class="docutils literal"><span class="pre">{}</span></code>. In a sense, <code class="docutils literal"><span class="pre">{}</span></code> servers the same function for output as
+<code class="code docutils literal"><span class="pre">auto</span></code> does for programming - the compiler knows the type, it should be able to do the appropriate
+thing without the programmer needing to be explicit.</p>
 <pre>
 <strong id="grammar-token-format">format   </strong> ::=  &quot;{&quot; [name] [&quot;:&quot; [specifier] [&quot;:&quot; extension]] &quot;}&quot;
 <strong id="grammar-token-name">name     </strong> ::=  index | ICHAR+
@@ -495,8 +508,8 @@ to provide extensions for specific argument types (e.g., IP addresses). The base
 but passes it on to the formatting function which can then behave different based on the
 extension.</dd>
 </dl>
-<p>While this seems a bit complex, all of it is optional. If default output is acceptable, then BWF
-will work with just the format <code class="docutils literal"><span class="pre">{}</span></code>.</p>
+<div class="section" id="usage-examples">
+<h3>Usage Examples<a class="headerlink" href="#usage-examples" title="Permalink to this headline">¶</a></h3>
 <p>Some examples, comparing <code class="code docutils literal"><span class="pre">snprintf</span></code> and <a class="reference internal" href="#_CPPv2N12BufferWriter5printE8TextViewz" title="BufferWriter::print"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::print()</span></code></a>.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
    <span class="k">auto</span> <span class="n">n</span> <span class="o">=</span> <span class="n">snprintf</span><span class="p">(</span><span class="n">buff</span><span class="p">,</span> <span class="n">len</span><span class="p">,</span> <span class="s">&quot;count %d&quot;</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
@@ -527,18 +540,20 @@ will work with just the format <code class="docutils literal"><span class="pre">
 <span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Number of items {}&quot;</span><span class="p">,</span> <span class="n">thing</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">());</span>
 </pre></div>
 </div>
-<p>Enumerations</p>
+<p>Enumerations become easier. Note in this case argument indices are used in order to print both a
+name and a value for the enumeration. The internal implementation of this is <a class="reference internal" href="#bwf-http-debug-name-example"><span class="std std-ref">here</span></a></p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-   <span class="k">auto</span> <span class="n">n</span> <span class="o">=</span> <span class="n">snprintf</span><span class="p">(</span><span class="n">buff</span><span class="p">,</span> <span class="n">len</span><span class="p">,</span> <span class="s">&quot;Unexpected event %s[%d] for &#39;%c&#39; to %.*s&quot;</span><span class="p">,</span>
-      <span class="n">HttpDebugNames</span><span class="o">::</span><span class="n">get_event_name</span><span class="p">(</span><span class="n">event</span><span class="p">),</span>
-      <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">event</span><span class="p">),</span> <span class="n">current_char</span><span class="p">,</span>
+   <span class="k">auto</span> <span class="n">n</span> <span class="o">=</span> <span class="n">snprintf</span><span class="p">(</span><span class="n">buff</span><span class="p">,</span> <span class="n">len</span><span class="p">,</span> <span class="s">&quot;Unexpected event %d in state %s[%d] for %.*s&quot;</span><span class="p">,</span>
+      <span class="n">event</span><span class="p">,</span>
+      <span class="n">HttpDebugNames</span><span class="o">::</span><span class="n">get_server_state_name</span><span class="p">(</span><span class="n">t_state</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">state</span><span class="p">),</span>
+      <span class="n">t_state</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">state</span><span class="p">,</span>
       <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">host_len</span><span class="p">),</span> <span class="n">host</span><span class="p">);</span>
    <span class="n">buff</span> <span class="o">+=</span> <span class="n">n</span><span class="p">;</span>
    <span class="n">len</span> <span class="o">-=</span> <span class="n">n</span><span class="p">;</span>
 <span class="p">}</span>
 
-<span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Unexpected event {0:s}[{0}] for &#39;{1}&#39; to {2}&quot;</span><span class="p">,</span>
-   <span class="n">event</span><span class="p">,</span> <span class="n">current_char</span><span class="p">,</span> <span class="n">string_view</span><span class="p">{</span><span class="n">host</span><span class="p">,</span> <span class="n">host_len</span><span class="p">});</span>
+<span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Unexpected event {0} in state {1}[{1:d}] for {2}&quot;</span><span class="p">,</span>
+   <span class="n">event</span><span class="p">,</span> <span class="n">t_state</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">state</span><span class="p">,</span> <span class="n">string_view</span><span class="p">{</span><span class="n">host</span><span class="p">,</span> <span class="n">host_len</span><span class="p">});</span>
 </pre></div>
 </div>
 <p>Using <code class="code docutils literal"><span class="pre">std::string</span></code></p>
@@ -560,6 +575,7 @@ will work with just the format <code class="docutils literal"><span class="pre">
 
 <span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Connecting to {} from {}&quot;</span><span class="p">,</span> <span class="n">addr1</span><span class="p">,</span> <span class="n">addr2</span><span class="p">);</span>
 </pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="user-defined-formatting">
@@ -607,9 +623,41 @@ appropriate. In turn other formatters, if given the type <code class="docutils l
 <p>To help reduce duplication, the output stream operator <code class="code docutils literal"><span class="pre">operator&lt;&lt;</span></code> is defined to call this
 function with a default constructed <code class="code docutils literal"><span class="pre">BWFSpec</span></code> instance so that absent a specific overload
 a BWF formatter will also provide a C++ stream output operator.</p>
+<div class="section" id="enum-example">
+<h3>Enum Example<a class="headerlink" href="#enum-example" title="Permalink to this headline">¶</a></h3>
+<p id="bwf-http-debug-name-example">For a specific example of using BufferWriter formatting to make debug messages easier, consider the
+case of <code class="code docutils literal"><span class="pre">HttpDebugNames</span></code>. This is a class that serves as a namespace to provide various
+methods that convert state machine related data into descriptive strings. Currently this is
+undocumented (and even uncommented) and is therefore used infrequently, as that requires either
+blind cut and paste, or tracing through header files to understand the code. This can be greatly
+simplified by adding formatters to <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/proxy/http/HttpDebugNames.h">HttpDebugNames.h</a></p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kr">inline</span> <span class="n">ts</span><span class="o">::</span><span class="n">BufferWriter</span> <span class="o">&amp;</span>
+<span class="n">bwformat</span><span class="p">(</span><span class="n">ts</span><span class="o">::</span><span class="n">BufferWriter</span> <span class="o">&amp;</span><span class="n">w</span><span class="p">,</span> <span class="n">ts</span><span class="o">::</span><span class="n">BWFSpec</span> <span class="k">const</span> <span class="o">&amp;</span><span class="n">spec</span><span class="p">,</span> <span class="n">HttpTransact</span><span class="o">::</span><span class="n">ServerState_t</span> <span class="n">state</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="n">has_numeric_type</span><span class="p">())</span> <span class="p">{</span>
+      <span class="c1">// allow the user to force numeric output with &#39;{:d}&#39; or other numeric type.</span>
+      <span class="k">return</span> <span class="n">bwformat</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">uintmax_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">state</span><span class="p">));</span>
+   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="n">bwformat</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">HttpDebugNames</span><span class="o">::</span><span class="n">get_server_state_name</span><span class="p">(</span><span class="n">state</span><span class="p">));</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>With this in place, any one wanting to print the name of the server state enumeration can do</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;state {}&quot;</span><span class="p">,</span> <span class="n">t_state</span><span class="p">.</span><span class="n">current_state</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>There is no need to remember names like <code class="code docutils literal"><span class="pre">HttpDebugNames</span></code> nor which method in it does the
+conversion. The developer making the <code class="code docutils literal"><span class="pre">HttpDebugNames</span></code> class or equivalent can take care of
+that in the same header file that provides the type.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In actual practice, due to this method being so obscure it’s not actually used as far as I
+can determine.</p>
+</div>
 </div>
 <div class="section" id="specialized-types">
-<h2>Specialized Types<a class="headerlink" href="#specialized-types" title="Permalink to this headline">¶</a></h2>
+<h3>Specialized Types<a class="headerlink" href="#specialized-types" title="Permalink to this headline">¶</a></h3>
 <p>These are types for which there exists a type specific BWF formatter.</p>
 <dl class="docutils">
 <dt><code class="xref cpp cpp-class docutils literal"><span class="pre">string_view</span></code></dt>
@@ -666,6 +714,7 @@ the first character is treated as the internal fill character. If omitted ‘0�
 </dd>
 </dl>
 </div>
+</div>
 <div class="section" id="global-names">
 <h2>Global Names<a class="headerlink" href="#global-names" title="Permalink to this headline">¶</a></h2>
 <p>As a convenience, there are a few predefined global names that can be used to generate output. These
@@ -714,7 +763,9 @@ examples assume <code class="code docutils literal"><span class="pre">bw</span><
 </pre></div>
 </div>
 <p>Using a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> with <code class="code docutils literal"><span class="pre">printf</span></code> is straight forward by use of the sized string format code.</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%.*s&quot;</span><span class="p">,</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">bw</span><span class="p">.</span><span class="n">size</span><span class="p">()),</span> <span class="n">bw</span><span class="p">.</span><span class="n">data</span><span class="p">());</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">LocalBufferWriter</span><span class="o">&lt;</span><span class="mi">256</span><span class="o">&gt;</span> <span class="n">bw</span><span class="p">;</span>
+<span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Failed to connect to {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">addr1</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">&quot;%.*s&quot;</span><span class="p">,</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">bw</span><span class="p">.</span><span class="n">size</span><span class="p">()),</span> <span class="n">bw</span><span class="p">.</span><span class="n">data</span><span class="p">());</span>
 </pre></div>
 </div>
 <p>In C++, writing to a stream can be done without any local variables at all.</p>
@@ -938,7 +989,7 @@ supported can be extended by defining an overload of this function for the types
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>
