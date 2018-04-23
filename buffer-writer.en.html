@@ -66,6 +66,7 @@
 </li>
 <li><a class="reference internal" href="#user-defined-formatting">User Defined Formatting</a><ul>
 <li><a class="reference internal" href="#enum-example">Enum Example</a></li>
+<li><a class="reference internal" href="#argument-forwarding">Argument Forwarding</a></li>
 <li><a class="reference internal" href="#specialized-types">Specialized Types</a></li>
 </ul>
 </li>
@@ -541,7 +542,12 @@ extension.</dd>
 </pre></div>
 </div>
 <p>Enumerations become easier. Note in this case argument indices are used in order to print both a
-name and a value for the enumeration. The internal implementation of this is <a class="reference internal" href="#bwf-http-debug-name-example"><span class="std std-ref">here</span></a></p>
+name and a value for the enumeration. A key benefit here is the lack of need for a developer to know
+the specific free function or method needed to do the name lookup. In this case,
+<code class="code docutils literal"><span class="pre">HttpDebugNuames::get_server_state_name</span></code>. Rather than every developer having to memorize the
+assocation between the type and the name lookup function, or grub through the code hoping for an
+example, the compiler is told once and henceforth does the lookup. The internal implementation of
+this is <a class="reference internal" href="#bwf-http-debug-name-example"><span class="std std-ref">here</span></a></p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
    <span class="k">auto</span> <span class="n">n</span> <span class="o">=</span> <span class="n">snprintf</span><span class="p">(</span><span class="n">buff</span><span class="p">,</span> <span class="n">len</span><span class="p">,</span> <span class="s">&quot;Unexpected event %d in state %s[%d] for %.*s&quot;</span><span class="p">,</span>
       <span class="n">event</span><span class="p">,</span>
@@ -556,7 +562,9 @@ name and a value for the enumeration. The internal implementation of this is <a 
    <span class="n">event</span><span class="p">,</span> <span class="n">t_state</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">state</span><span class="p">,</span> <span class="n">string_view</span><span class="p">{</span><span class="n">host</span><span class="p">,</span> <span class="n">host_len</span><span class="p">});</span>
 </pre></div>
 </div>
-<p>Using <code class="code docutils literal"><span class="pre">std::string</span></code></p>
+<p>Using <code class="code docutils literal"><span class="pre">std::string</span></code>, which illustrates the advantage of a formatter overloading knowing how to
+get the size from the object and not having to deal with restrictions on the numeric type (e.g.,
+that <code class="code docutils literal"><span class="pre">%.*s</span></code> requires an <code class="code docutils literal"><span class="pre">int</span></code>, not a <code class="code docutils literal"><span class="pre">size_t</span></code>).</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
    <span class="n">len</span> <span class="o">-=</span> <span class="n">snprintf</span><span class="p">(</span><span class="n">buff</span><span class="p">,</span> <span class="n">len</span><span class="p">,</span> <span class="s">&quot;%.*s&quot;</span><span class="p">,</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">size</span><span class="p">()),</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
 <span class="p">}</span>
@@ -564,9 +572,15 @@ name and a value for the enumeration. The internal implementation of this is <a 
 <span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>IP addresses</p>
+<p>IP addresses are much easier. There are two big advantages here. One is not having to know the
+conversion function name. The other is the lack of having to declare local variables and having to
+remember what the appropriate size is. Beyond there this code is more performant because the output
+is rendered directly in the output buffer, not rendered to a temporary and then copied over. This
+lack of local variables can be particularly nice in the context of a <code class="code docutils literal"><span class="pre">switch</span></code> statement where
+local variables for a <code class="code docutils literal"><span class="pre">case</span></code> mean having to add extra braces, or declare the temporaries at an
+outer scope.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="kt">char</span> <span class="n">ip_buff1</span><span class="p">[</span><span class="n">INET6_ADDRPORTSTRLEN</span><span class="p">];</span>
-<span class="kt">char</span> <span class="n">ip_buff2</span><span class="p">[</span><span class="n">INET6_ADDRPRTSTRLEN</span><span class="p">];</span>
+<span class="kt">char</span> <span class="n">ip_buff2</span><span class="p">[</span><span class="n">INET6_ADDRPORTSTRLEN</span><span class="p">];</span>
 <span class="n">ats_ip_nptop</span><span class="p">(</span><span class="n">ip_buff1</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">ip_buff1</span><span class="p">),</span> <span class="n">addr1</span><span class="p">);</span>
 <span class="n">ats_ip_nptop</span><span class="p">(</span><span class="n">ip_buff2</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">ip_buff2</span><span class="p">),</span> <span class="n">add2</span><span class="p">);</span>
 <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
@@ -655,6 +669,24 @@ that in the same header file that provides the type.</p>
 <p class="last">In actual practice, due to this method being so obscure it’s not actually used as far as I
 can determine.</p>
 </div>
+</div>
+<div class="section" id="argument-forwarding">
+<h3>Argument Forwarding<a class="headerlink" href="#argument-forwarding" title="Permalink to this headline">¶</a></h3>
+<p>It will frequently be useful for other libraries to allow local formatting (such as <code class="code docutils literal"><span class="pre">Errata</span></code>).
+For such cases the class methods will need to take variable arguments and then forward them on to
+the formatter. <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> provides the <a class="reference internal" href="#_CPPv2IDpEN12BufferWriter6printvE8TextViewRRNSt5tupleIDp4ArgsEE" title="BufferWriter::printv"><code class="xref cpp cpp-func docutils literal"><span class="pre">BufferWriter::printv()</span></code></a> overload for this
+purpose. Instead of taking variable arguments, these overloads take a <code class="code docutils literal"><span class="pre">std::tuple</span></code> of
+arguments. Such as tuple is easily created with <a class="reference external" href="http://en.cppreference.com/w/cpp/utility/tuple/forward_as_tuple">std::forward_as_tuple</a>. A standard implementation that
+uses the <code class="code docutils literal"><span class="pre">std::string</span></code> overload for <a class="reference internal" href="#_CPPv2IDpE7bwprintRNSt6stringE11string_viewDpRR4Args" title="bwprint"><code class="xref cpp cpp-func docutils literal"><span class="pre">bwprint()</span></code></a> would look like</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span> <span class="k">typename</span> <span class="p">...</span> <span class="n">Args</span> <span class="o">&gt;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span><span class="p">(</span><span class="n">string_view</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">Args</span> <span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+   <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">zret</span><span class="p">;</span>
+   <span class="k">return</span> <span class="n">ts</span><span class="o">::</span><span class="n">bwprint</span><span class="p">(</span><span class="n">zret</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">forward_as_tuple</span><span class="p">(</span><span class="n">args</span><span class="p">...));</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This gathers the argument (generally references to the arguments) in to a single tuple which is then
+passed by reference, to avoid restacking the arguments for every nested function call.</p>
 </div>
 <div class="section" id="specialized-types">
 <h3>Specialized Types<a class="headerlink" href="#specialized-types" title="Permalink to this headline">¶</a></h3>
@@ -762,20 +794,27 @@ examples assume <code class="code docutils literal"><span class="pre">bw</span><
 <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">bw</span><span class="p">.</span><span class="n">view</span><span class="p">();</span> <span class="c1">// identical effect as the previous line.</span>
 </pre></div>
 </div>
-<p>Using a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> with <code class="code docutils literal"><span class="pre">printf</span></code> is straight forward by use of the sized string format code.</p>
+<p>Using a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a> with <code class="code docutils literal"><span class="pre">printf</span></code> is straight forward by use of the sized string
+format code.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">LocalBufferWriter</span><span class="o">&lt;</span><span class="mi">256</span><span class="o">&gt;</span> <span class="n">bw</span><span class="p">;</span>
-<span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Failed to connect to {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">addr1</span><span class="p">);</span>
-<span class="n">printf</span><span class="p">(</span><span class="s">&quot;%.*s&quot;</span><span class="p">,</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">bw</span><span class="p">.</span><span class="n">size</span><span class="p">()),</span> <span class="n">bw</span><span class="p">.</span><span class="n">data</span><span class="p">());</span>
+<span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Failed to connect to {}&quot;</span><span class="p">,</span> <span class="n">addr1</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">&quot;%.*s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">bw</span><span class="p">.</span><span class="n">size</span><span class="p">()),</span> <span class="n">bw</span><span class="p">.</span><span class="n">data</span><span class="p">());</span>
 </pre></div>
 </div>
-<p>In C++, writing to a stream can be done without any local variables at all.</p>
+<p>Alternatively the output can be null terminated in the formatting to avoid having to pass the size.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">ts</span><span class="o">::</span><span class="n">LocalBufferWriter</span><span class="o">&lt;</span><span class="mi">256</span><span class="o">&gt;</span> <span class="n">bw</span><span class="p">;</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">bw</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Failed to connect to {}</span><span class="se">\0</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">addr1</span><span class="p">).</span><span class="n">data</span><span class="p">());</span>
+</pre></div>
+</div>
+<p>When using C++ stream I/O, writing to a stream can be done without any local variables at all.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">ts</span><span class="o">::</span><span class="n">LocalBufferWriter</span><span class="o">&lt;</span><span class="mi">256</span><span class="o">&gt;</span><span class="p">().</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Failed to connect to {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">addr1</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>This is quite handy for temporary debugging messages as it avoids having to clean up local variable
+<p>This is handy for temporary debugging messages as it avoids having to clean up local variable
 declarations later, particularly when the types involved themselves require additional local
 declarations (such as in this example, an IP address which would normally require a local text
-buffer for conversion before printing).</p>
+buffer for conversion before printing). As noted previously this is particularly useful inside a
+<code class="code docutils literal"><span class="pre">case</span></code> where local variables are more annoying to set up.</p>
 </div>
 <div class="section" id="reference">
 <h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
@@ -890,6 +929,12 @@ the characters needed, then allocating a sufficiently sized buffer and actually 
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv2IDpEN12BufferWriter6printvE8TextViewRRNSt5tupleIDp4ArgsEE">
+template&lt;typename ...<code class="descname">Args</code>&gt;<br /><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">printv</code><span class="sig-paren">(</span>TextView <em>fmt</em>, <a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::tuple&lt;<a class="reference internal" href="#_CPPv2IDpEN12BufferWriter6printvE8TextViewRRNSt5tupleIDp4ArgsEE" title="BufferWriter::printv::Args">Args</a>...&gt; &amp;&amp;<em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2IDpEN12BufferWriter6printvE8TextViewRRNSt5tupleIDp4ArgsEE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Print the arguments in the tuple <em>args</em> according to the format. See <a class="reference internal" href="#bw-formatting">bw-formatting</a>.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_CPPv2NK12BufferWriterrsERNSt7ostreamE">
 <span id="BufferWriter::rshift-operator__osRC"></span><a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::ostream &amp;<code class="descclassname"></code><code class="descname">operator&gt;&gt;</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::ostream &amp;<em>stream</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK12BufferWriterrsERNSt7ostreamE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Write the contents of the buffer to <em>stream</em> and return <em>stream</em>.</p>
@@ -917,9 +962,14 @@ data is written, all data past the maximum size is discarded.</p>
 
 <dl class="function">
 <dt id="_CPPv2N17FixedBufferWriter6reduceE6size_t">
-<span id="FixedBufferWriter::reduce__s"></span><code class="descclassname"></code><code class="descname">reduce</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N17FixedBufferWriter6reduceE6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Roll back the output to <em>n</em> bytes. This is useful primarily for clearing the buffer by
-calling <code class="code docutils literal"><span class="pre">reduce(0)</span></code>.</p>
+<span id="FixedBufferWriter::reduce__s"></span><a class="reference internal" href="#_CPPv217FixedBufferWriter" title="FixedBufferWriter">FixedBufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">reduce</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N17FixedBufferWriter6reduceE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Roll back the output to have <em>n</em> valid (used) bytes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N17FixedBufferWriter5resetEv">
+<span id="FixedBufferWriter::reset"></span><a class="reference internal" href="#_CPPv217FixedBufferWriter" title="FixedBufferWriter">FixedBufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N17FixedBufferWriter5resetEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Equivalent to <code class="code docutils literal"><span class="pre">reduce(0)</span></code>, provide for convenience.</p>
 </dd></dl>
 
 <dl class="function">
@@ -938,7 +988,8 @@ not be reserved if <em>reserve</em> is larger than the remaining output space.</
 template&lt;<a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <code class="descclassname"></code><code class="descname">N</code>&gt;<br /><em class="property">class </em><code class="descclassname"></code><code class="descname">LocalBufferWriter</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a><a class="headerlink" href="#_CPPv2I_6size_tE17LocalBufferWriter" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>This is a convenience class which is a subclass of <a class="reference internal" href="#_CPPv217FixedBufferWriter" title="FixedBufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">FixedBufferWriter</span></code></a>. It which creates a
 buffer as a member rather than having an external buffer that is passed to the instance. The
-buffer is <em>N</em> bytes long.</p>
+buffer is <em>N</em> bytes long. This differs from its super class only in the constructor, which
+is only a default constructor.</p>
 <dl class="function">
 <dt id="_CPPv2N17LocalBufferWriter17LocalBufferWriter17LocalBufferWriterEv">
 <span id="LocalBufferWriter::LocalBufferWriter::LocalBufferWriter"></span><code class="descclassname">LocalBufferWriter::</code><code class="descname">LocalBufferWriter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N17LocalBufferWriter17LocalBufferWriter17LocalBufferWriterEv" title="Permalink to this definition">¶</a><br /></dt>
@@ -960,6 +1011,26 @@ members. This is useful to specialized implementations of <a class="reference in
 template&lt;typename <code class="descname">V</code>&gt;<br /><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<code class="descclassname"></code><code class="descname">bwformat</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter">BufferWriter</a> &amp;<em>w</em>, <a class="reference internal" href="#_CPPv27BWFSpec" title="BWFSpec">BWFSpec</a> <em class="property">const</em> &amp;<em>spec</em>, <a class="reference internal" href="#_CPPv2I0E8bwformatR12BufferWriterR7BWFSpecR1V" title="bwformat::V">V</a> <em class="property">const</em> &amp;<em>v</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2I0E8bwformatR12BufferWriterR7BWFSpecR1V" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>A family of overloads that perform formatted output on a <a class="reference internal" href="#_CPPv212BufferWriter" title="BufferWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">BufferWriter</span></code></a>. The set of types
 supported can be extended by defining an overload of this function for the types.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2IDpE7bwprintRNSt6stringE11string_viewDpRR4Args">
+template&lt;typename ...<code class="descname">Args</code>&gt;<br /><a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv2NSt6stringE" title="std::string">string</a> &amp;<code class="descclassname"></code><code class="descname">bwprint</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv2NSt6stringE" title="std::string">string</a> &amp;<em>s</em>, string_view <em>format</em>, <a class="reference internal" href="#_CPPv2IDpE7bwprintRNSt6stringE11string_viewDpRR4Args" title="bwprint::Args">Args</a>&amp;&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2IDpE7bwprintRNSt6stringE11string_viewDpRR4Args" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Generate formatted output in <em>s</em> based on the <em>format</em> and arguments <em>args</em>. The
+string <em>s</em> is adjusted in size to be the exact length as required by the output. If the
+string already had enough capacity it is not re-allocated, otherwise the resizing will cause
+a re-allocation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2IDpE8bwprintvRNSt6stringE11string_viewNSt5tupleIDp4ArgsEE">
+template&lt;typename ...<code class="descname">Args</code>&gt;<br /><a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv2NSt6stringE" title="std::string">string</a> &amp;<code class="descclassname"></code><code class="descname">bwprintv</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv2NSt6stringE" title="std::string">string</a> &amp;<em>s</em>, string_view <em>format</em>, <a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::tuple&lt;<a class="reference internal" href="#_CPPv2IDpE8bwprintvRNSt6stringE11string_viewNSt5tupleIDp4ArgsEE" title="bwprintv::Args">Args</a>...&gt; <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2IDpE8bwprintvRNSt6stringE11string_viewNSt5tupleIDp4ArgsEE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Generate formatted output in <em>s</em> based on the <em>format</em> and <em>args</em>, which must be a
+tuple of the arguments to use for the format. The string <em>s</em> is adjusted in size to be the
+exact length as required by the output. If the string already had enough capacity it is not
+re-allocated, otherwise the resizing will cause a re-allocation.</p>
+<p>This overload is used primarily as a back end to another function which takes the arguments for
+the formatting independently.</p>
 </dd></dl>
 
 </div>
@@ -989,7 +1060,7 @@ supported can be extended by defining an overload of this function for the types
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

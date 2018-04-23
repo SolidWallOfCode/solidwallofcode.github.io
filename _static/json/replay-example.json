@@ -1,0 +1,13 @@
+{
+  "meta": { "version": "1.0" },
+  "sessions": [
+    { "protocol": "https",
+      "connect-time": 1000,
+      "transactions": [
+        {
+          "uuid": "id-thing"
+        }
+      ]
+    }
+  ]
+}

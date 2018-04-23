@@ -465,8 +465,12 @@ Some examples, comparing :code:`snprintf` and :func:`BufferWriter::print`. ::
    bw.print("Number of items {}", thing->count());
 
 Enumerations become easier. Note in this case argument indices are used in order to print both a
-name and a value for the enumeration. The internal implementation of this is :ref:`here
-<bwf-http-debug-name-example>` ::
+name and a value for the enumeration. A key benefit here is the lack of need for a developer to know
+the specific free function or method needed to do the name lookup. In this case,
+:code:`HttpDebugNuames::get_server_state_name`. Rather than every developer having to memorize the
+assocation between the type and the name lookup function, or grub through the code hoping for an
+example, the compiler is told once and henceforth does the lookup. The internal implementation of
+this is :ref:`here <bwf-http-debug-name-example>` ::
 
    if (len > 0) {
       auto n = snprintf(buff, len, "Unexpected event %d in state %s[%d] for %.*s",
@@ -481,7 +485,9 @@ name and a value for the enumeration. The internal implementation of this is :re
    bw.print("Unexpected event {0} in state {1}[{1:d}] for {2}",
       event, t_state.current.state, string_view{host, host_len});
 
-Using :code:`std::string` ::
+Using :code:`std::string`, which illustrates the advantage of a formatter overloading knowing how to
+get the size from the object and not having to deal with restrictions on the numeric type (e.g.,
+that :code:`%.*s` requires an :code:`int`, not a :code:`size_t`). ::
 
    if (len > 0) {
       len -= snprintf(buff, len, "%.*s", static_cast<int>(s.size()), s.data);
@@ -489,10 +495,16 @@ Using :code:`std::string` ::
 
    bw.print("{}", s);
 
-IP addresses ::
+IP addresses are much easier. There are two big advantages here. One is not having to know the
+conversion function name. The other is the lack of having to declare local variables and having to
+remember what the appropriate size is. Beyond there this code is more performant because the output
+is rendered directly in the output buffer, not rendered to a temporary and then copied over. This
+lack of local variables can be particularly nice in the context of a :code:`switch` statement where
+local variables for a :code:`case` mean having to add extra braces, or declare the temporaries at an
+outer scope. ::
 
    char ip_buff1[INET6_ADDRPORTSTRLEN];
-   char ip_buff2[INET6_ADDRPRTSTRLEN];
+   char ip_buff2[INET6_ADDRPORTSTRLEN];
    ats_ip_nptop(ip_buff1, sizeof(ip_buff1), addr1);
    ats_ip_nptop(ip_buff2, sizeof(ip_buff2), add2);
    if (len > 0) {
@@ -586,6 +598,26 @@ that in the same header file that provides the type.
 
    In actual practice, due to this method being so obscure it's not actually used as far as I
    can determine.
+
+Argument Forwarding
+-------------------
+
+It will frequently be useful for other libraries to allow local formatting (such as :code:`Errata`).
+For such cases the class methods will need to take variable arguments and then forward them on to
+the formatter. :class:`BufferWriter` provides the :func:`BufferWriter::printv` overload for this
+purpose. Instead of taking variable arguments, these overloads take a :code:`std::tuple` of
+arguments. Such as tuple is easily created with `std::forward_as_tuple
+<http://en.cppreference.com/w/cpp/utility/tuple/forward_as_tuple>`__. A standard implementation that
+uses the :code:`std::string` overload for :func:`bwprint` would look like ::
+
+   template < typename ... Args >
+   std::string message(string_view fmt, Args &&... args) {
+      std::string zret;
+      return ts::bwprint(zret, fmt, std::forward_as_tuple(args...));
+   }
+
+This gathers the argument (generally references to the arguments) in to a single tuple which is then
+passed by reference, to avoid restacking the arguments for every nested function call.
 
 Specialized Types
 -----------------
@@ -705,24 +737,31 @@ For convenience a stream operator for :code:`std::stream` is provided to make th
    std::cout << bw;
    std::cout << bw.view(); // identical effect as the previous line.
 
-Using a :class:`BufferWriter` with :code:`printf` is straight forward by use of the sized string format code.
+Using a :class:`BufferWriter` with :code:`printf` is straight forward by use of the sized string
+format code.
 
 .. code-block:: cpp
 
    ts::LocalBufferWriter<256> bw;
-   bw.print("Failed to connect to {}\n", addr1);
-   printf("%.*s", static_cast<int>(bw.size()), bw.data());
+   bw.print("Failed to connect to {}", addr1);
+   printf("%.*s\n", static_cast<int>(bw.size()), bw.data());
 
-In C++, writing to a stream can be done without any local variables at all.
+Alternatively the output can be null terminated in the formatting to avoid having to pass the size. ::
+
+   ts::LocalBufferWriter<256> bw;
+   printf("%s\n", bw.print("Failed to connect to {}\0", addr1).data());
+
+When using C++ stream I/O, writing to a stream can be done without any local variables at all.
 
 .. code-block:: cpp
 
    std::cout << ts::LocalBufferWriter<256>().print("Failed to connect to {}\n", addr1);
 
-This is quite handy for temporary debugging messages as it avoids having to clean up local variable
+This is handy for temporary debugging messages as it avoids having to clean up local variable
 declarations later, particularly when the types involved themselves require additional local
 declarations (such as in this example, an IP address which would normally require a local text
-buffer for conversion before printing).
+buffer for conversion before printing). As noted previously this is particularly useful inside a
+:code:`case` where local variables are more annoying to set up.
 
 Reference
 +++++++++
@@ -807,6 +846,11 @@ Reference
 
       Print the arguments according to the format. See `bw-formatting`_.
 
+   .. function:: template <typename ... Args> \
+         BufferWriter & printv(TextView fmt, std::tuple<Args...> && args)
+
+      Print the arguments in the tuple :arg:`args` according to the format. See `bw-formatting`_.
+
    .. function:: std::ostream & operator >> (std::ostream & stream) const
 
       Write the contents of the buffer to :arg:`stream` and return :arg:`stream`.
@@ -825,10 +869,13 @@ Reference
       Construct an instance that will write to :arg:`buffer` at most :arg:`length` bytes. If more
       data is written, all data past the maximum size is discarded.
 
-   .. function:: reduce(size_t n)
+   .. function:: FixedBufferWriter & reduce(size_t n)
 
-      Roll back the output to :arg:`n` bytes. This is useful primarily for clearing the buffer by
-      calling :code:`reduce(0)`.
+      Roll back the output to have :arg:`n` valid (used) bytes.
+
+   .. function:: FixedBufferWriter & reset()
+
+      Equivalent to :code:`reduce(0)`, provide for convenience.
 
    .. function:: FixedBufferWriter auxWriter(size_t reserve = 0)
 
@@ -841,7 +888,8 @@ Reference
 
    This is a convenience class which is a subclass of :class:`FixedBufferWriter`. It which creates a
    buffer as a member rather than having an external buffer that is passed to the instance. The
-   buffer is :arg:`N` bytes long.
+   buffer is :arg:`N` bytes long. This differs from its super class only in the constructor, which
+   is only a default constructor.
 
    .. function:: LocalBufferWriter::LocalBufferWriter()
 
@@ -857,3 +905,23 @@ Reference
 
    A family of overloads that perform formatted output on a :class:`BufferWriter`. The set of types
    supported can be extended by defining an overload of this function for the types.
+
+.. function:: template < typename ... Args > \
+               std::string& bwprint(std::string & s, string_view format, Args &&... args)
+
+   Generate formatted output in :arg:`s` based on the :arg:`format` and arguments :arg:`args`. The
+   string :arg:`s` is adjusted in size to be the exact length as required by the output. If the
+   string already had enough capacity it is not re-allocated, otherwise the resizing will cause
+   a re-allocation.
+
+.. function:: template < typename ... Args > \
+               std::string& bwprintv(std::string & s, string_view format, std::tuple<Args...> args)
+
+   Generate formatted output in :arg:`s` based on the :arg:`format` and :arg:`args`, which must be a
+   tuple of the arguments to use for the format. The string :arg:`s` is adjusted in size to be the
+   exact length as required by the output. If the string already had enough capacity it is not
+   re-allocated, otherwise the resizing will cause a re-allocation.
+
+   This overload is used primarily as a back end to another function which takes the arguments for
+   the formatting independently.
+

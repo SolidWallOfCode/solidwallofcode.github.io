@@ -71,8 +71,8 @@ Each transaction can also have a UUID which can be used to specify the appropria
 UUID can be sent along with the transaction as an extra header if needed. Otherwise the transactions
 must be matched up based on other data in the request.
 
-*  `File schema <_static/json/replay-file.json>`_.
-*  `Transaction header schema <_static/json/header.json>`_.
+*  `File schema <_static/json/replay-file.json>`__.
+*  `Example <_static/json/replay-example.json>`__.
 
 Diagrams
 ========
