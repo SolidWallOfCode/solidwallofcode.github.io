@@ -23,7 +23,7 @@ Event Notes
 ===========
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
    ATS-Cork-WG-Summary.en
 
