@@ -19,6 +19,14 @@ Projects planned for Apache |TS|.
    ats-projects.en
    poc/poc-index
 
+Event Notes
+===========
+
+.. toctree::
+   :maxdepth: 3
+
+   ATS-Cork-WG-Summary.en
+
 Reference
 =========
 
