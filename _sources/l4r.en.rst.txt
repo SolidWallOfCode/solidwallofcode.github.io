@@ -3,38 +3,110 @@
 .. highlight:: cpp
 .. default-domain:: cpp
 
-Layer 4 Routing
-***************
+Layer 4 Proxying
+****************
 
-Layer 4 routing is the capability to handle inbound connects at the TCP or TLS level. This is
-becoming a desirable capability with the increased use of TLS. While as a standalone capability it
-is not particularly useful, it is becoming commonly the case that given an existing |TS| based
-infrastructure, adding layer 4 routing to it is useful.
+Layer 4 proxying is proxying connections at the layer 3 or 4 level, that is at the TCP or TLS layer. This is distinct from routing in that the connections are terminated at layer 3 in |TS|, not by routing IP packets over the same TCP connection.
 
-Transparency
-============
+There are two primary reasons to use layer 4 proxying.
 
-Transparent connections are related to layer 4 routing. The normal transparent case isn't, because
-it involves full participation by the HTTP state machine, but the blind tunnel option is in effect
-layer 4 routing. The actual contents of the byte stream are not examined but are simply forwarded
-based on the addresses provided by the TCP layer. While a start, this is not at all adequate for
-current use cases.
+*  Control of the properties, particularly TLS properties, of the connection between the client and the server.
 
-SNI Routing
-===========
+*  De facto routing of client to server connections without modification of client or server. This differs from layer 3 routing in that it applies to specific clients and servers, not packets on the network in general.
 
-This is a first pass at providing some useful layer 4 routing. It has several issues which need to be fixed.
+The distinguishing characteristic in both use case is how the connections are made. This becomes more complex in the case of TLS connections and where the TLS connections are terminated, which are not necessarily the same places as the TCP connections. Because the client drives the properties of the connection we can consider the connection properties from the client point of view. The two basic cases are
 
-*  The destination address and the URL for the ``CONNECT`` should be separately specifiable.
-   Otherwise a plugin is required in order to successfully use the functionality.
+Direct connection
+    The client connects directly to the server.
+    To proxy a direction connection the client must send its packets to the proxy. This can be done by adjusting DNS resolution or by adjusting the networking infrastructure must be such that packets that go between the client and the server go through the proxy. In either case the proxy must be able to able to connect to the server or at least the next upstream proxy on the way to the server based on data available in the client connection.
 
-*  It should be possible to specify a direct connection and not one via an HTTP ``CONNECT`` request.
+Explict Proxy
+    The client connects to a known proxy and then uses the ``CONNECT`` method to forward the connection to the server.  Adding additional proxy support will require making the client connect to a different proxy, either by configuring it to do so or by adjusting DNS resolution.
 
-With regard to the latter, the primary implementation problem is resolving an address for the
-upstream destination. In the transparent case there is no need for such resolution as the address is
-implicit in the inbound connection. This does not seem insurmountable, however. The main requirement
-to do the resolution is a continuation to which the HostDB invocation can signal when the address is
-ready. For possible existing code that accomplishes something similar we should check the
-transparent bypass logic.
+For either case the outbound connection from the client can be a "local" or "remote" connection. These cases are distinguished by whether the connection crosses network infrastructure not controlled by the same entity that controls the client. In the local case the client can depend on support from the network infrastructure (e.g. routing that prevents outside packets from entering). In contrast a remote connection must be sufficient of itself.
 
-Separating the upstream destination and the URL for the ``CONNECT`` seems very straight forward.
+Use cases
+=========
+
+Direct remote connect
+---------------------
+
+This case assumes a direct remote connection.
+
+.. uml::
+   :align: center
+   :caption: Network Structure
+
+   hide empty members
+   cloud Cloud
+   actor Client
+
+   [Client] -> [Cloud]
+   [Cloud] -> [Service]
+
+Using a proxy in this scenario can be done using transparency and routing connections through the proxy. However in most environments this level of control of the routing will not be possible and so the client will need to connect to the proxy as if it were the server. In general this will be done by tweaking DNS or reconfiguring the client. When the client connects to the proxy the proxy must in turn connect to the service. Determing the correct upstream connection is the primary challenge. The advantage of transparency is the upstream destination is indicated by the connection. For a TCP only connection from the client the upstream must be explicitly configured in the proxy. If the client connects using TLS then information can be extracted from the initial TLS handshake.
+
+.. uml::
+   :align: center
+   :caption: TLS case
+
+   actor Client
+   participant Proxy
+   participant Service
+
+   Client -[#green]> Proxy : <font color="green">//TCP Connect//</font>
+   Client -[#blue]-> Service : <font color="blue">TLS ""Client HELLO""</font>
+   Proxy -[#green]> Service : <font color="green">//TCP Connect//</font>
+   Proxy -[#blue]-> Service : <font color="blue">TLS ""Client HELLO""</font>
+   note right : Duplicate of <font color="blue">""Client HELLO""</font>
+   Client -[#blue]-> Service : <font color="blue">//TLS Connect//</font>
+
+Remote explicit proxy
+----------------------
+
+In this case the client does a remote proxy connection to the service.
+
+.. uml::
+   :align: center
+   :caption: Network Structure
+
+   hide empty members
+   cloud Cloud
+   actor Client
+
+   [Client] <-> [Cloud]
+   [Cloud] <-> [Proxy]
+   [Proxy] <-> [Service]
+
+.. uml::
+   :align: center
+   :caption: Communications
+
+   actor Client
+   participant Proxy
+   participant Service
+
+   Client -[#green]> Proxy : //TCP Connect//
+   Client -[#red]> Proxy : <font color="red">HTTP ""CONNECT"" Service</font>
+   Proxy -[#green]> Service : //TCP Connect//
+   Client -[#blue]-> Service : <font color="blue">//TLS Connect//</font>
+   note over Proxy : Tunneled by Proxy 
+
+If the requirement is to secure the connection from the client to the proxy this requires adding local proxy to the client, which then forwards to the remote proxy.
+
+.. uml::
+   :align: center
+   :caption: Adding Local Proxy
+
+   hide empty members
+   cloud Cloud
+   actor Client
+   node "Ingress Proxy" as Ingress
+   node "Proxy" as Proxy
+
+   [Client] <-> [Ingress]
+   [Ingress] <-> [Cloud]
+   [Cloud] <-> [Proxy]
+   [Proxy] <-> [Service]
+
+   If the client uses TLS.

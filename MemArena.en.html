@@ -91,23 +91,23 @@
             
   <div class="section" id="memarena">
 <span id="id1"></span><h1>MemArena<a class="headerlink" href="#memarena" title="Permalink to this headline">¶</a></h1>
-<p><a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> provides a memory arena or pool for allocating memory. The intended use is for allocating many small chunks of memory - few, large allocations are best handled independently. The purpose is to amortize the cost of allocation of each chunk across larger allocations in a heap style. In addition the allocated memory is presumed to have similar lifetimes so that all of the memory in the arena can be de-allocatred en masse. This is a memory allocation style used by many cotainers - elements are small and allocated frequently, but all elements are discarded when the container itself is destroyed.</p>
+<p><a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> provides a memory arena or pool for allocating memory. Internally the <a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> allocates memory in large blocks and allocates memory from these blocks. When <a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> is destructed all of the
+memory blocks are deallocated. This is useful when the goal is to</p>
+<ul class="simple">
+<li>amortize allocation costs for many small allocations.</li>
+<li>create better memory locality for containers.</li>
+<li>deallocate memory in bulk.</li>
+</ul>
+<p><a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> has a mechanism for increasing locality by allowing coalescing the arena contents in to a single internal block of memory.</p>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> manages an internal list of memory blocks, out of which it provides allocated
-blocks of memory. When an instance is destructed all the internal blocks are also freed. The
-expected use of this class is as an embedded memory manager for a container class.</p>
-<p>To support coalescence and compaction of memory, the methods <a class="reference internal" href="#_CPPv2N8MemArena6freezeE6size_t" title="MemArena::freeze"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::freeze()</span></code></a> and
-<a class="reference internal" href="#_CPPv2N8MemArena4thawEv" title="MemArena::thaw"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::thaw()</span></code></a> are provided. These create in effect generations of memory allocation.
-Calling <a class="reference internal" href="#_CPPv2N8MemArena6freezeE6size_t" title="MemArena::freeze"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::freeze()</span></code></a> marks a generation. After this call any further allocations will
-be in new internal memory blocks. The corresponding call to <a class="reference internal" href="#_CPPv2N8MemArena4thawEv" title="MemArena::thaw"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::thaw()</span></code></a> cause older
-generations of internal memory to be freed. The general logic for the container would be to freeze,
-re-allocate and copy the container elements, then thaw. This would result in compacted memory
-allocation in a single internal block. The uses cases would be either a process static data
-structure after initialization (coalescing for locality performence) or a container that naturally
-re-allocates (such as a hash table during a bucket expansion). A container could also provide its
-own API for its clients to cause a coalesence.</p>
-<p>Other than freeze / thaw, this class does not offer any mechanism to release memory beyond its destruction. This is not an issue for either process globals or transient arenas.</p>
+<p>When a <a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> is constructed it can be constructed with no allocated memory or an initial memory block of a
+specific size. The <code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena:reserve()</span></code> can specific the size of the next internally allocated block if internally
+allocation should be delayed until <a class="reference internal" href="#_CPPv2N8MemArena5allocE6size_t" title="MemArena::alloc"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::alloc()</span></code></a> is called.</p>
+<p>To support coalescence and compaction of memory for better locality, the methods <a class="reference internal" href="#_CPPv2N8MemArena6freezeE6size_t" title="MemArena::freeze"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::freeze()</span></code></a> and
+<a class="reference internal" href="#_CPPv2N8MemArena4thawEv" title="MemArena::thaw"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::thaw()</span></code></a> are provided. Calling <a class="reference internal" href="#_CPPv2N8MemArena6freezeE6size_t" title="MemArena::freeze"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::freeze()</span></code></a> locks down all current blocks. After this call any further allocations will be in new internal memory blocks. The first internal block will be large enough to hold all of the currently allocated memory, unless a value is passed to <a class="reference internal" href="#_CPPv2N8MemArena6freezeE6size_t" title="MemArena::freeze"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::freeze()</span></code></a> to set the size explicitly. This enables copying all of the objects in the arena in to a single internal
+block. Once this has been done calling <a class="reference internal" href="#_CPPv2N8MemArena4thawEv" title="MemArena::thaw"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::thaw()</span></code></a> will release the frozen memory blocks.</p>
+<p>Other than a freeze / thaw cycle, there is no mechanism to release memory except for the destruction of the <a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a>. This makes <a class="reference internal" href="#_CPPv28MemArena" title="MemArena"><code class="xref cpp cpp-class docutils literal"><span class="pre">MemArena</span></code></a> not suitable for a container that allocates variables sized objects (such as something like a <code class="code docutils literal"><span class="pre">Std::vector</span></code>). A container that allocates the same sized objects (such as a <code class="code docutils literal"><span class="pre">std::map</span></code>) can (and should) use a free list.</p>
 </div>
 <div class="section" id="reference">
 <h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
@@ -121,21 +121,33 @@ own API for its clients to cause a coalesence.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv2N8MemArena8MemArenaE6size_t">
+<span id="MemArena::MemArena__s"></span><code class="descclassname"></code><code class="descname">MemArena</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena8MemArenaE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Construct an arena with an initial internal block with at least <em>n</em> bytes of free space.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_CPPv2N8MemArena5allocE6size_t">
-<span id="MemArena::alloc__s"></span>MemView <code class="descclassname"></code><code class="descname">alloc</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena5allocE6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Allocate an <em>n</em> byte chunk of memory in the arena.</p>
+<span id="MemArena::alloc__s"></span>MemSpan <code class="descclassname"></code><code class="descname">alloc</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena5allocE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Allocate memory of size <em>n</em> bytes in the arena.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N8MemArena7reserveE6size_t">
+<span id="MemArena::reserve__s"></span><a class="reference internal" href="#_CPPv28MemArena" title="MemArena">MemArena</a> &amp;<code class="descclassname"></code><code class="descname">reserve</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena7reserveE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Mark the next internal block to have at least <em>n</em> bytes of available space.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv2N8MemArena6freezeE6size_t">
 <span id="MemArena::freeze__s"></span><a class="reference internal" href="#_CPPv28MemArena" title="MemArena">MemArena</a> &amp;<code class="descclassname"></code><code class="descname">freeze</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv26size_t" title="size_t">size_t</a> <em>n</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena6freezeE6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Block all further allocation from any existing internal blocks. If <em>n</em> is zero then on the next allocation request a block sufficiently large to hold all current allocations is created, otherwise the next internal block will be large enough to hold <em>n</em> bytes.</p>
+<dd><p>Freeze the existing internal memory blocks and do not allocate from them. If <em>n</em> is zero then for the next allocation request a block sufficiently large to hold all of the contents of the frozen memory will be created. If <em>n</em> &gt; 0 the next internal allocation will have a least <em>n</em> bytes of available space.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv2N8MemArena4thawEv">
 <span id="MemArena::thaw"></span><a class="reference internal" href="#_CPPv28MemArena" title="MemArena">MemArena</a> &amp;<code class="descclassname"></code><code class="descname">thaw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N8MemArena4thawEv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Unallocate all internal blocks that were allocated before the last called to <a class="reference internal" href="#_CPPv2N8MemArena6freezeE6size_t" title="MemArena::freeze"><code class="xref cpp cpp-func docutils literal"><span class="pre">MemArena::freeze()</span></code></a>.</p>
+<dd><p>Free frozen memory.</p>
 </dd></dl>
 
 </dd></dl>
