@@ -106,15 +106,50 @@ To proxy a direction connection the client must send its packets to the proxy. T
 <h2>Use cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h2>
 <p>The basic non-proxy connection.</p>
 <div class="figure align-center" id="id1">
+<p class="plantuml">
+<img src="_images/plantuml-ce09cd7e6b09dee1c6f80dcb172b4c84f799427f.png" alt="actor Client
+entity Upstream
+
+Client -[#green]&gt; Upstream : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
+group Optional
+   Client -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;
+end" />
+</p>
 <p class="caption"><span class="caption-text">Simple connection.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>Adding a proxy.</p>
 <div class="figure align-center" id="id2">
+<p class="plantuml">
+<img src="_images/plantuml-3c2202f8778baeafb56f7ec317f3e8f07240ef94.png" alt="actor Client
+participant Proxy
+entity Upstream
+
+Client -[#green]&gt; Proxy : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
+group Optional
+   Client -[#blue]&gt; Proxy : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;
+end
+Proxy -[#green]&gt; Upstream : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
+group Optional
+   Proxy -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;
+end" />
+</p>
 <p class="caption"><span class="caption-text">Proxied connection.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <div class="section" id="tls-termination">
 <h3>TLS Termination<a class="headerlink" href="#tls-termination" title="Permalink to this headline">¶</a></h3>
 <div class="figure align-center" id="id3">
+<p class="plantuml">
+<img src="_images/plantuml-b1a6665f392b8a2abbd99cbe9ce5b050ebee7797.png" alt="actor Client
+participant Proxy
+entity Upstream
+hide footbox
+
+Client -[#green]&gt; Proxy : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
+Client -[#blue]&gt; Proxy : &lt;font color=&quot;blue&quot;&gt;// TLS Connect //&lt;/font&gt;
+note over Proxy : Client verifies proxy provided\ncertificate as if for Upstream
+Proxy -[#green]&gt; Upstream : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
+Proxy -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;// TLS Connect //&lt;/font&gt;" />
+</p>
 <p class="caption"><span class="caption-text">TLS Termination</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>The proxy terminates the TLS connection from the client as it it were the Service. This requires the
@@ -124,10 +159,29 @@ proxy to have the private key for the Server public certificate.</p>
 <h3>Direct remote connect<a class="headerlink" href="#direct-remote-connect" title="Permalink to this headline">¶</a></h3>
 <p>This case assumes a direct remote connection.</p>
 <div class="figure align-center" id="id4">
+<p class="plantuml">
+<img src="_images/plantuml-6715bcbcc559f711a527d618d44053cd3430a9b8.png" alt="actor Client
+entity Upstream
+
+Client -[#green]&gt; Upstream : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
+Client -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;" />
+</p>
 <p class="caption"><span class="caption-text">Simple connection.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>Using a proxy in this scenario can be done using transparency and routing connections through the proxy. However in most environments this level of control of the routing will not be possible and so the client will need to connect to the proxy as if it were the server. In general this will be done by tweaking DNS or reconfiguring the client. When the client connects to the proxy the proxy must in turn connect to the service. Determing the correct upstream connection is the primary challenge. The advantage of transparency is the upstream destination is indicated by the connection. For a TCP only connection from the client the upstream must be explicitly configured in the proxy. If the client connects using TLS then information can be extracted from the initial TLS handshake.</p>
 <div class="figure align-center" id="id5">
+<p class="plantuml">
+<img src="_images/plantuml-769257e9ec6830fa5bfaa503eeab4f0e50c63ed5.png" alt="actor Client
+participant Proxy
+participant Service
+
+Client -[#green]&gt; Proxy : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
+Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;TLS &quot;&quot;Client HELLO&quot;&quot;&lt;/font&gt;
+Proxy -[#green]&gt; Service : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
+Proxy -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;TLS &quot;&quot;Client HELLO&quot;&quot;&lt;/font&gt;
+note right : Duplicate of &lt;font color=&quot;blue&quot;&gt;&quot;&quot;Client HELLO&quot;&quot;&lt;/font&gt;
+Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;" />
+</p>
 <p class="caption"><span class="caption-text">TLS case</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 </div>
@@ -135,13 +189,45 @@ proxy to have the private key for the Server public certificate.</p>
 <h3>Remote explicit proxy<a class="headerlink" href="#remote-explicit-proxy" title="Permalink to this headline">¶</a></h3>
 <p>In this case the client does a remote proxy connection to the service.</p>
 <div class="figure align-center" id="id6">
+<p class="plantuml">
+<img src="_images/plantuml-ac0e4a8924e8fd0f949020c10e513dafefefa0d6.png" alt="hide empty members
+cloud Cloud
+actor Client
+
+[Client] &lt;-&gt; [Cloud]
+[Cloud] &lt;-&gt; [Proxy]
+[Proxy] &lt;-&gt; [Service]" />
+</p>
 <p class="caption"><span class="caption-text">Network Structure</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 <div class="figure align-center" id="id7">
+<p class="plantuml">
+<img src="_images/plantuml-0b42980293f68ba572b7591fe7941e83259c0c94.png" alt="actor Client
+participant Proxy
+participant Service
+
+Client -[#green]&gt; Proxy : //TCP Connect//
+Client -[#red]&gt; Proxy : &lt;font color=&quot;red&quot;&gt;HTTP &quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
+Proxy -[#green]&gt; Service : //TCP Connect//
+Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;
+note over Proxy : Tunneled by Proxy" />
+</p>
 <p class="caption"><span class="caption-text">Communications</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 <p>If the requirement is to secure the connection from the client to the proxy this requires adding local proxy to the client, which then forwards to the remote proxy.</p>
 <div class="figure align-center" id="id8">
+<p class="plantuml">
+<img src="_images/plantuml-3ca00765515acb56570c9bb8b646967ad69100da.png" alt="hide empty members
+cloud Cloud
+actor Client
+node &quot;Ingress Proxy&quot; as Ingress
+node &quot;Proxy&quot; as Proxy
+
+[Client] &lt;-&gt; [Ingress]
+[Ingress] &lt;-&gt; [Cloud]
+[Cloud] &lt;-&gt; [Proxy]
+[Proxy] &lt;-&gt; [Service]" />
+</p>
 <p class="caption"><span class="caption-text">Adding Local Proxy</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 <p>If the client uses TLS.</p>
