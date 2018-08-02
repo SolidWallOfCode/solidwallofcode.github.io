@@ -4,29 +4,20 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Layer 4 Proxying &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '8.0.x',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Plugin Coordination" href="plugin-coordination.en.html" />
-    <link rel="prev" title="Certifier" href="certifier.en.html" /> 
-  </head>
-  <body>
+    <link rel="prev" title="TSVConn Arguments" href="vconn-args.en.html" /> 
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -37,7 +28,7 @@
           <a href="plugin-coordination.en.html" title="Plugin Coordination"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="certifier.en.html" title="Certifier"
+          <a href="vconn-args.en.html" title="TSVConn Arguments"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
@@ -52,6 +43,7 @@
   <ul>
 <li><a class="reference internal" href="#">Layer 4 Proxying</a><ul>
 <li><a class="reference internal" href="#use-cases">Use cases</a><ul>
+<li><a class="reference internal" href="#tls-termination">TLS Termination</a></li>
 <li><a class="reference internal" href="#direct-remote-connect">Direct remote connect</a></li>
 <li><a class="reference internal" href="#remote-explicit-proxy">Remote explicit proxy</a></li>
 </ul>
@@ -61,8 +53,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="certifier.en.html"
-                        title="previous chapter">Certifier</a></p>
+  <p class="topless"><a href="vconn-args.en.html"
+                        title="previous chapter">TSVConn Arguments</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="plugin-coordination.en.html"
                         title="next chapter">Plugin Coordination</a></p>
@@ -75,12 +67,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -105,83 +99,52 @@
 <dd>The client connects directly to the server.
 To proxy a direction connection the client must send its packets to the proxy. This can be done by adjusting DNS resolution or by adjusting the networking infrastructure must be such that packets that go between the client and the server go through the proxy. In either case the proxy must be able to able to connect to the server or at least the next upstream proxy on the way to the server based on data available in the client connection.</dd>
 <dt>Explict Proxy</dt>
-<dd>The client connects to a known proxy and then uses the <code class="docutils literal"><span class="pre">CONNECT</span></code> method to forward the connection to the server.  Adding additional proxy support will require making the client connect to a different proxy, either by configuring it to do so or by adjusting DNS resolution.</dd>
+<dd>The client connects to a known proxy and then uses the <code class="docutils literal notranslate"><span class="pre">CONNECT</span></code> method to forward the connection to the server.  Adding additional proxy support will require making the client connect to a different proxy, either by configuring it to do so or by adjusting DNS resolution.</dd>
 </dl>
 <p>For either case the outbound connection from the client can be a “local” or “remote” connection. These cases are distinguished by whether the connection crosses network infrastructure not controlled by the same entity that controls the client. In the local case the client can depend on support from the network infrastructure (e.g. routing that prevents outside packets from entering). In contrast a remote connection must be sufficient of itself.</p>
 <div class="section" id="use-cases">
 <h2>Use cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h2>
+<p>The basic non-proxy connection.</p>
+<div class="figure align-center" id="id1">
+<p class="caption"><span class="caption-text">Simple connection.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>Adding a proxy.</p>
+<div class="figure align-center" id="id2">
+<p class="caption"><span class="caption-text">Proxied connection.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<div class="section" id="tls-termination">
+<h3>TLS Termination<a class="headerlink" href="#tls-termination" title="Permalink to this headline">¶</a></h3>
+<div class="figure align-center" id="id3">
+<p class="caption"><span class="caption-text">TLS Termination</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<p>The proxy terminates the TLS connection from the client as it it were the Service. This requires the
+proxy to have the private key for the Server public certificate.</p>
+</div>
 <div class="section" id="direct-remote-connect">
 <h3>Direct remote connect<a class="headerlink" href="#direct-remote-connect" title="Permalink to this headline">¶</a></h3>
 <p>This case assumes a direct remote connection.</p>
-<div class="figure align-center" id="id1">
-<p class="plantuml">
-<object data="_images/plantuml-90b878dce3511e4869c455229d6e68077019e9b6.svg" type="image/svg+xml" style="width:262px;height:101px;">
-<img src="_images/plantuml-90b878dce3511e4869c455229d6e68077019e9b6.png" alt="hide empty members
-cloud Cloud
-actor Client
-
-[Client] -&gt; [Cloud]
-[Cloud] -&gt; [Service]" />
-
-</object></p>
-<p class="caption"><span class="caption-text">Network Structure</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<div class="figure align-center" id="id4">
+<p class="caption"><span class="caption-text">Simple connection.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>Using a proxy in this scenario can be done using transparency and routing connections through the proxy. However in most environments this level of control of the routing will not be possible and so the client will need to connect to the proxy as if it were the server. In general this will be done by tweaking DNS or reconfiguring the client. When the client connects to the proxy the proxy must in turn connect to the service. Determing the correct upstream connection is the primary challenge. The advantage of transparency is the upstream destination is indicated by the connection. For a TCP only connection from the client the upstream must be explicitly configured in the proxy. If the client connects using TLS then information can be extracted from the initial TLS handshake.</p>
-<div class="figure align-center" id="id2">
-<p class="plantuml">
-<object data="_images/plantuml-769257e9ec6830fa5bfaa503eeab4f0e50c63ed5.svg" type="image/svg+xml" style="width:511px;height:349px;">
-<img src="_images/plantuml-769257e9ec6830fa5bfaa503eeab4f0e50c63ed5.png" alt="actor Client
-participant Proxy
-participant Service
-
-Client -[#green]&gt; Proxy : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
-Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;TLS &quot;&quot;Client HELLO&quot;&quot;&lt;/font&gt;
-Proxy -[#green]&gt; Service : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
-Proxy -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;TLS &quot;&quot;Client HELLO&quot;&quot;&lt;/font&gt;
-note right : Duplicate of &lt;font color=&quot;blue&quot;&gt;&quot;&quot;Client HELLO&quot;&quot;&lt;/font&gt;
-Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;" />
-
-</object></p>
-<p class="caption"><span class="caption-text">TLS case</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<div class="figure align-center" id="id5">
+<p class="caption"><span class="caption-text">TLS case</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="remote-explicit-proxy">
 <h3>Remote explicit proxy<a class="headerlink" href="#remote-explicit-proxy" title="Permalink to this headline">¶</a></h3>
 <p>In this case the client does a remote proxy connection to the service.</p>
-<div class="figure align-center" id="id3">
-<p class="plantuml">
-<object data="_images/plantuml-ac0e4a8924e8fd0f949020c10e513dafefefa0d6.svg" type="image/svg+xml" style="width:356px;height:101px;">
-<img src="_images/plantuml-ac0e4a8924e8fd0f949020c10e513dafefefa0d6.png" alt="hide empty members
-cloud Cloud
-actor Client
-
-[Client] &lt;-&gt; [Cloud]
-[Cloud] &lt;-&gt; [Proxy]
-[Proxy] &lt;-&gt; [Service]" />
-
-</object></p>
-<p class="caption"><span class="caption-text">Network Structure</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<div class="figure align-center" id="id6">
+<p class="caption"><span class="caption-text">Network Structure</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
-<div class="figure align-center" id="id4">
-<p class="plantuml">
-<object data="_images/plantuml-0b42980293f68ba572b7591fe7941e83259c0c94.svg" type="image/svg+xml" style="width:350px;height:349px;">
-<img src="_images/plantuml-0b42980293f68ba572b7591fe7941e83259c0c94.png" alt="actor Client
-participant Proxy
-participant Service
-
-Client -[#green]&gt; Proxy : //TCP Connect//
-Client -[#red]&gt; Proxy : &lt;font color=&quot;red&quot;&gt;HTTP &quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
-Proxy -[#green]&gt; Service : //TCP Connect//
-Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;
-note over Proxy : Tunneled by Proxy" />
-
-</object></p>
-<p class="caption"><span class="caption-text">Communications</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<div class="figure align-center" id="id7">
+<p class="caption"><span class="caption-text">Communications</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 <p>If the requirement is to secure the connection from the client to the proxy this requires adding local proxy to the client, which then forwards to the remote proxy.</p>
-<div class="figure align-center" id="id5">
-<p class="caption"><span class="caption-text">Adding Local Proxy</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<div class="figure align-center" id="id8">
+<p class="caption"><span class="caption-text">Adding Local Proxy</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
+<p>If the client uses TLS.</p>
 </div>
 </div>
 </div>
@@ -202,7 +165,7 @@ note over Proxy : Tunneled by Proxy" />
           <a href="plugin-coordination.en.html" title="Plugin Coordination"
              >next</a> |</li>
         <li class="right" >
-          <a href="certifier.en.html" title="Certifier"
+          <a href="vconn-args.en.html" title="TSVConn Arguments"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
@@ -210,7 +173,7 @@ note over Proxy : Tunneled by Proxy" />
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

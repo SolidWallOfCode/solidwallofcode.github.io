@@ -25,7 +25,8 @@ Event Notes
 .. toctree::
    :maxdepth: 1
 
-   ATS-Cork-WG-Summary.en
+   notes/ATS-Cork-WG-Summary.en
+   notes/L7R-Denver.en
 
 Reference
 =========

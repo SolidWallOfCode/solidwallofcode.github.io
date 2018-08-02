@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Cache Logic / Operations &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '8.0.x',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -25,8 +17,7 @@
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Cache Data Structures" href="poc-data-structures.en.html" />
     <link rel="prev" title="Partial Object Caching" href="poc-index.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -51,6 +42,7 @@
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Cache Logic / Operations</a><ul>
+<li><a class="reference internal" href="#read">Read</a></li>
 <li><a class="reference internal" href="#cache-startup">Cache Startup</a></li>
 <li><a class="reference internal" href="#lock-waiting">Lock Waiting</a></li>
 <li><a class="reference internal" href="#write-operations">Write Operations</a></li>
@@ -73,12 +65,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -92,56 +86,24 @@
   <div class="section" id="cache-logic-operations">
 <h1>Cache Logic / Operations<a class="headerlink" href="#cache-logic-operations" title="Permalink to this headline">¶</a></h1>
 <p>When an object in cache (or potentiallyin cache) is active in a transaction, it is tracked by an
-<em>ODE</em>, which is an instance of <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> <a class="footnote-reference" href="#f1" id="id1">[1]</a>. For any cache oject the first operation is
+<em>ODE</em>, which is an instance of <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> <a class="footnote-reference" href="#f1" id="id1">[1]</a>. For any cache oject the first operation is
 always a read.</p>
-<p class="plantuml">
-<object data="../_images/plantuml-b40dd2ab55fead8ad0e89f35173772430bc3ff58.svg" type="image/svg+xml" style="width:718px;height:564px;">
-<img src="../_images/plantuml-b40dd2ab55fead8ad0e89f35173772430bc3ff58.png" alt="state open_read : create ODE
-state read_first : altvec_read := true
-state dir_probe : loop on collision
-state altvec_update : altvec_update := true
-state alt_select : wait on altvec_update
-
-[*] --&gt; open_read
-open_read --&gt; dir_probe : !altvec_read
-open_read -&gt; wait_altvec_read : altvec_read
-wait_altvec_read -&gt; dir_probe : wake up
-dir_probe -l&gt; read_first : dir hit
-read_first -&gt; dir_probe : IO complete
-dir_probe --&gt; alt_select : doc hit
-alt_select --&gt; altvec_update : fail
-alt_select -&gt; serve : fresh &amp; covered
-alt_select -&gt; slice_fill : fresh &amp; !covered
-alt_select -l&gt; slice_update : !fresh" />
-
-</object></p>
+<div class="section" id="read">
+<h2>Read<a class="headerlink" href="#read" title="Permalink to this headline">¶</a></h2>
+<p>Reading starts with <code class="code docutils literal notranslate"><span class="pre">Cache::open_read</span></code>. This attempts to get the stripe lock and then probes
+the open directory entries and the stripe directory. A <a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instance is created if
+either the lock is missed or there is a hit in the hit. The other case indicates a valid
+determination that the read is a a miss.</p>
+<p>The next step depends on the result. If the lock was missed <code class="code docutils literal notranslate"><span class="pre">CacheVC::stateProbe</span></code> is next,
+which waits for the stripe lock and then does the cache probe and goes on to the same as
+<code class="code docutils literal notranslate"><span class="pre">Cache::open_read</span></code>. If a <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> was found it is checked for being valid. If
+not, or a <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> wasn’t found then one is created and the <a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> goes to
+the <code class="code docutils literal notranslate"><span class="pre">CacheVC::stateReadFirstDoc</span></code> which loads the first doc fragment from disk. If another
+<a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instance is already reading from disk then the <a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> waits for the read
+to complete.</p>
+</div>
 <div class="section" id="cache-startup">
 <h2>Cache Startup<a class="headerlink" href="#cache-startup" title="Permalink to this headline">¶</a></h2>
-<p class="plantuml">
-<object data="../_images/plantuml-24a9bccb13092e69c932aace8d6de1c3502bbb03.svg" type="image/svg+xml" style="width:602px;height:451px;">
-<img src="../_images/plantuml-24a9bccb13092e69c932aace8d6de1c3502bbb03.png" alt="hide empty members
-hide empty methods
-skinparam defaultTextAlignment left
-
-class CacheProcessor
-class DiskInit
-class CacheDisk
-class VolInit
-class Vol
-
-CacheProcessor --&gt; DiskInit : //create//
-DiskInit --&gt; CacheDisk : [1] open()
-note on link : Start I/O for Span Header
-CacheDisk --&gt; CacheDisk : [2] openStart()
-note on link : Validate Span Header
-CacheDisk -d-&gt; CacheDisk : [3] openDone()
-CacheDisk --&gt; CacheProcessor : [4] diskInitialized()
-
-CacheProcessor --&gt; Cache : [5] open()
-Cache --&gt; VolInit : [6] mainEvent()
-VolInit --&gt; Vol : [7] init()" />
-
-</object></p>
 <p>State machine.</p>
 <img src="../_images/graphviz-736c5fe737e61e9ebf2c53e80359449c214274f7.png" alt="digraph cache {
 
@@ -276,32 +238,32 @@ VolInit --&gt; Vol : [7] init()" />
 </div>
 <div class="section" id="lock-waiting">
 <h2>Lock Waiting<a class="headerlink" href="#lock-waiting" title="Permalink to this headline">¶</a></h2>
-<p>To avoid the current issues with excessive event flows when many <a class="reference internal" href="poc-data-structures.en.html#_CPPv27CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal"><span class="pre">CacheVC</span></code></a> instances are
-waiting for locks along with many failed lock attempts, the <a class="reference internal" href="poc-data-structures.en.html#_CPPv23Vol" title="Vol"><code class="xref cpp cpp-class docutils literal"><span class="pre">Vol</span></code></a> and <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a>
+<p>To avoid the current issues with excessive event flows when many <a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instances are
+waiting for locks along with many failed lock attempts, the <a class="reference internal" href="poc-data-structures.en.html#_CPPv33Vol" title="Vol"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Vol</span></code></a> and <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a>
 maintain lock waits lists. These are organized differently due to the different natures and access
 patterns for the classes. In both cases the wait lists are lists of Traffic Server events that refer to
-<a class="reference internal" href="poc-data-structures.en.html#_CPPv27CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal"><span class="pre">CacheVC</span></code></a> instances. This indirection is critical in order to avoid problems if a
-<a class="reference internal" href="poc-data-structures.en.html#_CPPv27CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal"><span class="pre">CacheVC</span></code></a> is destroyed while waiting for a lock. It can then cancel the event without leaving
+<a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instances. This indirection is critical in order to avoid problems if a
+<a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> is destroyed while waiting for a lock. It can then cancel the event without leaving
 dangerous dangling pointers. The lock owner can then discard canceled events without any further
 dereferencing. This is the same logic used by the core event loop.</p>
-<p><a class="reference internal" href="poc-data-structures.en.html#_CPPv23Vol" title="Vol"><code class="xref cpp cpp-class docutils literal"><span class="pre">Vol</span></code></a> uses thread local storage to store wait lists. For each thread there is a vector of
-event lists. Each <a class="reference internal" href="poc-data-structures.en.html#_CPPv23Vol" title="Vol"><code class="xref cpp cpp-class docutils literal"><span class="pre">Vol</span></code></a> has a numeric identifier which also serves as its index in the
-vector. This is possible because the set of <a class="reference internal" href="poc-data-structures.en.html#_CPPv23Vol" title="Vol"><code class="xref cpp cpp-class docutils literal"><span class="pre">Vol</span></code></a> instances is determined by the cache
-configuration and therefore fixed at process start time. Content for <a class="reference internal" href="poc-data-structures.en.html#_CPPv23Vol" title="Vol"><code class="xref cpp cpp-class docutils literal"><span class="pre">Vol</span></code></a> locks is, based on
+<p><a class="reference internal" href="poc-data-structures.en.html#_CPPv33Vol" title="Vol"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Vol</span></code></a> uses thread local storage to store wait lists. For each thread there is a vector of
+event lists. Each <a class="reference internal" href="poc-data-structures.en.html#_CPPv33Vol" title="Vol"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Vol</span></code></a> has a numeric identifier which also serves as its index in the
+vector. This is possible because the set of <a class="reference internal" href="poc-data-structures.en.html#_CPPv33Vol" title="Vol"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Vol</span></code></a> instances is determined by the cache
+configuration and therefore fixed at process start time. Content for <a class="reference internal" href="poc-data-structures.en.html#_CPPv33Vol" title="Vol"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Vol</span></code></a> locks is, based on
 experimental measurements, the lock with the highest contention and therefore is worth special
 casing for performance. The locks are spread among threads for a few reasons.</p>
 <dl class="docutils">
 <dt>Load Distribution</dt>
-<dd>The number of waiting <a class="reference internal" href="poc-data-structures.en.html#_CPPv27CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal"><span class="pre">CacheVC</span></code></a> instances can be large and having them all dispatch in one pass could easily introduce excessive latency in to whichever event loop gets unlucky. Conversely breaking up thundering herds somewhat from the cache point of view is also beneficial.</dd>
+<dd>The number of waiting <a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instances can be large and having them all dispatch in one pass could easily introduce excessive latency in to whichever event loop gets unlucky. Conversely breaking up thundering herds somewhat from the cache point of view is also beneficial.</dd>
 <dt>Thread Consistency</dt>
-<dd>Waiting <a class="reference internal" href="poc-data-structures.en.html#_CPPv27CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal"><span class="pre">CacheVC</span></code></a> instances can be dispatched on their preferred thread. This is more important for <a class="reference internal" href="poc-data-structures.en.html#_CPPv23Vol" title="Vol"><code class="xref cpp cpp-class docutils literal"><span class="pre">Vol</span></code></a> interaction as those are much close to the HTTP state machine which prefers to always run on a single thread.</dd>
+<dd>Waiting <a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instances can be dispatched on their preferred thread. This is more important for <a class="reference internal" href="poc-data-structures.en.html#_CPPv33Vol" title="Vol"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Vol</span></code></a> interaction as those are much close to the HTTP state machine which prefers to always run on a single thread.</dd>
 </dl>
-<p><a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> uses a single global atomic list of events per instance. It is not feasible to
-use thread local storage because instances of <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> are created and destroyed
+<p><a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> uses a single global atomic list of events per instance. It is not feasible to
+use thread local storage because instances of <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> are created and destroyed
 frequently and the corresponding number of instances fluctuates over a large range. The load
 distribution issue is of lesser importance because of the (usually) much larger number of instances
 which spreads the load when the instances become available. It is unfortunate this causes
-<a class="reference internal" href="poc-data-structures.en.html#_CPPv27CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal"><span class="pre">CacheVC</span></code></a> instances to dispatch on other threads but the <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> interactions
+<a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instances to dispatch on other threads but the <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> interactions
 tend to be less closely coupled to HTTP state machine instances.</p>
 </div>
 <div class="section" id="write-operations">
@@ -340,7 +302,7 @@ tend to be less closely coupled to HTTP state machine instances.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

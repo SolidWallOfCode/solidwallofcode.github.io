@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Body Factory Refactoring &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '8.0.x',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -25,8 +17,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="TSVConn Arguments" href="vconn-args.en.html" />
     <link rel="prev" title="Errata" href="errata.en.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -90,12 +81,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -112,26 +105,26 @@
 up for a long time both to make it more robust and maintainable but also to add features that are
 currently hard to do. There are also arbitrary internal limits which are entirely artifacts of the
 implementation.</p>
-<p>The goal is to replace all of this with <code class="code docutils literal"><span class="pre">MIOBuffer</span></code> to get the following benefits:</p>
+<p>The goal is to replace all of this with <code class="code docutils literal notranslate"><span class="pre">MIOBuffer</span></code> to get the following benefits:</p>
 <ul class="simple">
 <li>Remove arbitrary limits.</li>
-<li>Remove all direct memory allocation, use only <code class="code docutils literal"><span class="pre">IOBufferBlock</span></code> based allocations.</li>
-<li>Reduce costs of using the generated bodies later. An <code class="code docutils literal"><span class="pre">MIOBuffer</span></code> can be directly fed to an
+<li>Remove all direct memory allocation, use only <code class="code docutils literal notranslate"><span class="pre">IOBufferBlock</span></code> based allocations.</li>
+<li>Reduce costs of using the generated bodies later. An <code class="code docutils literal notranslate"><span class="pre">MIOBuffer</span></code> can be directly fed to an
 output tunnel or even a socket without additional copies or allocations.</li>
-<li>Simplify the code. All output is done directly to an <code class="code docutils literal"><span class="pre">MIOBuffer</span></code>.</li>
+<li>Simplify the code. All output is done directly to an <code class="code docutils literal notranslate"><span class="pre">MIOBuffer</span></code>.</li>
 </ul>
-<p>The basic plan is to extend the <code class="code docutils literal"><span class="pre">BufferWriter</span></code> class to have one that takes an
-<code class="code docutils literal"><span class="pre">MIOBuffer</span></code> as its output target. This would make it basically equivalent to C++ I/O stream operators
+<p>The basic plan is to extend the <code class="code docutils literal notranslate"><span class="pre">BufferWriter</span></code> class to have one that takes an
+<code class="code docutils literal notranslate"><span class="pre">MIOBuffer</span></code> as its output target. This would make it basically equivalent to C++ I/O stream operators
 but using Traffic Server core mechanisms.</p>
 <div class="section" id="implementation">
 <h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
 <p>The starting change is</p>
 <ol class="arabic simple">
-<li>change <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_buffer</span></code> from a <code class="code docutils literal"><span class="pre">char*</span></code> to :<cite>MIOBuffer</cite></li>
-<li>remove <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_size</span></code></li>
-<li>remove <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_size_fast_allocator_size</span></code></li>
-<li>change <code class="code docutils literal"><span class="pre">HttpTransact::State::internal_msg_buffer_type</span></code> to <code class="code docutils literal"><span class="pre">ats_scoped_str</span></code>. This is
-used to populate the <code class="docutils literal"><span class="pre">Content-Type</span></code> header and so doesn’t need to be a variable sized buffer.
+<li>change <code class="code docutils literal notranslate"><span class="pre">HttpTransact::State::internal_msg_buffer</span></code> from a <code class="code docutils literal notranslate"><span class="pre">char*</span></code> to :<cite>MIOBuffer</cite></li>
+<li>remove <code class="code docutils literal notranslate"><span class="pre">HttpTransact::State::internal_msg_size</span></code></li>
+<li>remove <code class="code docutils literal notranslate"><span class="pre">HttpTransact::State::internal_msg_size_fast_allocator_size</span></code></li>
+<li>change <code class="code docutils literal notranslate"><span class="pre">HttpTransact::State::internal_msg_buffer_type</span></code> to <code class="code docutils literal notranslate"><span class="pre">ats_scoped_str</span></code>. This is
+used to populate the <code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> header and so doesn’t need to be a variable sized buffer.
 It could probably be made a fixed size string of some reasonable length (~128 bytes) without loss
 of generality.</li>
 </ol>
@@ -188,9 +181,9 @@ void <code class="descname">TSHttpTxnErrorBodySet</code><span class="sig-paren">
 </div>
 <div class="section" id="id2">
 <h3>Description<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p>Note that both string arguments must be allocated with <a class="reference internal" href="external-types.en.html#c.TSmalloc" title="TSmalloc"><code class="xref c c-func docutils literal"><span class="pre">TSmalloc()</span></code></a> or
-<a class="reference internal" href="external-types.en.html#c.TSstrdup" title="TSstrdup"><code class="xref c c-func docutils literal"><span class="pre">TSstrdup()</span></code></a>.  The <em>mimetype</em> is optional, and if not provided it
-defaults to <code class="docutils literal"><span class="pre">text/html</span></code>. Sending an empty string would prevent setting
+<p>Note that both string arguments must be allocated with <a class="reference internal" href="external-types.en.html#c.TSmalloc" title="TSmalloc"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSmalloc()</span></code></a> or
+<a class="reference internal" href="external-types.en.html#c.TSstrdup" title="TSstrdup"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSstrdup()</span></code></a>.  The <em>mimetype</em> is optional, and if not provided it
+defaults to <code class="docutils literal notranslate"><span class="pre">text/html</span></code>. Sending an empty string would prevent setting
 a content type header (but that is not adviced).</p>
 </div>
 </div>
@@ -248,16 +241,16 @@ int <code class="descname">TSIOBufferReaderIterate</code><span class="sig-paren"
 <dl class="type">
 <dt id="c.TSIOBufferBlockFunc">
 <code class="descname">TSIOBufferBlockFunc</code><a class="headerlink" href="#c.TSIOBufferBlockFunc" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">int</span> <span class="pre">(*TSIOBufferBlockFunc)(void</span> <span class="pre">const*</span> <span class="pre">data,</span> <span class="pre">int64_t</span> <span class="pre">nbytes,</span> <span class="pre">void*</span> <span class="pre">context)</span></code></p>
-<p><em>data</em> is the data in the <a class="reference internal" href="external-types.en.html#c.TSIOBufferBlock" title="TSIOBufferBlock"><code class="xref c c-type docutils literal"><span class="pre">TSIOBufferBlock</span></code></a> and is <em>nbytes</em> long. <em>context</em> is
+<dd><p><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">(*TSIOBufferBlockFunc)(void</span> <span class="pre">const*</span> <span class="pre">data,</span> <span class="pre">int64_t</span> <span class="pre">nbytes,</span> <span class="pre">void*</span> <span class="pre">context)</span></code></p>
+<p><em>data</em> is the data in the <a class="reference internal" href="external-types.en.html#c.TSIOBufferBlock" title="TSIOBufferBlock"><code class="xref c c-type docutils literal notranslate"><span class="pre">TSIOBufferBlock</span></code></a> and is <em>nbytes</em> long. <em>context</em> is
 opaque data provided to the API call along with this function and passed on to the function. This
-function should return <code class="docutils literal"><span class="pre">true</span></code> to continue iteration or <code class="docutils literal"><span class="pre">false</span></code> to terminate iteration.</p>
+function should return <code class="docutils literal notranslate"><span class="pre">true</span></code> to continue iteration or <code class="docutils literal notranslate"><span class="pre">false</span></code> to terminate iteration.</p>
 </dd></dl>
 
 </div>
 <div class="section" id="id4">
 <h3>Description<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader"><code class="xref c c-type docutils literal"><span class="pre">TSIOBufferReader</span></code></a> is an read accessor for <a class="reference internal" href="external-types.en.html#c.TSIOBuffer" title="TSIOBuffer"><code class="xref c c-type docutils literal"><span class="pre">TSIOBuffer</span></code></a>. It represents a location in
+<p><a class="reference internal" href="external-types.en.html#c.TSIOBufferReader" title="TSIOBufferReader"><code class="xref c c-type docutils literal notranslate"><span class="pre">TSIOBufferReader</span></code></a> is an read accessor for <a class="reference internal" href="external-types.en.html#c.TSIOBuffer" title="TSIOBuffer"><code class="xref c c-type docutils literal notranslate"><span class="pre">TSIOBuffer</span></code></a>. It represents a location in
 the contents of the buffer. A buffer can have multiple readers and each reader consumes data in the
 buffer independently. Data which for which there are no readers is discarded from the buffer. This
 has two very important consequences –</p>
@@ -273,19 +266,19 @@ disappear.</dd>
 <p>A buffer has a fixed amount of possible readers (currently 5) which is determined at compile
 time. Reader allocation is fast and cheap until this maxium is reached at which point it fails.</p>
 <dl class="docutils">
-<dt><a class="reference internal" href="#c.TSIOBufferReaderAlloc" title="TSIOBufferReaderAlloc"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderAlloc()</span></code></a> allocates a reader for the IO buffer <em>bufp</em>. This should only be</dt>
+<dt><a class="reference internal" href="#c.TSIOBufferReaderAlloc" title="TSIOBufferReaderAlloc"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderAlloc()</span></code></a> allocates a reader for the IO buffer <em>bufp</em>. This should only be</dt>
 <dd>called on a newly allocated buffer. If not the location of the reader in the buffer will be
-indeterminate. Use <a class="reference internal" href="#c.TSIOBufferReaderClone" title="TSIOBufferReaderClone"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderClone()</span></code></a> to get another reader if the buffer is
+indeterminate. Use <a class="reference internal" href="#c.TSIOBufferReaderClone" title="TSIOBufferReaderClone"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderClone()</span></code></a> to get another reader if the buffer is
 already in use.</dd>
 </dl>
-<p><a class="reference internal" href="#c.TSIOBufferReaderClone" title="TSIOBufferReaderClone"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderClone()</span></code></a> allocates a reader and sets its position in the buffer to be the same as <em>reader</em>.</p>
+<p><a class="reference internal" href="#c.TSIOBufferReaderClone" title="TSIOBufferReaderClone"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderClone()</span></code></a> allocates a reader and sets its position in the buffer to be the same as <em>reader</em>.</p>
 <dl class="docutils">
-<dt><a class="reference internal" href="#c.TSIOBufferReaderFree" title="TSIOBufferReaderFree"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderFree()</span></code></a> de-allocates the reader. Any data referenced only by this reader is</dt>
+<dt><a class="reference internal" href="#c.TSIOBufferReaderFree" title="TSIOBufferReaderFree"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderFree()</span></code></a> de-allocates the reader. Any data referenced only by this reader is</dt>
 <dd>discarded from the buffer.</dd>
-<dt><a class="reference internal" href="#c.TSIOBufferReaderConsume" title="TSIOBufferReaderConsume"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderConsume()</span></code></a> advances the position of <em>reader</em> in its IO buffer by the</dt>
+<dt><a class="reference internal" href="#c.TSIOBufferReaderConsume" title="TSIOBufferReaderConsume"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderConsume()</span></code></a> advances the position of <em>reader</em> in its IO buffer by the</dt>
 <dd>the smaller of <em>nbytes</em> and the maximum available in the buffer.</dd>
 </dl>
-<p><a class="reference internal" href="#c.TSIOBufferReaderStart" title="TSIOBufferReaderStart"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderStart()</span></code></a> returns the IO buffer block containing the position of
+<p><a class="reference internal" href="#c.TSIOBufferReaderStart" title="TSIOBufferReaderStart"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderStart()</span></code></a> returns the IO buffer block containing the position of
 <em>reader</em>.</p>
 <blockquote>
 <div><div class="admonition note">
@@ -294,38 +287,38 @@ already in use.</dd>
 </div>
 </div></blockquote>
 <dl class="docutils">
-<dt><a class="reference internal" href="#c.TSIOBufferReaderAvail" title="TSIOBufferReaderAvail"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderAvail()</span></code></a> returns the number of bytes which <em>reader</em> could consume. That is</dt>
+<dt><a class="reference internal" href="#c.TSIOBufferReaderAvail" title="TSIOBufferReaderAvail"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderAvail()</span></code></a> returns the number of bytes which <em>reader</em> could consume. That is</dt>
 <dd>the number of bytes in the IO buffer starting at the current position of <em>reader</em>.</dd>
-<dt><a class="reference internal" href="#c.TSIOBufferReaderIsAvailAtLeast" title="TSIOBufferReaderIsAvailAtLeast"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderIsAvailAtLeast()</span></code></a> return <code class="docutils literal"><span class="pre">true</span></code> if the available number of bytes for</dt>
-<dd><em>reader</em> is at least <em>nbytes</em>, <code class="docutils literal"><span class="pre">false</span></code> if not. This can be more efficient than
-<a class="reference internal" href="#c.TSIOBufferReaderAvail" title="TSIOBufferReaderAvail"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderAvail()</span></code></a> because the latter must walk all the IO buffer blocks in the IO
+<dt><a class="reference internal" href="#c.TSIOBufferReaderIsAvailAtLeast" title="TSIOBufferReaderIsAvailAtLeast"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderIsAvailAtLeast()</span></code></a> return <code class="docutils literal notranslate"><span class="pre">true</span></code> if the available number of bytes for</dt>
+<dd><em>reader</em> is at least <em>nbytes</em>, <code class="docutils literal notranslate"><span class="pre">false</span></code> if not. This can be more efficient than
+<a class="reference internal" href="#c.TSIOBufferReaderAvail" title="TSIOBufferReaderAvail"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderAvail()</span></code></a> because the latter must walk all the IO buffer blocks in the IO
 buffer. This function returns as soon as the return value can be determined. In particular a
-value of <code class="docutils literal"><span class="pre">1</span></code> for <em>nbytes</em> means only the first buffer block will be checked.</dd>
-<dt><a class="reference internal" href="#c.TSIOBufferReaderRead" title="TSIOBufferReaderRead"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderRead()</span></code></a> reads data from <em>reader</em>. This first copies data from the IO</dt>
+value of <code class="docutils literal notranslate"><span class="pre">1</span></code> for <em>nbytes</em> means only the first buffer block will be checked.</dd>
+<dt><a class="reference internal" href="#c.TSIOBufferReaderRead" title="TSIOBufferReaderRead"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderRead()</span></code></a> reads data from <em>reader</em>. This first copies data from the IO</dt>
 <dd>buffer for <em>reader</em> to the target buffer <em>bufp</em>, starting at <em>reader`s
 position, and then advances (as with :func:`TSIOBufferReaderConsume</em>) <em>reader`s
 position past the copied data. The amount of data read in this fashion is the smaller of the
 amount of data available in the IO buffer for :arg:`reader</em> and the size of the target buffer
 (<em>length</em>).</dd>
 </dl>
-<p><a class="reference internal" href="#c.TSIOBufferReaderIterate" title="TSIOBufferReaderIterate"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderIterate()</span></code></a> iterates over the blocks for <em>reader</em>. For each block
+<p><a class="reference internal" href="#c.TSIOBufferReaderIterate" title="TSIOBufferReaderIterate"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderIterate()</span></code></a> iterates over the blocks for <em>reader</em>. For each block
 <em>func</em> is called with with the data for the block and <em>context</em>. The <em>context</em> is an
 opaque type to this function and is passed unchanged to <em>func</em>. It is intended to be used as
-context for <em>func</em>. If <em>func</em> returns <code class="docutils literal"><span class="pre">false</span></code> the iteration terminates. If <em>func</em>
-returns true the block is consumed. The return value for <a class="reference internal" href="#c.TSIOBufferReaderIterate" title="TSIOBufferReaderIterate"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderIterate()</span></code></a> is the
+context for <em>func</em>. If <em>func</em> returns <code class="docutils literal notranslate"><span class="pre">false</span></code> the iteration terminates. If <em>func</em>
+returns true the block is consumed. The return value for <a class="reference internal" href="#c.TSIOBufferReaderIterate" title="TSIOBufferReaderIterate"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderIterate()</span></code></a> is the
 return value from the last call to <em>func</em>.</p>
 <blockquote>
 <div><div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If it would be a problem for the iteration to consume the data (especially in cases where
-<code class="docutils literal"><span class="pre">false</span></code> might be returned) the reader can be cloned via <a class="reference internal" href="#c.TSIOBufferReaderClone" title="TSIOBufferReaderClone"><code class="xref c c-func docutils literal"><span class="pre">TSIOBufferReaderClone()</span></code></a> to
+<code class="docutils literal notranslate"><span class="pre">false</span></code> might be returned) the reader can be cloned via <a class="reference internal" href="#c.TSIOBufferReaderClone" title="TSIOBufferReaderClone"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSIOBufferReaderClone()</span></code></a> to
 keep the data in the IO buffer and available. If not needed the reader can be destroyed or
 if needed the original reader can be destroyed and replaced by the clone.</p>
 </div>
 </div></blockquote>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Destroying a <a class="reference internal" href="external-types.en.html#c.TSIOBuffer" title="TSIOBuffer"><code class="xref c c-type docutils literal"><span class="pre">TSIOBuffer</span></code></a> will de-allocate and destroy all readers for that buffer.</p>
+<p class="last">Destroying a <a class="reference internal" href="external-types.en.html#c.TSIOBuffer" title="TSIOBuffer"><code class="xref c c-type docutils literal notranslate"><span class="pre">TSIOBuffer</span></code></a> will de-allocate and destroy all readers for that buffer.</p>
 </div>
 </div>
 <div class="section" id="id5">
@@ -359,7 +352,7 @@ if needed the original reader can be destroyed and replaced by the clone.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

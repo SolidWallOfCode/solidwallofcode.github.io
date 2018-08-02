@@ -28,6 +28,60 @@ For either case the outbound connection from the client can be a "local" or "rem
 Use cases
 =========
 
+The basic non-proxy connection.
+
+.. uml::
+   :align: center
+   :caption: Simple connection.
+
+   actor Client
+   entity Upstream
+
+   Client -[#green]> Upstream : <font color="green">//TCP Connect//</font>
+   group Optional
+      Client -[#blue]> Upstream : <font color="blue">//TLS Connect//</font>
+   end
+
+Adding a proxy.
+
+.. uml::
+   :align: center
+   :caption: Proxied connection.
+
+   actor Client
+   participant Proxy
+   entity Upstream
+
+   Client -[#green]> Proxy : <font color="green">//TCP Connect//</font>
+   group Optional
+      Client -[#blue]> Proxy : <font color="blue">//TLS Connect//</font>
+   end
+   Proxy -[#green]> Upstream : <font color="green">//TCP Connect//</font>
+   group Optional
+      Proxy -[#blue]> Upstream : <font color="blue">//TLS Connect//</font>
+   end
+
+TLS Termination
+---------------
+
+.. uml::
+   :align: center
+   :caption: TLS Termination
+
+   actor Client
+   participant Proxy
+   entity Upstream
+   hide footbox
+
+   Client -[#green]> Proxy : <font color="green">//TCP Connect//</font>
+   Client -[#blue]> Proxy : <font color="blue">// TLS Connect //</font>
+   note over Proxy : Client verifies proxy provided\ncertificate as if for Upstream
+   Proxy -[#green]> Upstream : <font color="green">//TCP Connect//</font>
+   Proxy -[#blue]> Upstream : <font color="blue">// TLS Connect //</font>
+
+The proxy terminates the TLS connection from the client as it it were the Service. This requires the
+proxy to have the private key for the Server public certificate.
+
 Direct remote connect
 ---------------------
 
@@ -35,14 +89,13 @@ This case assumes a direct remote connection.
 
 .. uml::
    :align: center
-   :caption: Network Structure
+   :caption: Simple connection.
 
-   hide empty members
-   cloud Cloud
    actor Client
+   entity Upstream
 
-   [Client] -> [Cloud]
-   [Cloud] -> [Service]
+   Client -[#green]> Upstream : <font color="green">//TCP Connect//</font>
+   Client -[#blue]> Upstream : <font color="blue">//TLS Connect//</font>
 
 Using a proxy in this scenario can be done using transparency and routing connections through the proxy. However in most environments this level of control of the routing will not be possible and so the client will need to connect to the proxy as if it were the server. In general this will be done by tweaking DNS or reconfiguring the client. When the client connects to the proxy the proxy must in turn connect to the service. Determing the correct upstream connection is the primary challenge. The advantage of transparency is the upstream destination is indicated by the connection. For a TCP only connection from the client the upstream must be explicitly configured in the proxy. If the client connects using TLS then information can be extracted from the initial TLS handshake.
 
@@ -90,7 +143,7 @@ In this case the client does a remote proxy connection to the service.
    Client -[#red]> Proxy : <font color="red">HTTP ""CONNECT"" Service</font>
    Proxy -[#green]> Service : //TCP Connect//
    Client -[#blue]-> Service : <font color="blue">//TLS Connect//</font>
-   note over Proxy : Tunneled by Proxy 
+   note over Proxy : Tunneled by Proxy
 
 If the requirement is to secure the connection from the client to the proxy this requires adding local proxy to the client, which then forwards to the remote proxy.
 
@@ -109,4 +162,4 @@ If the requirement is to secure the connection from the client to the proxy this
    [Cloud] <-> [Proxy]
    [Proxy] <-> [Service]
 
-   If the client uses TLS.
+If the client uses TLS.

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Cache Types &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '8.0.x',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -25,8 +17,7 @@
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Glossary" href="cache-glossary.en.html" />
     <link rel="prev" title="Cache Data Structures" href="poc-data-structures.en.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -69,12 +60,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -88,36 +81,36 @@
   <div class="section" id="cache-types">
 <span id="id1"></span><h1>Cache Types<a class="headerlink" href="#cache-types" title="Permalink to this headline">¶</a></h1>
 <dl class="type">
-<dt id="_CPPv212HttpCacheKey">
-<span id="HttpCacheKey"></span><em class="property">type </em><code class="descclassname"></code><code class="descname">HttpCacheKey</code><a class="headerlink" href="#_CPPv212HttpCacheKey" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv312HttpCacheKey">
+<span id="_CPPv212HttpCacheKey"></span><span id="HttpCacheKey"></span><em class="property">type </em><code class="descname">HttpCacheKey</code><a class="headerlink" href="#_CPPv312HttpCacheKey" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>The type used to hold a full cache key.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="_CPPv212HTTPCacheAlt">
-<span id="HTTPCacheAlt"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">HTTPCacheAlt</code><a class="headerlink" href="#_CPPv212HTTPCacheAlt" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv312HTTPCacheAlt">
+<span id="_CPPv212HTTPCacheAlt"></span><span id="HTTPCacheAlt"></span><em class="property">class </em><code class="descname">HTTPCacheAlt</code><a class="headerlink" href="#_CPPv312HTTPCacheAlt" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Description of an alternate in the cache. This contains the metadata for the alternate, such as the fragment table and the request and response headers.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="_CPPv213CacheHTTPInfo">
-<span id="CacheHTTPInfo"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">CacheHTTPInfo</code><a class="headerlink" href="#_CPPv213CacheHTTPInfo" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>A wrapper class for a pointer to a <a class="reference internal" href="#_CPPv212HTTPCacheAlt" title="HTTPCacheAlt"><code class="xref cpp cpp-class docutils literal"><span class="pre">HTTPCacheAlt</span></code></a>.</p>
+<dt id="_CPPv313CacheHTTPInfo">
+<span id="_CPPv213CacheHTTPInfo"></span><span id="CacheHTTPInfo"></span><em class="property">class </em><code class="descname">CacheHTTPInfo</code><a class="headerlink" href="#_CPPv313CacheHTTPInfo" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>A wrapper class for a pointer to a <a class="reference internal" href="#_CPPv312HTTPCacheAlt" title="HTTPCacheAlt"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">HTTPCacheAlt</span></code></a>.</p>
 </dd></dl>
 
 </div>
 <div class="section" id="traffic-server-types">
 <h1>Traffic Server Types<a class="headerlink" href="#traffic-server-types" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="_CPPv26HttpSM">
-<span id="HttpSM"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">HttpSM</code><a class="headerlink" href="#_CPPv26HttpSM" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv36HttpSM">
+<span id="_CPPv26HttpSM"></span><span id="HttpSM"></span><em class="property">class </em><code class="descname">HttpSM</code><a class="headerlink" href="#_CPPv36HttpSM" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>The HTTP transaction state machine, which also represents the transaction.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="_CPPv210HttpTunnel">
-<span id="HttpTunnel"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">HttpTunnel</code><a class="headerlink" href="#_CPPv210HttpTunnel" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Contains the data sources and sinks for the <a class="reference internal" href="#_CPPv26HttpSM" title="HttpSM"><code class="xref cpp cpp-class docutils literal"><span class="pre">HttpSM</span></code></a>.</p>
+<dt id="_CPPv310HttpTunnel">
+<span id="_CPPv210HttpTunnel"></span><span id="HttpTunnel"></span><em class="property">class </em><code class="descname">HttpTunnel</code><a class="headerlink" href="#_CPPv310HttpTunnel" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Contains the data sources and sinks for the <a class="reference internal" href="#_CPPv36HttpSM" title="HttpSM"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">HttpSM</span></code></a>.</p>
 </dd></dl>
 
 </div>
@@ -146,7 +139,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

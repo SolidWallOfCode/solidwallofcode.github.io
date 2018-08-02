@@ -4,29 +4,20 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>TSConfig / Lua &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '8.0.x',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Cache Tool" href="cache-tool.en.html" />
-    <link rel="prev" title="BufferWriter" href="buffer-writer.en.html" /> 
-  </head>
-  <body>
+    <link rel="prev" title="Traffic Server Projects" href="ats-projects.en.html" /> 
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -37,7 +28,7 @@
           <a href="cache-tool.en.html" title="Cache Tool"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="buffer-writer.en.html" title="BufferWriter"
+          <a href="ats-projects.en.html" title="Traffic Server Projects"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
@@ -70,8 +61,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="buffer-writer.en.html"
-                        title="previous chapter">BufferWriter</a></p>
+  <p class="topless"><a href="ats-projects.en.html"
+                        title="previous chapter">Traffic Server Projects</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="cache-tool.en.html"
                         title="next chapter">Cache Tool</a></p>
@@ -84,12 +75,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -109,7 +102,7 @@ converted use Lua. This project is about providing that technology in a generic 
 easier to add configuration for new features.</p>
 <div class="section" id="current-practice">
 <h2>Current Practice<a class="headerlink" href="#current-practice" title="Permalink to this headline">¶</a></h2>
-<p>The primary example current is the custom logging configuration file <code class="file docutils literal"><span class="pre">logging.config</span></code> which is
+<p>The primary example current is the custom logging configuration file <code class="file docutils literal notranslate"><span class="pre">logging.config</span></code> which is
 processed as a Lua file. The interface to the Traffic Server core is done by creating Lua types in the core
 and exposing them to the Lua interpretor (see <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/proxy/logging/LogBindings.cc">LogBindings.cc</a>). Data is
 transfered by the Lua interpretor executing calls to the extended Lua types and then invoking the
@@ -123,7 +116,7 @@ types to get its data.</p>
 <p>An alternative is to provide a more generic facility that has the Lua file construct a forest of
 data and then copy that forest over to a C++ container. In order to provide appropriate feedback for
 configurations a description of expected values is needed, in the flavor of the current
-<code class="docutils literal"><span class="pre">RecordsConfig.cc</span></code>. Because the data is more complex this takes the form of a schema to describe
+<code class="docutils literal notranslate"><span class="pre">RecordsConfig.cc</span></code>. Because the data is more complex this takes the form of a schema to describe
 the data. The schema is a data object written in Lua, modeled on the standard <cite>JSON schema
 &lt;http://json-schema.org&gt;</cite>. <a class="footnote-reference" href="#fn-schema" id="id2">[1]</a></p>
 <p>The schema drives the rest of the implementation. A C++ structure to hold the configuration values
@@ -139,21 +132,21 @@ because most or all of that is done by the configuration loading, based on the s
 <div class="section" id="implementation">
 <h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
 <p>The schema is processed to generate the configuration class. Its structure parallels that of the
-configuration data, as descibed by the schema. <a class="reference internal" href="#_CPPv212TsConfigBase" title="TsConfigBase"><code class="xref cpp cpp-class docutils literal"><span class="pre">TsConfigBase</span></code></a> is the abstract base class for
+configuration data, as descibed by the schema. <a class="reference internal" href="#_CPPv312TsConfigBase" title="TsConfigBase"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TsConfigBase</span></code></a> is the abstract base class for
 the configuration class. it provides a base uniform interface for operating on elements of the
 configuration class. Each configuration data element in the base configuration class it also a
-subclass of <a class="reference internal" href="#_CPPv212TsConfigBase" title="TsConfigBase"><code class="xref cpp cpp-class docutils literal"><span class="pre">TsConfigBase</span></code></a> and as the client calls the <a class="reference internal" href="#_CPPv2N12TsConfigBase6loaderERNSt6stringE" title="TsConfigBase::loader"><code class="xref cpp cpp-func docutils literal"><span class="pre">TsConfigBase::loader()</span></code></a> method
+subclass of <a class="reference internal" href="#_CPPv312TsConfigBase" title="TsConfigBase"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TsConfigBase</span></code></a> and as the client calls the <a class="reference internal" href="#_CPPv3N12TsConfigBase6loaderERNSt6stringE" title="TsConfigBase::loader"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TsConfigBase::loader()</span></code></a> method
 to load the overall configuration, that class calls the same method on each of its elements, and so
 recursively on down until primitives are reached which load themselves.</p>
 <p>This style requires that each element have access to data from the schema for validation and error
 reporting. To avoid the expense of constructing this data repeatedly it is split off into classes
-based on <a class="reference internal" href="#_CPPv218TsConfigDescriptor" title="TsConfigDescriptor"><code class="xref cpp cpp-class docutils literal"><span class="pre">TsConfigDescriptor</span></code></a>. Instances of subclasses of this are intended to be declared
+based on <a class="reference internal" href="#_CPPv318TsConfigDescriptor" title="TsConfigDescriptor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TsConfigDescriptor</span></code></a>. Instances of subclasses of this are intended to be declared
 staticly and the elements of the configuration class are initialized with references to these static
-instances. The <a class="reference internal" href="#_CPPv212TsConfigBase" title="TsConfigBase"><code class="xref cpp cpp-class docutils literal"><span class="pre">TsConfigBase</span></code></a> class hierarchy is for dynamic, per configuration data and the
-<a class="reference internal" href="#_CPPv218TsConfigDescriptor" title="TsConfigDescriptor"><code class="xref cpp cpp-class docutils literal"><span class="pre">TsConfigDescriptor</span></code></a> class hierarchy is for static schema data.</p>
+instances. The <a class="reference internal" href="#_CPPv312TsConfigBase" title="TsConfigBase"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TsConfigBase</span></code></a> class hierarchy is for dynamic, per configuration data and the
+<a class="reference internal" href="#_CPPv318TsConfigDescriptor" title="TsConfigDescriptor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TsConfigDescriptor</span></code></a> class hierarchy is for static schema data.</p>
 <p>All of this is description and operations. The actual configuration data is stored directly as
 members of the configuration class for easier access. Consider a schema that is a single integer.</p>
-<div class="highlight-lua"><div class="highlight"><pre><span></span><span class="p">{</span>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
    <span class="n">cname</span><span class="o">=</span><span class="s2">&quot;CounterConfig&quot;</span><span class="p">,</span>
    <span class="n">global</span><span class="o">=</span><span class="s2">&quot;ItemCounter&quot;</span><span class="p">,</span>
    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;counter&quot;</span><span class="p">,</span>
@@ -163,7 +156,7 @@ members of the configuration class for easier access. Consider a schema that is 
 </pre></div>
 </div>
 <p>This creates a container class.</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CounterConfig</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TsConfigBase</span> <span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CounterConfig</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TsConfigBase</span> <span class="p">{</span>
    <span class="n">CounterConfig</span><span class="p">()</span> <span class="o">:</span> <span class="n">TsConfigbase</span><span class="p">{</span><span class="n">_DESCRIPTOR</span><span class="p">},</span>
                      <span class="n">_meta_counter</span><span class="p">{</span><span class="n">counter</span><span class="p">,</span> <span class="n">COUNTER_DESCRIPTOR</span><span class="p">}</span>
    <span class="p">{}</span>
@@ -187,7 +180,7 @@ members of the configuration class for easier access. Consider a schema that is 
 </pre></div>
 </div>
 <p>The schema static data is defined as</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="n">TsConfigSchemaDescriptor</span> <span class="n">CounterConfig</span><span class="o">::</span><span class="n">_DESCRIPTOR</span> <span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="n">TsConfigSchemaDescriptor</span> <span class="n">CounterConfig</span><span class="o">::</span><span class="n">_DESCRIPTOR</span> <span class="p">{</span>
    <span class="n">TsConfigDescriptor</span><span class="o">::</span><span class="n">SCHEMA</span><span class="p">,</span>
    <span class="s">&quot;CounterConfig&quot;</span><span class="p">,</span>
    <span class="s">&quot;&quot;</span><span class="p">,</span>
@@ -203,21 +196,21 @@ members of the configuration class for easier access. Consider a schema that is 
 </pre></div>
 </div>
 <p>Loading the configuration is done by</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">CounterConfig</span> <span class="n">config</span><span class="p">;</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">CounterConfig</span> <span class="n">config</span><span class="p">;</span>
 <span class="n">config</span><span class="o">-&gt;</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;counter.config&quot;</span><span class="p">);</span>
 <span class="c1">// ...</span>
 <span class="n">tracker</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">config</span><span class="p">.</span><span class="n">counter</span><span class="p">);</span> <span class="c1">// Use loaded value.</span>
 </pre></div>
 </div>
 <p>A valid configuration example</p>
-<div class="highlight-lua"><div class="highlight"><pre><span></span><span class="n">ItemCounter</span> <span class="o">=</span> <span class="mi">17</span><span class="p">;</span>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="n">ItemCounter</span> <span class="o">=</span> <span class="mi">17</span><span class="p">;</span>
 </pre></div>
 </div>
 <div class="section" id="enumerations">
 <h3>Enumerations<a class="headerlink" href="#enumerations" title="Permalink to this headline">¶</a></h3>
 <p>Being able to contrain primitive values to a specific set of values is critical to providing good
 feedback for configurations. Data for an enumeration is stored in a static instance of
-<a class="reference internal" href="#_CPPv222TsConfigEnumDescriptor" title="TsConfigEnumDescriptor"><code class="xref cpp cpp-class docutils literal"><span class="pre">TsConfigEnumDescriptor</span></code></a>. This contains two mappings, from string keys to numeric values and
+<a class="reference internal" href="#_CPPv322TsConfigEnumDescriptor" title="TsConfigEnumDescriptor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TsConfigEnumDescriptor</span></code></a>. This contains two mappings, from string keys to numeric values and
 from numeric values to string keys. These values should be available in C++ and in Lua.</p>
 <p>For Lua enumerations are stored as tables attached to predefined global variables. The schema
 supports defining such enumerations and specifying the global variable. Note this can be a nested
@@ -225,7 +218,7 @@ path so that a schema could have a single top level global for its enumerations 
 enumeration an entry in the global table. The presumption is the enumeration values are integers and
 these are the values passed to the configuration loader, specified by the global value. This is
 intended to minimize undetected typographic errors in the configuration file.</p>
-<p>Enumerations are defined in a top level key of the schema named <code class="docutils literal"><span class="pre">definitions</span></code>. Enumerations are
+<p>Enumerations are defined in a top level key of the schema named <code class="docutils literal notranslate"><span class="pre">definitions</span></code>. Enumerations are
 restricted to mappings between strings (“keys”) and integers (“values”). The mapping can be defined
 in multiple ways.</p>
 <dl class="docutils">
@@ -236,36 +229,36 @@ in multiple ways.</p>
 strings is flipped to its dual. Duplicated keys or values are an error.</dd>
 </dl>
 <p>The schema data for an enumeration is stored in a static instance of
-<a class="reference internal" href="#_CPPv222TsConfigEnumDescriptor" title="TsConfigEnumDescriptor"><code class="xref cpp cpp-class docutils literal"><span class="pre">TsConfigEnumDescriptor</span></code></a>. The internal maps are initialized by the constructor.</p>
+<a class="reference internal" href="#_CPPv322TsConfigEnumDescriptor" title="TsConfigEnumDescriptor"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TsConfigEnumDescriptor</span></code></a>. The internal maps are initialized by the constructor.</p>
 </div>
 </div>
 <div class="section" id="generic-data">
 <h2>Generic Data<a class="headerlink" href="#generic-data" title="Permalink to this headline">¶</a></h2>
 <p>Not all data can be explicitly described in the configuration schema due to the names or structure
-being generic. In this case an array or object can use set <code class="docutils literal"><span class="pre">additionalProperties</span></code> (for an object)
-or <code class="docutils literal"><span class="pre">additionalItems</span></code> (for an array) to <code class="docutils literal"><span class="pre">true</span></code> to enable generic data. For an object a member is
+being generic. In this case an array or object can use set <code class="docutils literal notranslate"><span class="pre">additionalProperties</span></code> (for an object)
+or <code class="docutils literal notranslate"><span class="pre">additionalItems</span></code> (for an array) to <code class="docutils literal notranslate"><span class="pre">true</span></code> to enable generic data. For an object a member is
 generated that contains a mapping from strings to generic values.</p>
 </div>
 <div class="section" id="interface">
 <h2>Interface<a class="headerlink" href="#interface" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="_CPPv212TsConfigBase">
-<span id="TsConfigBase"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">TsConfigBase</code><a class="headerlink" href="#_CPPv212TsConfigBase" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv312TsConfigBase">
+<span id="_CPPv212TsConfigBase"></span><span id="TsConfigBase"></span><em class="property">class </em><code class="descname">TsConfigBase</code><a class="headerlink" href="#_CPPv312TsConfigBase" title="Permalink to this definition">¶</a><br /></dt>
 <dd><dl class="function">
-<dt id="_CPPv2N12TsConfigBase12TSConfigBaseEv">
-<span id="TsConfigBase::TSConfigBase"></span><code class="descclassname"></code><code class="descname">TSConfigBase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12TsConfigBase12TSConfigBaseEv" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv3N12TsConfigBase12TSConfigBaseEv">
+<span id="_CPPv2N12TsConfigBase12TSConfigBaseEv"></span><span id="TsConfigBase::TSConfigBase"></span><code class="descname">TSConfigBase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N12TsConfigBase12TSConfigBaseEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Default constructor. The configuration is populated with defaults, if specified.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2N12TsConfigBase6loaderERNSt6stringE">
-<span id="TsConfigBase::loader__ssCR"></span><a class="reference internal" href="external-types.en.html#_CPPv22ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv2N2ts6ErrataE" title="ts::Errata">Errata</a> <code class="descclassname"></code><code class="descname">loader</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv2St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv2NSt6stringE" title="std::string">string</a> <em class="property">const</em> &amp;<em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N12TsConfigBase6loaderERNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv3N12TsConfigBase6loaderERNSt6stringE">
+<span id="_CPPv2N12TsConfigBase6loaderERNSt6stringE"></span><span id="TsConfigBase::loader__ssCR"></span><a class="reference internal" href="external-types.en.html#_CPPv32ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv3N2ts6ErrataE" title="ts::Errata">Errata</a> <code class="descname">loader</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv3St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv3NSt6stringE" title="std::string">string</a> <em class="property">const</em> &amp;<em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N12TsConfigBase6loaderERNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Load data from the Lua config specified by <em>path</em>.</p>
 </dd></dl>
 
 <dl class="enum">
-<dt id="_CPPv2N12TsConfigBase6SourceE">
-<em class="property">enum </em><code class="descclassname"></code><code class="descname">Source</code><a class="headerlink" href="#_CPPv2N12TsConfigBase6SourceE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv3N12TsConfigBase6SourceE">
+<span id="_CPPv2N12TsConfigBase6SourceE"></span><em class="property">enum </em><code class="descname">Source</code><a class="headerlink" href="#_CPPv3N12TsConfigBase6SourceE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Which type of source of configuration data.</p>
 <dl class="macro">
 <dt id="c.NONE">
@@ -283,57 +276,57 @@ generated that contains a mapping from strings to generic values.</p>
 <dt id="c.CONFIG">
 <code class="descname">CONFIG</code><a class="headerlink" href="#c.CONFIG" title="Permalink to this definition">¶</a></dt>
 <dd><p>Data was read from the configuration file. This value has priority - if the source is
-<a class="reference internal" href="#c.CONFIG" title="CONFIG"><code class="xref c c-macro docutils literal"><span class="pre">CONFIG</span></code></a> for a non-primitive that means at least one nested primitive value was read
+<a class="reference internal" href="#c.CONFIG" title="CONFIG"><code class="xref c c-macro docutils literal notranslate"><span class="pre">CONFIG</span></code></a> for a non-primitive that means at least one nested primitive value was read
 from the configuration file.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="member">
-<dt id="_CPPv2N12TsConfigBase6sourceE">
-<span id="TsConfigBase::source__Source"></span><a class="reference internal" href="#_CPPv2N12TsConfigBase6SourceE" title="TsConfigBase::Source">Source</a> <code class="descclassname"></code><code class="descname">source</code><a class="headerlink" href="#_CPPv2N12TsConfigBase6sourceE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv3N12TsConfigBase6sourceE">
+<span id="_CPPv2N12TsConfigBase6sourceE"></span><span id="TsConfigBase::source__Source"></span><a class="reference internal" href="#_CPPv3N12TsConfigBase6SourceE" title="TsConfigBase::Source">Source</a> <code class="descname">source</code><a class="headerlink" href="#_CPPv3N12TsConfigBase6sourceE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>The source for the configuration data associated with this instance.</p>
 </dd></dl>
 
 <dl class="member">
-<dt id="_CPPv2N12TsConfigBase10descriptorE">
-<span id="TsConfigBase::descriptor__TsConfigDescriptorCR"></span><a class="reference internal" href="#_CPPv218TsConfigDescriptor" title="TsConfigDescriptor">TsConfigDescriptor</a> <em class="property">const</em> &amp;<code class="descclassname"></code><code class="descname">descriptor</code><a class="headerlink" href="#_CPPv2N12TsConfigBase10descriptorE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv3N12TsConfigBase10descriptorE">
+<span id="_CPPv2N12TsConfigBase10descriptorE"></span><span id="TsConfigBase::descriptor__TsConfigDescriptorCR"></span><a class="reference internal" href="#_CPPv318TsConfigDescriptor" title="TsConfigDescriptor">TsConfigDescriptor</a> <em class="property">const</em> &amp;<code class="descname">descriptor</code><a class="headerlink" href="#_CPPv3N12TsConfigBase10descriptorE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Static schema data for the configuration value.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="class">
-<dt id="_CPPv218TsConfigDescriptor">
-<span id="TsConfigDescriptor"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">TsConfigDescriptor</code><a class="headerlink" href="#_CPPv218TsConfigDescriptor" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv318TsConfigDescriptor">
+<span id="_CPPv218TsConfigDescriptor"></span><span id="TsConfigDescriptor"></span><em class="property">class </em><code class="descname">TsConfigDescriptor</code><a class="headerlink" href="#_CPPv318TsConfigDescriptor" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Base class for schema element descriptions.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="_CPPv222TsConfigEnumDescriptor">
-<span id="TsConfigEnumDescriptor"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">TsConfigEnumDescriptor</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv218TsConfigDescriptor" title="TsConfigDescriptor">TsConfigDescriptor</a><a class="headerlink" href="#_CPPv222TsConfigEnumDescriptor" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv322TsConfigEnumDescriptor">
+<span id="_CPPv222TsConfigEnumDescriptor"></span><span id="TsConfigEnumDescriptor"></span><em class="property">class </em><code class="descname">TsConfigEnumDescriptor</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv318TsConfigDescriptor" title="TsConfigDescriptor">TsConfigDescriptor</a><a class="headerlink" href="#_CPPv322TsConfigEnumDescriptor" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Schema data for an enumeration type.</p>
 <dl class="function">
-<dt id="_CPPv2NK22TsConfigEnumDescriptorixEi">
-<span id="TsConfigEnumDescriptor::subscript-operator__iC"></span><a class="reference internal" href="external-types.en.html#_CPPv22ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv2N2ts11string_viewE" title="ts::string_view">string_view</a> <code class="descclassname"></code><code class="descname">operator[]</code><span class="sig-paren">(</span>int <em>value</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK22TsConfigEnumDescriptorixEi" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Find the key for the <em>value</em>. An <code class="code docutils literal"><span class="pre">std::out_of_range</span></code> exception is thrown if <em>value</em> is not valid.</p>
+<dt id="_CPPv3NK22TsConfigEnumDescriptorixEi">
+<span id="_CPPv2NK22TsConfigEnumDescriptorixEi"></span><span id="TsConfigEnumDescriptor::subscript-operator__iC"></span><a class="reference internal" href="external-types.en.html#_CPPv32ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv3N2ts11string_viewE" title="ts::string_view">string_view</a> <code class="descname">operator[]</code><span class="sig-paren">(</span>int <em>value</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv3NK22TsConfigEnumDescriptorixEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Find the key for the <em>value</em>. An <code class="code docutils literal notranslate"><span class="pre">std::out_of_range</span></code> exception is thrown if <em>value</em> is not valid.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2NK22TsConfigEnumDescriptorixEN2ts11string_viewE">
-<span id="TsConfigEnumDescriptor::subscript-operator__ts::string_viewC"></span>int <code class="descclassname"></code><code class="descname">operator[]</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv22ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv2N2ts11string_viewE" title="ts::string_view">string_view</a> <em>key</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK22TsConfigEnumDescriptorixEN2ts11string_viewE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Find the value for the <em>key</em>. An <code class="code docutils literal"><span class="pre">std:out_of_range</span></code> exception is thrown if <em>key</em> is not valid.</p>
+<dt id="_CPPv3NK22TsConfigEnumDescriptorixEN2ts11string_viewE">
+<span id="_CPPv2NK22TsConfigEnumDescriptorixEN2ts11string_viewE"></span><span id="TsConfigEnumDescriptor::subscript-operator__ts::string_viewC"></span>int <code class="descname">operator[]</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv32ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv3N2ts11string_viewE" title="ts::string_view">string_view</a> <em>key</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv3NK22TsConfigEnumDescriptorixEN2ts11string_viewE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Find the value for the <em>key</em>. An <code class="code docutils literal notranslate"><span class="pre">std:out_of_range</span></code> exception is thrown if <em>key</em> is not valid.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2NK22TsConfigEnumDescriptor8is_validEi">
-<span id="TsConfigEnumDescriptor::is_valid__iC"></span>bool <code class="descclassname"></code><code class="descname">is_valid</code><span class="sig-paren">(</span>int <em>value</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK22TsConfigEnumDescriptor8is_validEi" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv3NK22TsConfigEnumDescriptor8is_validEi">
+<span id="_CPPv2NK22TsConfigEnumDescriptor8is_validEi"></span><span id="TsConfigEnumDescriptor::is_valid__iC"></span>bool <code class="descname">is_valid</code><span class="sig-paren">(</span>int <em>value</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv3NK22TsConfigEnumDescriptor8is_validEi" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Check if <em>value</em> is valid.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2NK22TsConfigEnumDescriptor8is_validEN2ts11string_viewE">
-<span id="TsConfigEnumDescriptor::is_valid__ts::string_viewC"></span>bool <code class="descclassname"></code><code class="descname">is_valid</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv22ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv2N2ts11string_viewE" title="ts::string_view">string_view</a> <em>key</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK22TsConfigEnumDescriptor8is_validEN2ts11string_viewE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv3NK22TsConfigEnumDescriptor8is_validEN2ts11string_viewE">
+<span id="_CPPv2NK22TsConfigEnumDescriptor8is_validEN2ts11string_viewE"></span><span id="TsConfigEnumDescriptor::is_valid__ts::string_viewC"></span>bool <code class="descname">is_valid</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv32ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv3N2ts11string_viewE" title="ts::string_view">string_view</a> <em>key</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv3NK22TsConfigEnumDescriptor8is_validEN2ts11string_viewE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Check if <em>key</em> is vald.</p>
 </dd></dl>
 
@@ -343,7 +336,7 @@ from the configuration file.</p>
 <div class="section" id="schema">
 <h2>Schema<a class="headerlink" href="#schema" title="Permalink to this headline">¶</a></h2>
 <p>A Lua configuration schema has its own schema.</p>
-<div class="highlight-lua"><div class="highlight"><pre><span></span><span class="n">schema</span> <span class="o">=</span>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="n">schema</span> <span class="o">=</span>
 <span class="p">{</span>
    <span class="p">[</span><span class="s1">&#39;$schema&#39;</span><span class="p">]</span><span class="o">=</span> <span class="s2">&quot;http://trafficsever.apache.org/config/meta-schema&quot;</span><span class="p">,</span>
    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Lua Configuration MetaSchema&quot;</span><span class="p">,</span>
@@ -521,13 +514,13 @@ from the configuration file.</p>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
 <p>An example project using TsLuaConfig is SNI remap. An example configuration looks like</p>
-<div class="highlight-lua"><div class="highlight"><pre><span></span><span class="n">sni_config</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="n">sni_config</span> <span class="o">=</span> <span class="p">{</span>
    <span class="p">{</span> <span class="n">fqdn</span><span class="o">=</span><span class="s2">&quot;one.com&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">TLS</span><span class="p">.</span><span class="n">ACTION</span><span class="p">.</span><span class="n">TUNNEL</span><span class="p">,</span> <span class="n">upstream_cert_verification</span><span class="p">:</span><span class="n">TLS</span><span class="p">.</span><span class="n">VERIFY</span><span class="p">.</span><span class="n">REQUIRED</span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The schema to describe this configuration is</p>
-<div class="highlight-lua"><div class="highlight"><pre><span></span><span class="p">{</span>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
    <span class="p">[</span><span class="s2">&quot;$schema&quot;</span><span class="p">]</span><span class="o">=</span> <span class="s2">&quot;http://trafficserver.apache.org/config/sni-remap&quot;</span><span class="p">,</span>
    <span class="n">name</span><span class="o">=</span> <span class="s2">&quot;SNIConfig&quot;</span><span class="p">,</span>
    <span class="n">global</span><span class="o">=</span> <span class="s2">&quot;sni_config&quot;</span><span class="p">,</span>
@@ -566,7 +559,7 @@ from the configuration file.</p>
 </pre></div>
 </div>
 <p>This generates a config class.</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nl">LuaSNIConfig</span> <span class="p">:</span> <span class="k">public</span> <span class="n">TsConfigBase</span> <span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nl">LuaSNIConfig</span> <span class="p">:</span> <span class="k">public</span> <span class="n">TsConfigBase</span> <span class="p">{</span>
    <span class="k">using</span> <span class="n">self</span> <span class="o">=</span> <span class="n">LuaSNIConfig</span><span class="p">;</span>
    <span class="k">enum</span> <span class="k">class</span> <span class="nc">Action</span> <span class="p">{</span> <span class="n">CLOSE</span><span class="p">,</span> <span class="n">TUNNEL</span> <span class="p">};</span>
 
@@ -604,7 +597,7 @@ from the configuration file.</p>
 <div class="section" id="future-work">
 <h2>Future Work<a class="headerlink" href="#future-work" title="Permalink to this headline">¶</a></h2>
 <p>In the long run it would desirable to have a single Lua configuration file for all configurations.</p>
-<p>There is a difficult question on how <code class="docutils literal"><span class="pre">traffic_ctl</span></code> interacts with Lua based configuration. That is
+<p>There is a difficult question on how <code class="docutils literal notranslate"><span class="pre">traffic_ctl</span></code> interacts with Lua based configuration. That is
 not specific to this configuration system but is a more general problem.</p>
 <p>Some consideration must be given to whether variants should be supported. This would allow a
 configuration value to be listed as multiple types and any of the types would be acceptable. It’s
@@ -653,7 +646,7 @@ in the same language.</td></tr>
           <a href="cache-tool.en.html" title="Cache Tool"
              >next</a> |</li>
         <li class="right" >
-          <a href="buffer-writer.en.html" title="BufferWriter"
+          <a href="ats-projects.en.html" title="Traffic Server Projects"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
@@ -661,7 +654,7 @@ in the same language.</td></tr>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

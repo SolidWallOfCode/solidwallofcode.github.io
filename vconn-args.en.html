@@ -4,29 +4,20 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>TSVConn Arguments &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '8.0.x',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Multiplexer" href="multiplexer.en.html" />
+    <link rel="next" title="Layer 4 Proxying" href="l4r.en.html" />
     <link rel="prev" title="Body Factory Refactoring" href="body-factory.en.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -34,7 +25,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="multiplexer.en.html" title="Multiplexer"
+          <a href="l4r.en.html" title="Layer 4 Proxying"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="body-factory.en.html" title="Body Factory Refactoring"
@@ -52,8 +43,8 @@
   <p class="topless"><a href="body-factory.en.html"
                         title="previous chapter">Body Factory Refactoring</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="multiplexer.en.html"
-                        title="next chapter">Multiplexer</a></p>
+  <p class="topless"><a href="l4r.en.html"
+                        title="next chapter">Layer 4 Proxying</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -63,12 +54,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -84,15 +77,15 @@
 <p>To enable better Layer 4 routing it would be very helpful to be extend the transaction and session
 rguments to virtual connections. Plugins can then easily pass data from early intervention (layer 4)
 callbacks to transaction (layer 7) callbacks. For plugins such arguments only needto be attached to
-<code class="code docutils literal"><span class="pre">INKVConnInternal</span></code> and <code class="code docutils literal"><span class="pre">NetVConnection</span></code> as there aren’t any other virtual connection
+<code class="code docutils literal notranslate"><span class="pre">INKVConnInternal</span></code> and <code class="code docutils literal notranslate"><span class="pre">NetVConnection</span></code> as there aren’t any other virtual connection
 types accessible from the plugin API.</p>
 <p>In terms of implementation the primary issue is adding a hook that a plugin can use to clean up
 resources. There are already sufficient early intervention hooks to set the data but both
-<code class="code docutils literal"><span class="pre">TS_HTTP_TXN_CLOSE_HOOK</span></code> and <code class="code docutils literal"><span class="pre">TS_HTTP_SSN_CLOSE_HOOK</span></code> hooks are insufficient in case of
-error before the client session is constructed. A new hook, <code class="code docutils literal"><span class="pre">TS_VCONN_CLOSE</span></code>, is needed to do
-this cleanup. We should rename <code class="code docutils literal"><span class="pre">TS_VCONN_PRE_ACCEPT_HOOK</span></code> to <code class="code docutils literal"><span class="pre">TS_VCONN_START_HOOK</span></code>.</p>
-<p>In terms of implementation we would add a <code class="code docutils literal"><span class="pre">std::vector</span></code> to a class which would be inherited by
-<a class="reference internal" href="external-types.en.html#_CPPv216INKVConnInternal" title="INKVConnInternal"><code class="xref cpp cpp-class docutils literal"><span class="pre">INKVConnInternal</span></code></a> and <a class="reference internal" href="external-types.en.html#_CPPv214NetVConnection" title="NetVConnection"><code class="xref cpp cpp-class docutils literal"><span class="pre">NetVConnection</span></code></a>. This has a size of 24 bytes default
+<code class="code docutils literal notranslate"><span class="pre">TS_HTTP_TXN_CLOSE_HOOK</span></code> and <code class="code docutils literal notranslate"><span class="pre">TS_HTTP_SSN_CLOSE_HOOK</span></code> hooks are insufficient in case of
+error before the client session is constructed. A new hook, <code class="code docutils literal notranslate"><span class="pre">TS_VCONN_CLOSE</span></code>, is needed to do
+this cleanup. We should rename <code class="code docutils literal notranslate"><span class="pre">TS_VCONN_PRE_ACCEPT_HOOK</span></code> to <code class="code docutils literal notranslate"><span class="pre">TS_VCONN_START_HOOK</span></code>.</p>
+<p>In terms of implementation we would add a <code class="code docutils literal notranslate"><span class="pre">std::vector</span></code> to a class which would be inherited by
+<a class="reference internal" href="external-types.en.html#_CPPv316INKVConnInternal" title="INKVConnInternal"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">INKVConnInternal</span></code></a> and <a class="reference internal" href="external-types.en.html#_CPPv314NetVConnection" title="NetVConnection"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">NetVConnection</span></code></a>. This has a size of 24 bytes default
 constructed. When needed the vector would be extended to a compile time constant number of entries.
 This is a trade off from a constant sized array in that it is expected most instances will not have
 the arguments in which no memory is allocated. Only instances that need the data will allocate,
@@ -114,7 +107,7 @@ reducing the overall memory footprint.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="multiplexer.en.html" title="Multiplexer"
+          <a href="l4r.en.html" title="Layer 4 Proxying"
              >next</a> |</li>
         <li class="right" >
           <a href="body-factory.en.html" title="Body Factory Refactoring"
@@ -125,7 +118,7 @@ reducing the overall memory footprint.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

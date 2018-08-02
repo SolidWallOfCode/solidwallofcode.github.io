@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Partal Object Caching &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '8.0.x',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -25,8 +17,7 @@
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Partial Caching Initial Design" href="archive-partial-object-caching-prototype.en.html" />
     <link rel="prev" title="Glossary" href="cache-glossary.en.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -89,12 +80,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -133,7 +126,7 @@ to a user agent.</p>
 </div>
 <div class="section" id="object-contention">
 <h2>Object Contention<a class="headerlink" href="#object-contention" title="Permalink to this headline">¶</a></h2>
-<p>When an object is found in cache or a new cache object is created an in memory record of that object is allocated, an instance of <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a>. This tracks the state of the object. In the object, and therefore in the ODE (<a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a>) there is an <a class="reference internal" href="cache-glossary.en.html#term-alternate-vector"><span class="xref std std-term">alternate vector</span></a> which is a set of <a class="reference internal" href="cache-glossary.en.html#term-alternates"><span class="xref std std-term">alternates</span></a> for the object. Initially this is an empty vector (for newly created objects) but can contain multiple entries for the object. The alternate vector gets updated (update of a specific alt or the addition of a new alt) from the response headers of a request. When such a request is made to the origin, this state is referred to as <em>pending alternate vector update</em>. This state lasts until either the response headers arrive (and the alternate vector is updated) or the origin connection fails. By design, only one alternate vector update can be pending. While one is pending no other request can be proxied to the origin for that object. This was the subject of much thought but currently it seems the best approach, primarily because doing otherwise creates complexity without apparent benefit. It is important to note this does not mean only one request to an origin for an object can be outstanding - once the response headers are received a new request can be made. Additional request should not be any faster than waiting for a request that is already on the wire except for connection issues with the origin server.</p>
+<p>When an object is found in cache or a new cache object is created an in memory record of that object is allocated, an instance of <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a>. This tracks the state of the object. In the object, and therefore in the ODE (<a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a>) there is an <a class="reference internal" href="cache-glossary.en.html#term-alternate-vector"><span class="xref std std-term">alternate vector</span></a> which is a set of <a class="reference internal" href="cache-glossary.en.html#term-alternates"><span class="xref std std-term">alternates</span></a> for the object. Initially this is an empty vector (for newly created objects) but can contain multiple entries for the object. The alternate vector gets updated (update of a specific alt or the addition of a new alt) from the response headers of a request. When such a request is made to the origin, this state is referred to as <em>pending alternate vector update</em>. This state lasts until either the response headers arrive (and the alternate vector is updated) or the origin connection fails. By design, only one alternate vector update can be pending. While one is pending no other request can be proxied to the origin for that object. This was the subject of much thought but currently it seems the best approach, primarily because doing otherwise creates complexity without apparent benefit. It is important to note this does not mean only one request to an origin for an object can be outstanding - once the response headers are received a new request can be made. Additional request should not be any faster than waiting for a request that is already on the wire except for connection issues with the origin server.</p>
 <dl class="docutils">
 <dt>If, after a cache read hit, there is a pending alternate vector update, the transaction will wait for a configurable number of milliseconds for the update to complete. If this times out the transaction must do one of the following -</dt>
 <dd><ul class="first last simple">
@@ -153,7 +146,7 @@ to a user agent.</p>
 <p>There are several current features that are eliminated in the partial caching implementation. Instead these features are built more directly in to the basic mechanisms so equivalent functionality is still available.</p>
 <div class="section" id="read-while-write">
 <h4>Read While Write<a class="headerlink" href="#read-while-write" title="Permalink to this headline">¶</a></h4>
-<p>There is no mention of “read while write” in the previous section because it is no longer a distinct case. Any cache operation that is not a fresh write to cache of a full request is implemented internally as read while write. Any request to the origin that will cache content gets a CacheVC as a writer. This becomes effectively independent of the user agent request. In the special case noted previously the response from the origin is split via <a class="reference internal" href="cache-types.en.html#_CPPv210HttpTunnel" title="HttpTunnel"><code class="xref cpp cpp-class docutils literal"><span class="pre">HttpTunnel</span></code></a> for performance reasons but in any other case a CacheVC to read content is created. This CacheVC handles cached and live content directly, fetching from ram cache, or disk, or waiting for a writer CacheVC to fill.</p>
+<p>There is no mention of “read while write” in the previous section because it is no longer a distinct case. Any cache operation that is not a fresh write to cache of a full request is implemented internally as read while write. Any request to the origin that will cache content gets a CacheVC as a writer. This becomes effectively independent of the user agent request. In the special case noted previously the response from the origin is split via <a class="reference internal" href="cache-types.en.html#_CPPv310HttpTunnel" title="HttpTunnel"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">HttpTunnel</span></code></a> for performance reasons but in any other case a CacheVC to read content is created. This CacheVC handles cached and live content directly, fetching from ram cache, or disk, or waiting for a writer CacheVC to fill.</p>
 <p>For this reason the previous implementation of read while write has been completely removed, replaced in its limited scope by this more general mechanism. What was “read while write” is now the general case for all cache operations. The new implementation is more efficient and robust as well</p>
 </div>
 <div class="section" id="stale-while-revalidate">
@@ -174,11 +167,11 @@ to a user agent.</p>
 <div class="section" id="revalidation">
 <h3>Revalidation<a class="headerlink" href="#revalidation" title="Permalink to this headline">¶</a></h3>
 <p>Revalidation occurs only after a request has done alternate selection. That particular alternate is checked for requiring revalidation and if so the state machine performs a proxy request to the origin. It is not an object that is revalidated but always a specific alternate.</p>
-<p>If the response is a header only update (which generally means a <cite>304</cite> response) or the response for whatever reason is uncachebale, then the alternate key (earliest) key remains the same and only the first doc is written to disk. If a cacheable response with content is received then the alternate is replaced and the earliest key changed. The writer CacheVC stores the original alternate key in <code class="xref cpp cpp-member docutils literal"><span class="pre">CacheVC::update_key</span></code>. The alternate vector is not updated until the writer CacheVC is closed. At that point the earliest key for the new content is copied to the alternate vector.</p>
-<p>Because of this the original alternate content remains available in the alternate vector until the replacement has been completely written to the cache. However this still has timing problems in that a reader CacheVC can being serving the stale content just before the final replacement content arrives and therefore still be serving from the stale data when the alternate vector is updated (changing its apparently local <code class="xref cpp cpp-member docutils literal"><span class="pre">CacheVC::alternate</span></code>).</p>
+<p>If the response is a header only update (which generally means a <cite>304</cite> response) or the response for whatever reason is uncachebale, then the alternate key (earliest) key remains the same and only the first doc is written to disk. If a cacheable response with content is received then the alternate is replaced and the earliest key changed. The writer CacheVC stores the original alternate key in <code class="xref cpp cpp-member docutils literal notranslate"><span class="pre">CacheVC::update_key</span></code>. The alternate vector is not updated until the writer CacheVC is closed. At that point the earliest key for the new content is copied to the alternate vector.</p>
+<p>Because of this the original alternate content remains available in the alternate vector until the replacement has been completely written to the cache. However this still has timing problems in that a reader CacheVC can being serving the stale content just before the final replacement content arrives and therefore still be serving from the stale data when the alternate vector is updated (changing its apparently local <code class="xref cpp cpp-member docutils literal notranslate"><span class="pre">CacheVC::alternate</span></code>).</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">It is not yet clear when the request and response headers in the alternate vector are updated. This may happen when the origin server response header is merged with the cached response header. <code class="xref cpp cpp-func docutils literal"><span class="pre">CacheVC::set_http_info()</span></code> updates <code class="xref cpp cpp-member docutils literal"><span class="pre">CacheVC::alternate</span></code> but shallowly so that the alternate vector is unaltered. As best I can tell the cleanup logic depends on an alternate never getting updated more than once while the <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> exists. If multiple writers are not allowed then the <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> is destoyed when the write completes which in turn destroys the newly allocated alternate. If multiple writers are allowed it’s not as clear but I think it’s presumed these must all be for different alternates and therefore when the last writer CacheVC closes it will trigger the same cleanup as the single writer case. There is in fact a comment implying that in <code class="file docutils literal"><span class="pre">!CacheWrite.cc</span></code> which states that only the first writer of multiple writers can do an update which in turns means an alternate can’t be updated twice. This implies that alternates are not destroyed until the <a class="reference internal" href="poc-data-structures.en.html#_CPPv212OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal"><span class="pre">OpenDirEntry</span></code></a> is destroyed.</p>
+<p class="last">It is not yet clear when the request and response headers in the alternate vector are updated. This may happen when the origin server response header is merged with the cached response header. <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">CacheVC::set_http_info()</span></code> updates <code class="xref cpp cpp-member docutils literal notranslate"><span class="pre">CacheVC::alternate</span></code> but shallowly so that the alternate vector is unaltered. As best I can tell the cleanup logic depends on an alternate never getting updated more than once while the <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> exists. If multiple writers are not allowed then the <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> is destoyed when the write completes which in turn destroys the newly allocated alternate. If multiple writers are allowed it’s not as clear but I think it’s presumed these must all be for different alternates and therefore when the last writer CacheVC closes it will trigger the same cleanup as the single writer case. There is in fact a comment implying that in <code class="file docutils literal notranslate"><span class="pre">!CacheWrite.cc</span></code> which states that only the first writer of multiple writers can do an update which in turns means an alternate can’t be updated twice. This implies that alternates are not destroyed until the <a class="reference internal" href="poc-data-structures.en.html#_CPPv312OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> is destroyed.</p>
 </div>
 </div>
 <div class="section" id="background-fill">
@@ -226,7 +219,7 @@ to a user agent.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

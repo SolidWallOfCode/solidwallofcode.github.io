@@ -4,29 +4,20 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>RPC Refactor &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '8.0.x',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="TSVConnArgs" href="api/TSVConnArgs.en.html" />
-    <link rel="prev" title="MemArena" href="MemArena.en.html" /> 
-  </head>
-  <body>
+    <link rel="prev" title="Plugin Coordination" href="plugin-coordination.en.html" /> 
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -37,7 +28,7 @@
           <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="MemArena.en.html" title="MemArena"
+          <a href="plugin-coordination.en.html" title="Plugin Coordination"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
@@ -49,8 +40,8 @@
               <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
             </a></p>
   <h4>Previous topic</h4>
-  <p class="topless"><a href="MemArena.en.html"
-                        title="previous chapter">MemArena</a></p>
+  <p class="topless"><a href="plugin-coordination.en.html"
+                        title="previous chapter">Plugin Coordination</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="api/TSVConnArgs.en.html"
                         title="next chapter">TSVConnArgs</a></p>
@@ -63,12 +54,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -81,12 +74,12 @@
             
   <div class="section" id="rpc-refactor">
 <span id="id1"></span><h1>RPC Refactor<a class="headerlink" href="#rpc-refactor" title="Permalink to this headline">¶</a></h1>
-<p>To communicate between <code class="docutils literal"><span class="pre">traffic_manager</span></code> and <code class="docutils literal"><span class="pre">traffic_server</span></code> there is an RPC mechanism in
-<code class="docutils literal"><span class="pre">mgmt/api</span></code>. This is a simple serialization style RPC which runs over sockets. Current the logic is
+<p>To communicate between <code class="docutils literal notranslate"><span class="pre">traffic_manager</span></code> and <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> there is an RPC mechanism in
+<code class="docutils literal notranslate"><span class="pre">mgmt/api</span></code>. This is a simple serialization style RPC which runs over sockets. Current the logic is
 tightly embedded in the management library. It would be useful for various reasons to extract this
 in to a separate library.</p>
-<p>In addition there seems to be a delay between a command line tool such as <code class="docutils literal"><span class="pre">traffic_ctl</span></code> sending
-data and <code class="docutils literal"><span class="pre">traffic_server</span></code> receiving the data. This is likely due to <code class="code docutils literal"><span class="pre">Continuation</span></code>
+<p>In addition there seems to be a delay between a command line tool such as <code class="docutils literal notranslate"><span class="pre">traffic_ctl</span></code> sending
+data and <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> receiving the data. This is likely due to <code class="code docutils literal notranslate"><span class="pre">Continuation</span></code>
 scheduling that causes the socket to be polled every few seconds.</p>
 <p>The phases of the project</p>
 <ol class="arabic simple">
@@ -97,21 +90,21 @@ scheduling that causes the socket to be polled every few seconds.</p>
 <li>Find or create documentation for the current RPC mechanism, including<ol class="loweralpha">
 <li>The basics of the serialization mechanism.</li>
 <li>The API for both sides of the RPC.</li>
-<li>The run time structure of the RPC from <code class="docutils literal"><span class="pre">traffic_ctl</span></code> to <code class="docutils literal"><span class="pre">traffic_server</span></code>.</li>
+<li>The run time structure of the RPC from <code class="docutils literal notranslate"><span class="pre">traffic_ctl</span></code> to <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code>.</li>
 <li>A sequence diagram of how a message is delivered.</li>
 </ol>
 </li>
 <li>Factor out the serialization logic.<ol class="loweralpha">
-<li>Possibly remove the assymetry between <code class="docutils literal"><span class="pre">requests</span></code> and <code class="docutils literal"><span class="pre">responses</span></code>. I think this may be the
+<li>Possibly remove the assymetry between <code class="docutils literal notranslate"><span class="pre">requests</span></code> and <code class="docutils literal notranslate"><span class="pre">responses</span></code>. I think this may be the
 root of the assymmetry. See <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/mgmt/api/NetworkMessage.cc">NetworkMessage.cc</a>.</li>
 <li>If this is made in to a library, it will be necessary to make the registration of message and
 type handling a push mechanism rather than a push. That is, currently this information is
 directly embedded in the RPC code, which won’t be possible in a library.</li>
-<li>Make it possible for the core to pass messages back from <code class="docutils literal"><span class="pre">traffic_server</span></code> to command line tools.</li>
+<li>Make it possible for the core to pass messages back from <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> to command line tools.</li>
 <li>Make it possible for plugins to pass messages back to command line tools.</li>
 </ol>
 </li>
-<li>Create <code class="docutils literal"><span class="pre">libatsprc</span></code>.<ol class="loweralpha">
+<li>Create <code class="docutils literal notranslate"><span class="pre">libatsprc</span></code>.<ol class="loweralpha">
 <li>Create the library.</li>
 <li>Change the RPC using code to use the library.</li>
 </ol>
@@ -143,7 +136,7 @@ matching serialized type data with C++ types, again obviating the advantages.</d
           <a href="api/TSVConnArgs.en.html" title="TSVConnArgs"
              >next</a> |</li>
         <li class="right" >
-          <a href="MemArena.en.html" title="MemArena"
+          <a href="plugin-coordination.en.html" title="Plugin Coordination"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
@@ -151,7 +144,7 @@ matching serialized type data with C++ types, again obviating the advantages.</d
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

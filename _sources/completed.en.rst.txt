@@ -9,7 +9,7 @@ For historical purposes projects which were planned here but are now completed (
 are listed in this section.
 
 BufferWriter
-   Implemented for 8.0.
+   Implemented for 8.0.0.
 
 C++17 :code:`string_view`
    Implement as `ts::string_view` and `ts::TextView`.
@@ -25,3 +25,9 @@ Thread Initialization
 
 TLS Bridge
    Committed for 8.0.0.
+
+MemArena
+   Committed for 9.0.0.
+
+Certifier
+   Commited for 9.0.0.

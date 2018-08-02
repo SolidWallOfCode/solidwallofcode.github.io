@@ -15,18 +15,14 @@ Projects
 .. toctree::
    :maxdepth: 1
 
-   buffer-writer.en
    tsconfig-lua.en
    cache-tool.en
    testing.en
    errata.en
    body-factory.en
    vconn-args.en
-   multiplexer.en
-   certifier.en
    l4r.en
    plugin-coordination.en
-   MemArena.en
    RPC.en
 
 ======================

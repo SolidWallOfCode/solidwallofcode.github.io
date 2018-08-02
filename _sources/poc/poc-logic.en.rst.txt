@@ -8,25 +8,32 @@ When an object in cache (or potentiallyin cache) is active in a transaction, it 
 *ODE*, which is an instance of :class:`OpenDirEntry` [#f1]_. For any cache oject the first operation is
 always a read.
 
+Read
+====
+
+Reading starts with :code:`Cache::open_read`. This attempts to get the stripe lock and then probes
+the open directory entries and the stripe directory. A :class:`CacheVC` instance is created if
+either the lock is missed or there is a hit in the hit. The other case indicates a valid
+determination that the read is a a miss.
+
+The next step depends on the result. If the lock was missed :code:`CacheVC::stateProbe` is next,
+which waits for the stripe lock and then does the cache probe and goes on to the same as
+:code:`Cache::open_read`. If a :class:`OpenDirEntry` was found it is checked for being valid. If
+not, or a :class:`OpenDirEntry` wasn't found then one is created and the :class:`CacheVC` goes to
+the :code:`CacheVC::stateReadFirstDoc` which loads the first doc fragment from disk. If another
+:class:`CacheVC` instance is already reading from disk then the :class:`CacheVC` waits for the read
+to complete.
+
 .. uml::
 
-   state open_read : create ODE
-   state read_first : altvec_read := true
-   state dir_probe : loop on collision
-   state altvec_update : altvec_update := true
-   state alt_select : wait on altvec_update
+   state Cache::open_read : Create CacheVC
 
-   [*] --> open_read
-   open_read --> dir_probe : !altvec_read
-   open_read -> wait_altvec_read : altvec_read
-   wait_altvec_read -> dir_probe : wake up
-   dir_probe -l> read_first : dir hit
-   read_first -> dir_probe : IO complete
-   dir_probe --> alt_select : doc hit
-   alt_select --> altvec_update : fail
-   alt_select -> serve : fresh & covered
-   alt_select -> slice_fill : fresh & !covered
-   alt_select -l> slice_update : !fresh
+   state Probe : Check cache for\nODE or dir entry
+   state ReadInit :
+   state rReadFirstDoc : Load the first\ndoc fragment.
+
+   Cache::open_read --> Probe : Lock miss
+   cache::open_read --> ReadInit
 
 
 Cache Startup

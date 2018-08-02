@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>TSVConnArgs &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '8.0.x',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -25,8 +17,7 @@
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Partial Object Caching" href="../poc/poc-index.html" />
     <link rel="prev" title="RPC Refactor" href="../RPC.en.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -73,12 +64,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -122,39 +115,39 @@ void * <code class="descname">TSVConnArgGet</code><span class="sig-paren">(</spa
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p>Virtual connection objects (API type <a class="reference internal" href="../external-types.en.html#c.TSVConn" title="TSVConn"><code class="xref c c-type docutils literal"><span class="pre">TSVConn</span></code></a>) support an array of <code class="code docutils literal"><span class="pre">void</span> <span class="pre">*</span></code> values that
+<p>Virtual connection objects (API type <a class="reference internal" href="../external-types.en.html#c.TSVConn" title="TSVConn"><code class="xref c c-type docutils literal notranslate"><span class="pre">TSVConn</span></code></a>) support an array of <code class="code docutils literal notranslate"><span class="pre">void</span> <span class="pre">*</span></code> values that
 are controlled entirely by plugins. These are not used in any way by the core. This allows plugins
 to store data associated with a specific virtual connection for later retrieval by the same plugin
 in a different hook or by another plugin. Because the core does not interact with these values any
 cleanup is the responsibility of the plugin.</p>
 <p>To avoid collisions between plugins a plugin should first <em>reserve</em> an index in the array by calling
-<a class="reference internal" href="#c.TSVConnArgIndexReserve" title="TSVConnArgIndexReserve"><code class="xref c c-func docutils literal"><span class="pre">TSVConnArgIndexReserve()</span></code></a> passing it an identifying name, a description, and a pointer to an
-integer which will get the reserved index. The function returns <code class="code docutils literal"><span class="pre">TS_SUCCESS</span></code> if an index was
-reserved, <code class="code docutils literal"><span class="pre">TS_ERROR</span></code> if not (most likely because all of the indices have already been
+<a class="reference internal" href="#c.TSVConnArgIndexReserve" title="TSVConnArgIndexReserve"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSVConnArgIndexReserve()</span></code></a> passing it an identifying name, a description, and a pointer to an
+integer which will get the reserved index. The function returns <code class="code docutils literal notranslate"><span class="pre">TS_SUCCESS</span></code> if an index was
+reserved, <code class="code docutils literal notranslate"><span class="pre">TS_ERROR</span></code> if not (most likely because all of the indices have already been
 reserved). Generally this will be a file or library scope global which is set at plugin
 initialization. Note the reservation is by convention - nothing stops a plugin from interacting with
-a <code class="code docutils literal"><span class="pre">TSVConn</span></code> arg it has not reserved.</p>
-<p>To look up the owner of a reserved index use <a class="reference internal" href="#c.TSVConnArgIndexNameLookup" title="TSVConnArgIndexNameLookup"><code class="xref c c-func docutils literal"><span class="pre">TSVConnArgIndexNameLookup()</span></code></a>. If the <em>name</em> is
-found as an owner, the function returns <code class="code docutils literal"><span class="pre">TS_SUCCESS</span></code> and <em>arg_index</em> is updated with the
-index reserved under that name. If <em>description</em> is not <code class="code docutils literal"><span class="pre">nullptr</span></code> then it will be updated
+a <code class="code docutils literal notranslate"><span class="pre">TSVConn</span></code> arg it has not reserved.</p>
+<p>To look up the owner of a reserved index use <a class="reference internal" href="#c.TSVConnArgIndexNameLookup" title="TSVConnArgIndexNameLookup"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSVConnArgIndexNameLookup()</span></code></a>. If the <em>name</em> is
+found as an owner, the function returns <code class="code docutils literal notranslate"><span class="pre">TS_SUCCESS</span></code> and <em>arg_index</em> is updated with the
+index reserved under that name. If <em>description</em> is not <code class="code docutils literal notranslate"><span class="pre">nullptr</span></code> then it will be updated
 with the description for that reserved index. This enables communication between plugins where
 plugin “A” reserves an index under a well known name and plugin “B” locates the index by looking it
 up under that name.</p>
-<p>The owner of a reserved index can be found with <a class="reference internal" href="#c.TSVConnArgIndexLookup" title="TSVConnArgIndexLookup"><code class="xref c c-func docutils literal"><span class="pre">TSVConnArgIndexLookup()</span></code></a>. If <em>arg_index</em> is
-reserved then the function returns <code class="code docutils literal"><span class="pre">TS_SUCCESS</span></code> and <em>name</em> and <em>description</em> are
+<p>The owner of a reserved index can be found with <a class="reference internal" href="#c.TSVConnArgIndexLookup" title="TSVConnArgIndexLookup"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSVConnArgIndexLookup()</span></code></a>. If <em>arg_index</em> is
+reserved then the function returns <code class="code docutils literal notranslate"><span class="pre">TS_SUCCESS</span></code> and <em>name</em> and <em>description</em> are
 updated. <em>name</em> must point at a valid character pointer but <em>description</em> can be
-<code class="code docutils literal"><span class="pre">nullptr</span></code>.</p>
-<p>Manipulating the array is simple. <a class="reference internal" href="#c.TSVConnArgSet" title="TSVConnArgSet"><code class="xref c c-func docutils literal"><span class="pre">TSVConnArgSet()</span></code></a> sets the array slot at <em>arg_idx</em> for
+<code class="code docutils literal notranslate"><span class="pre">nullptr</span></code>.</p>
+<p>Manipulating the array is simple. <a class="reference internal" href="#c.TSVConnArgSet" title="TSVConnArgSet"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSVConnArgSet()</span></code></a> sets the array slot at <em>arg_idx</em> for
 the <em>vc</em> to the value <em>arg</em>. Note this sets the value only for the specific
-<a class="reference internal" href="../external-types.en.html#c.TSVConn" title="TSVConn"><code class="xref c c-type docutils literal"><span class="pre">TSVConn</span></code></a>. The values can be retrieved with <a class="reference internal" href="#c.TSVConnArgGet" title="TSVConnArgGet"><code class="xref c c-func docutils literal"><span class="pre">TSVConnArgGet()</span></code></a> which returns the
-specified value. Values that have not been set are <code class="code docutils literal"><span class="pre">nullptr</span></code>.</p>
+<a class="reference internal" href="../external-types.en.html#c.TSVConn" title="TSVConn"><code class="xref c c-type docutils literal notranslate"><span class="pre">TSVConn</span></code></a>. The values can be retrieved with <a class="reference internal" href="#c.TSVConnArgGet" title="TSVConnArgGet"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSVConnArgGet()</span></code></a> which returns the
+specified value. Values that have not been set are <code class="code docutils literal notranslate"><span class="pre">nullptr</span></code>.</p>
 </div>
 <div class="section" id="hooks">
 <h2>Hooks<a class="headerlink" href="#hooks" title="Permalink to this headline">¶</a></h2>
-<p>Although these can be used from any hook that has access to a <a class="reference internal" href="../external-types.en.html#c.TSVConn" title="TSVConn"><code class="xref c c-type docutils literal"><span class="pre">TSVConn</span></code></a> it will generally be
-the case that <a class="reference internal" href="#c.TSVConnArgSet" title="TSVConnArgSet"><code class="xref c c-func docutils literal"><span class="pre">TSVConnArgSet()</span></code></a> will be used in early intervention hooks and
-<a class="reference internal" href="#c.TSVConnArgGet" title="TSVConnArgGet"><code class="xref c c-func docutils literal"><span class="pre">TSVConnArgGet()</span></code></a> in session / transaction hooks. Cleanup should be done on the
-<code class="code docutils literal"><span class="pre">TS_VCONN_CLOSE_HOOK</span></code>.</p>
+<p>Although these can be used from any hook that has access to a <a class="reference internal" href="../external-types.en.html#c.TSVConn" title="TSVConn"><code class="xref c c-type docutils literal notranslate"><span class="pre">TSVConn</span></code></a> it will generally be
+the case that <a class="reference internal" href="#c.TSVConnArgSet" title="TSVConnArgSet"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSVConnArgSet()</span></code></a> will be used in early intervention hooks and
+<a class="reference internal" href="#c.TSVConnArgGet" title="TSVConnArgGet"><code class="xref c c-func docutils literal notranslate"><span class="pre">TSVConnArgGet()</span></code></a> in session / transaction hooks. Cleanup should be done on the
+<code class="code docutils literal notranslate"><span class="pre">TS_VCONN_CLOSE_HOOK</span></code>.</p>
 <p class="rubric">Appendix</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -188,7 +181,7 @@ has been extended based on discussions with Kees and Leif Hedstrom at the ATS su
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>
