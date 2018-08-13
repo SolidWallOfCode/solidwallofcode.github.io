@@ -102,6 +102,7 @@ the <code class="code docutils literal notranslate"><span class="pre">CacheVC::s
 <a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instance is already reading from disk then the <a class="reference internal" href="poc-data-structures.en.html#_CPPv37CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> waits for the read
 to complete.</p>
 <p class="plantuml">
+<object data="../_images/plantuml-526ed14b05f0dc8eb00d6f4e05b08070ec6fdf11.svg" type="image/svg+xml" style="width:857px;height:83px;">
 <img src="../_images/plantuml-526ed14b05f0dc8eb00d6f4e05b08070ec6fdf11.png" alt="state Cache::open_read : Create CacheVC
 
 state Probe : Check cache for\nODE or dir entry
@@ -110,11 +111,13 @@ state rReadFirstDoc : Load the first\ndoc fragment.
 
 Cache::open_read --&gt; Probe : Lock miss
 cache::open_read --&gt; ReadInit" />
-</p>
+
+</object></p>
 </div>
 <div class="section" id="cache-startup">
 <h2>Cache Startup<a class="headerlink" href="#cache-startup" title="Permalink to this headline">¶</a></h2>
 <p class="plantuml">
+<object data="../_images/plantuml-24a9bccb13092e69c932aace8d6de1c3502bbb03.svg" type="image/svg+xml" style="width:602px;height:451px;">
 <img src="../_images/plantuml-24a9bccb13092e69c932aace8d6de1c3502bbb03.png" alt="hide empty members
 hide empty methods
 skinparam defaultTextAlignment left
@@ -136,7 +139,8 @@ CacheDisk --&gt; CacheProcessor : [4] diskInitialized()
 CacheProcessor --&gt; Cache : [5] open()
 Cache --&gt; VolInit : [6] mainEvent()
 VolInit --&gt; Vol : [7] init()" />
-</p>
+
+</object></p>
 <p>State machine.</p>
 <img src="../_images/graphviz-736c5fe737e61e9ebf2c53e80359449c214274f7.png" alt="digraph cache {
 

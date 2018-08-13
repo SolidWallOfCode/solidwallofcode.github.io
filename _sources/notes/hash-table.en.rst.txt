@@ -120,7 +120,12 @@ cause the creation of the key transparently. This is a big deal for |TS| because
 source key is a string that is embedded in other memory (e.g., the name of a field in an HTTP
 header).
 
-Selecting the key also enabled the multi-index capability in that each index can select a different key.
+Selecting the key also enabled the multi-index capability in that each index can select a different
+key. In addition, if using STL containers then the general solution is to have one owner container
+which has the actual objects and ancillary ones that contain pointers or iterators to the object in
+the owner container. The problem here is that one must either duplicate the keys (for the ancillary
+indices and in the object) or not have a key value available from other indices. This issue doesn't
+arise in a container that allows the key to be embedded in the object.
 
 With the switch to C++11 and then C++17, it seemed reasonable to update this class to take advantage
 of the new language features and become more STL compliant. This resulted in
@@ -214,12 +219,14 @@ understand it, is that for the forseeable future the code base will keep the pro
 
 I find the ease of use argument comes to the same point. For proxy allocated objects, for
 multi-indexing situations, and where the key is naturally embedded in the object,
-:code:`IntrusiveHashMap` is easier to use. No small part of the recent upgrade was to make the class
-more STL compliant so that it acts like an STL container, e.g. range :code:`for` loops work as with
-an STL container. I have for decades thought the require separation of key and object in STL
-containers is a problem to be worked around, not a feature, and that's no small part of why I like
-:code:`IntrusiveHashMap` better. I agree that for cases where the object exists only in the
-container, the STL containers are the easier to use choice.
+:code:`IntrusiveHashMap` is easier to use. I have for decades thought the require separation of key
+and object in STL containers is a problem to be worked around, not a feature, and that's no small
+part of why I like :code:`IntrusiveHashMap` better. No small part of the recent upgrade was to make
+the class more STL compliant so that it acts like an STL container, e.g. range :code:`for` loops
+work as with an STL container. I agree that for cases where the object exists only in the container,
+the STL containers are the easier to use choice. It is also the case that :code:`IntrusiveHashmap`
+*requires* the key to be in the object. This is usually reasonable but can be a problem in some
+cases. Obviously those are ones where an STL container is a better choice.
 
 Overall, then, for basic hash containers I would have
 
