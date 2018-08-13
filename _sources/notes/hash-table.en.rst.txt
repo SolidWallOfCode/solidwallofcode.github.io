@@ -34,10 +34,11 @@ Multi-index hash tables
 External memory management
    Because of the heavy use of proxy and class allocators, it is sometimes the case that memory and
    life time management of objects is independent of the hash container. Again, the upstream session
-   table is archetypical in that sessions are put in and removed from the hash container, the
-   container should not create or delete these objects. While it would be possible to use a
-   container of smart pointers, this means allocating and deallocating nodes in the container for
-   inserts and deletes, in contrast to an intrusive container which does not require such memory management.q
+   table is archetypical in that sessions are created and destroyed elsewhere, outside the scope of
+   the container). Therefore inserting and removing an object should not cause its creation or
+   destruction. While it would be possible to use a container of smart pointers, this means
+   allocating and deallocating nodes in the container for inserts and deletes, in contrast to an
+   intrusive container which does not require such memory management.
 
 A side property which is not required but is very conventient is the ability to use a member of the
 object as a key. While the key can be split off, this tends to tie the object to the container.
@@ -103,14 +104,21 @@ These features make the container much easier for a standard C++ programmer to u
 following standard STL use patterns.
 
 The ability to select the key is valuable for performance as well because :code:`IntrusiveHashMap`
-takes care to never default construct a key, but only initialize them. This means the type used by
-the container may be a reference or pointer to the actual key. For example, if the key is a
-:code:`std::string` then the key used for the container can be :code:`const std::string &` or even a
+takes care to never default construct a key, but only initialize them. In addition the comparison
+operator is under the control of the template parameters. This means the type used by the container
+for search may be a reference or pointer to the actual key. This allows the type in the object to
+own its memory while not imposing that requirement on the search key. For example, if the key is a
+:code:`std::string` then the key used for searching can be :code:`const std::string &` or even a
 :code:`std::string_view`, with the result that searching the container does not require
-instantiating a :code:`std::string` and the attendant memory management. There have been attempts to
-work around this by using STL containers and making the key a reference or even a
-:code:`std::string_view` in to the object but these have failed with obscure memory corruption
-issues. At present this is not a viable option.
+instantiating a :code:`std::string` and the attendant memory management. For an STL container,
+searching requires creating a instance of key type and therefore also any memory allocation that
+construction requires. There have been attempts to work around this by using STL containers and
+making the key a reference or even a :code:`std::string_view` in to the object but these have failed
+with obscure memory corruption issues. At present this is not a viable option. Additionally, it can
+appear that lookups can be done on an STL container using such a reference, but type coercion will
+cause the creation of the key transparently. This is a big deal for |TS| because in many cases the
+source key is a string that is embedded in other memory (e.g., the name of a field in an HTTP
+header).
 
 Selecting the key also enabled the multi-index capability in that each index can select a different key.
 
@@ -177,9 +185,47 @@ Concurrency Kit
    "CK++" project to do this, which was endorsed by the Concurrency Kit author. The base C version
    is a completed project, there is no active development.
 
-While the various merits and costs can be debated, the reality is likely we will adopt which ever of
-these is first brought in to compatibility with |TS|. My personal preference is for CK++, the
-reskinning of Concurrency Kit.
+
+===========
+Conclusions
+===========
+
+While the various merits and costs of the various concurrent container libraries can be debated, the
+reality is likely we will adopt which ever of these is first brought in to compatibility with |TS|.
+My personal preference is for CK++, the reskinning of Concurrency Kit. However, I expect any of the
+choices will be good enough.
+
+For uses cases that do not require concurrency I think concurrent containers should not be used.
+There is a cost to using them and why pay that if it's not necessary? Concurrent containers should
+be used iff there is a clear reduction in use of an explicit lock. E.g. using a concurrent hash
+container means that read operations no longer need to get a lock.
+
+For general hash containers there are two issues, ease of use and performance.
+
+I think for our use case, where many objects are allocated via proxy allocators, the latter
+intrusive containers are a clear win. They clearly do less work, because they do not do any memory
+management. On the other hand, there are many uses of hash containers where either performance isn't
+critical (e.g.. process static tables) or where the objects aren't proxy allocated. In such cases I
+see no reason to not use STL containers, other than the carry on effects noted above. There is also
+the argument that use of jemalloc or even modern glibc provides the equivalent of per thread proxy
+allocators without the explicit coding requirements of the |TS| internal ones and therefore the
+performance differences will be minimal. I don't consider that argument because the concensus, as I
+understand it, is that for the forseeable future the code base will keep the proxy allocators.
+
+I find the ease of use argument to come to the same point. For proxy allocated objects, for
+multi-indexing situations, and where the key is naturally embedded in the object,
+:code:`IntrusiveHashMap` is easier to use. No small part of the recent upgrade was to make the class
+more STL compliant so that it acts like an STL container, e.g. range :code:`for` loops work as with
+an STL container. I agree that for cases where the object exists only in the container, the STL
+containers are the easier to use choice.
+
+Overall, then, for basic hash containers I would have
+
+*  :code:`IntrusiveHashMap` for high performance use cases, and ease of use for the noted use cases.
+
+*  Use STL containers for process statics or non-performant code. I think it should be OK to make
+   this the default choice and use either :code:`IntrusiveHashMap` or a concurrent container if a
+   specific need to do so exists.
 
 .. rubric:: Footnotes
 
