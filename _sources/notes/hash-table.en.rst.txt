@@ -202,22 +202,24 @@ container means that read operations no longer need to get a lock.
 
 For general hash containers there are two issues, ease of use and performance.
 
-I think for our use case, where many objects are allocated via proxy allocators, the latter
-intrusive containers are a clear win. They clearly do less work, because they do not do any memory
-management. On the other hand, there are many uses of hash containers where either performance isn't
-critical (e.g.. process static tables) or where the objects aren't proxy allocated. In such cases I
-see no reason to not use STL containers, other than the carry on effects noted above. There is also
-the argument that use of jemalloc or even modern glibc provides the equivalent of per thread proxy
+I think for our use case, where many objects are allocated via proxy allocators, the intrusive
+containers are a clear win. They clearly do less work, because they do not do any memory management.
+On the other hand, there are many uses of hash containers where either performance isn't critical
+(e.g.. process static tables) or where the objects aren't proxy allocated. In such cases I see no
+reason to not use STL containers, other than the carry on effects noted above. There is also the
+argument that use of jemalloc or even modern glibc provides the equivalent of per thread proxy
 allocators without the explicit coding requirements of the |TS| internal ones and therefore the
 performance differences will be minimal. I don't consider that argument because the concensus, as I
 understand it, is that for the forseeable future the code base will keep the proxy allocators.
 
-I find the ease of use argument to come to the same point. For proxy allocated objects, for
+I find the ease of use argument comes to the same point. For proxy allocated objects, for
 multi-indexing situations, and where the key is naturally embedded in the object,
 :code:`IntrusiveHashMap` is easier to use. No small part of the recent upgrade was to make the class
 more STL compliant so that it acts like an STL container, e.g. range :code:`for` loops work as with
-an STL container. I agree that for cases where the object exists only in the container, the STL
-containers are the easier to use choice.
+an STL container. I have for decades thought the require separation of key and object in STL
+containers is a problem to be worked around, not a feature, and that's no small part of why I like
+:code:`IntrusiveHashMap` better. I agree that for cases where the object exists only in the
+container, the STL containers are the easier to use choice.
 
 Overall, then, for basic hash containers I would have
 
