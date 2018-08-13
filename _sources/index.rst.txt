@@ -27,6 +27,7 @@ Event Notes
 
    notes/ATS-Cork-WG-Summary.en
    notes/L7R-Denver.en
+   notes/hash-table.en
 
 Reference
 =========

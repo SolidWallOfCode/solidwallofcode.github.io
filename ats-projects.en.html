@@ -15,7 +15,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="TSConfig / Lua" href="tsconfig-lua.en.html" />
+    <link rel="next" title="Cache Tool" href="cache-tool.en.html" />
     <link rel="prev" title="Solid Wall Of Code Documents" href="index.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -25,7 +25,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="tsconfig-lua.en.html" title="TSConfig / Lua"
+          <a href="cache-tool.en.html" title="Cache Tool"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Solid Wall Of Code Documents"
@@ -48,19 +48,14 @@
 <li><a class="reference internal" href="#c-abi-to-core">C++ ABI to Core</a></li>
 <li><a class="reference internal" href="#plugin-c-api">Plugin C++ API</a></li>
 <li><a class="reference internal" href="#bijection">Bijection</a><ul>
-<li><a class="reference internal" href="#compacting-arena">Compacting Arena</a></li>
 <li><a class="reference internal" href="#replace-tcl-hash-maps">Replace TCL hash maps</a></li>
 <li><a class="reference internal" href="#id1">Bijection</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#traffic-server-core">Traffic Server Core</a><ul>
-<li><a class="reference internal" href="#concurrent-containers">Concurrent Containers</a></li>
 <li><a class="reference internal" href="#tls-extensions">TLS Extensions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#http-2-outbound">HTTP/2 Outbound</a></li>
-<li><a class="reference internal" href="#jemalloc-and-memory-allocators">jemalloc and memory allocators</a></li>
-<li><a class="reference internal" href="#tls">TLS</a></li>
 <li><a class="reference internal" href="#cache-api-toolkit">Cache API Toolkit</a></li>
 <li><a class="reference internal" href="#live-restart">Live Restart</a></li>
 </ul>
@@ -73,8 +68,8 @@
   <p class="topless"><a href="index.html"
                         title="previous chapter">Solid Wall Of Code Documents</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="tsconfig-lua.en.html"
-                        title="next chapter">TSConfig / Lua</a></p>
+  <p class="topless"><a href="cache-tool.en.html"
+                        title="next chapter">Cache Tool</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -110,12 +105,10 @@ large diagram of the projects and their dependencies is <a class="reference exte
 <h2>Projects<a class="headerlink" href="#projects" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="tsconfig-lua.en.html">TSConfig / Lua</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cache-tool.en.html">Cache Tool</a></li>
 <li class="toctree-l1"><a class="reference internal" href="testing.en.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="errata.en.html">Errata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="body-factory.en.html">Body Factory Refactoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vconn-args.en.html">TSVConn Arguments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="l4r.en.html">Layer 4 Proxying</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin-coordination.en.html">Plugin Coordination</a></li>
 <li class="toctree-l1"><a class="reference internal" href="RPC.en.html">RPC Refactor</a></li>
@@ -135,7 +128,10 @@ large diagram of the projects and their dependencies is <a class="reference exte
 </div>
 <div class="section" id="logging-tags-from-plugins">
 <h3>Logging tags from plugins<a class="headerlink" href="#logging-tags-from-plugins" title="Permalink to this headline">¶</a></h3>
-<p>This has been a desire for a long time but the implementation is a bit tricky with regard to timing, due to logging being done as the transaction is being terminated and data may have already disappeared. I have some ideas but those would require some additional infrastructure such as better arenas.</p>
+<p>This has been a desire for a long time but the implementation is a bit tricky with regard to timing,
+due to logging being done as the transaction is being terminated and data may have already
+disappeared. I have some ideas but those would require some additional infrastructure such as better
+arenas.</p>
 </div>
 <div class="section" id="c-abi-to-core">
 <h3>C++ ABI to Core<a class="headerlink" href="#c-abi-to-core" title="Permalink to this headline">¶</a></h3>
@@ -151,21 +147,23 @@ this.</p>
 </div>
 <div class="section" id="bijection">
 <h3>Bijection<a class="headerlink" href="#bijection" title="Permalink to this headline">¶</a></h3>
-<p>Bijection is a class I wrote for my own product software long ago, but it depends on some sophisticated Boost library support and so could not be easily ported to Traffic Server. It was a very useful class, particularly for configuration work and enumeration support. It is a goal of mine because building will create a good amount of powerful infrastructure which will be useful in other situations.</p>
-<div class="section" id="compacting-arena">
-<h4>Compacting Arena<a class="headerlink" href="#compacting-arena" title="Permalink to this headline">¶</a></h4>
-<p>Memory arena support should be formalized in to a support class. Having a better string arena for
-transactions would be a clear improvement in memory handling. The compacting arena is one that does
-standard memory arena support but also enables compacting / coalescing its in use memory in to a
-single block. This is very useful for data constructed at process start time and then not updated.</p>
-</div>
+<p>Bijection is a class I wrote for my own product software long ago, but it depends on some
+sophisticated Boost library support and so could not be easily ported to Traffic Server. It was a very useful
+class, particularly for configuration work and enumeration support. It is a goal of mine because
+building will create a good amount of powerful infrastructure which will be useful in other
+situations.</p>
 <div class="section" id="replace-tcl-hash-maps">
 <h4>Replace TCL hash maps<a class="headerlink" href="#replace-tcl-hash-maps" title="Permalink to this headline">¶</a></h4>
-<p>There is currently a templated hash map table but it requires externally allocated memory. This has its benefits in complex situations but is simply annoying for basic hash table use. Adding the compacting arena to the current <code class="code docutils literal notranslate"><span class="pre">TSHashTable</span></code> would yield an easily usable hash table with the desired memory allocation properties.</p>
+<p>There is currently a templated hash map table but it requires externally allocated memory. This has
+its benefits in complex situations but is simply annoying for basic hash table use. Adding the
+compacting arena to the current <code class="code docutils literal notranslate"><span class="pre">TSHashTable</span></code> would yield an easily usable hash table with the
+desired memory allocation properties.</p>
 </div>
 <div class="section" id="id1">
 <h4>Bijection<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
-<p>Given the compacting arena and <code class="code docutils literal notranslate"><span class="pre">TSHashTable</span></code> buidling the bijection class is straightforward. Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is the essential technique.</p>
+<p>Given the compacting arena and <code class="code docutils literal notranslate"><span class="pre">TSHashTable</span></code> buidling the bijection class is straightforward.
+Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is
+the essential technique.</p>
 </div>
 </div>
 <div class="section" id="traffic-server-core">
@@ -186,20 +184,8 @@ logging mechanisms.</p>
 <p>Prevent restart on cache failure (bad disks).</p>
 <p>Transaction arenas for plugin use.</p>
 <p>Pending event counting at base event loop / continuation.</p>
-<p>Look at allocating SDK Handles from the transaction arena instead of a global allocator, to avoid cleanup issues.</p>
-<div class="section" id="concurrent-containers">
-<h4>Concurrent Containers<a class="headerlink" href="#concurrent-containers" title="Permalink to this headline">¶</a></h4>
-<p>We should look at importing concurrent containers. Some options are</p>
-<dl class="docutils">
-<dt>TBB</dt>
-<dd>Thread Building Blocks. The primary issue is this does a lot more than just concurrent containers.</dd>
-<dt>ConcurrencyKit</dt>
-<dd>A excellent set of concurrent containers. The issue is this doesn’t compile in C++ and would need to
-be forked and have an API makeover.</dd>
-<dt>Concurrent Data Structures</dt>
-<dd>This was suggested on the mailing list. I’m not familiar with it. See <a class="reference external" href="https://github.com/khizmax/libcds">here</a>.</dd>
-</dl>
-</div>
+<p>Look at allocating SDK Handles from the transaction arena instead of a global allocator, to avoid
+cleanup issues.</p>
 <div class="section" id="tls-extensions">
 <h4>TLS Extensions<a class="headerlink" href="#tls-extensions" title="Permalink to this headline">¶</a></h4>
 <p>It would be interesting in terms of L4 routing to be enable TLS clients to send a Traffic Server specialized
@@ -207,26 +193,10 @@ TLS extension to provide addition L4 routing information or other control data. 
 design carefully to avoid security issues but I think it could be very powerful.</p>
 </div>
 </div>
-<div class="section" id="http-2-outbound">
-<h3>HTTP/2 Outbound<a class="headerlink" href="#http-2-outbound" title="Permalink to this headline">¶</a></h3>
-<p>Traffic Server should be able to use HTTP/2 outbound. This will require some restructuring of the internal classes used to model outbound connections (similar to the restructuring needed for inbound HTTP/2 as expressed in TS-3612).</p>
-</div>
-<div class="section" id="jemalloc-and-memory-allocators">
-<h3>jemalloc and memory allocators<a class="headerlink" href="#jemalloc-and-memory-allocators" title="Permalink to this headline">¶</a></h3>
-<p>We need to proceed with work on testing <code class="code docutils literal notranslate"><span class="pre">jemalloc</span></code> and its interaction with Traffic Server memory allocation.</p>
-</div>
-<div class="section" id="tls">
-<h3>TLS<a class="headerlink" href="#tls" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt>openSSL 1.1</dt>
-<dd>Traffic Server needs to be compatible with the openSSL 1.1 library. This is mostly done, it should be primarily verification at this point.</dd>
-<dt>TLS/1.3</dt>
-<dd>This is a soon to be standard. We should start planning for it.</dd>
-</dl>
-</div>
 <div class="section" id="cache-api-toolkit">
 <h3>Cache API Toolkit<a class="headerlink" href="#cache-api-toolkit" title="Permalink to this headline">¶</a></h3>
-<p>This is a restructuring of how the cache to enable fine grained control by plugins. Put in a reference to the summit presentation on this.</p>
+<p>This is a restructuring of how the cache to enable fine grained control by plugins. Put in a
+reference to the summit presentation on this.</p>
 </div>
 <div class="section" id="live-restart">
 <h3>Live Restart<a class="headerlink" href="#live-restart" title="Permalink to this headline">¶</a></h3>
@@ -266,7 +236,7 @@ in the old process.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="tsconfig-lua.en.html" title="TSConfig / Lua"
+          <a href="cache-tool.en.html" title="Cache Tool"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Solid Wall Of Code Documents"

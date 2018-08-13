@@ -15,12 +15,10 @@ Projects
 .. toctree::
    :maxdepth: 1
 
-   tsconfig-lua.en
    cache-tool.en
    testing.en
    errata.en
    body-factory.en
-   vconn-args.en
    l4r.en
    plugin-coordination.en
    RPC.en
@@ -43,7 +41,10 @@ Select upstream target based on the HTTP header information.
 Logging tags from plugins
 =========================
 
-This has been a desire for a long time but the implementation is a bit tricky with regard to timing, due to logging being done as the transaction is being terminated and data may have already disappeared. I have some ideas but those would require some additional infrastructure such as better arenas.
+This has been a desire for a long time but the implementation is a bit tricky with regard to timing,
+due to logging being done as the transaction is being terminated and data may have already
+disappeared. I have some ideas but those would require some additional infrastructure such as better
+arenas.
 
 C++ ABI to Core
 ===============
@@ -62,25 +63,26 @@ The plugin C++ API needs a lot of polishing and updating.
 Bijection
 =========
 
-Bijection is a class I wrote for my own product software long ago, but it depends on some sophisticated Boost library support and so could not be easily ported to |TS|. It was a very useful class, particularly for configuration work and enumeration support. It is a goal of mine because building will create a good amount of powerful infrastructure which will be useful in other situations.
-
-Compacting Arena
-++++++++++++++++
-
-Memory arena support should be formalized in to a support class. Having a better string arena for
-transactions would be a clear improvement in memory handling. The compacting arena is one that does
-standard memory arena support but also enables compacting / coalescing its in use memory in to a
-single block. This is very useful for data constructed at process start time and then not updated.
+Bijection is a class I wrote for my own product software long ago, but it depends on some
+sophisticated Boost library support and so could not be easily ported to |TS|. It was a very useful
+class, particularly for configuration work and enumeration support. It is a goal of mine because
+building will create a good amount of powerful infrastructure which will be useful in other
+situations.
 
 Replace TCL hash maps
 +++++++++++++++++++++
 
-There is currently a templated hash map table but it requires externally allocated memory. This has its benefits in complex situations but is simply annoying for basic hash table use. Adding the compacting arena to the current :code:`TSHashTable` would yield an easily usable hash table with the desired memory allocation properties.
+There is currently a templated hash map table but it requires externally allocated memory. This has
+its benefits in complex situations but is simply annoying for basic hash table use. Adding the
+compacting arena to the current :code:`TSHashTable` would yield an easily usable hash table with the
+desired memory allocation properties.
 
 Bijection
 +++++++++
 
-Given the compacting arena and :code:`TSHashTable` buidling the bijection class is straightforward. Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is the essential technique.
+Given the compacting arena and :code:`TSHashTable` buidling the bijection class is straightforward.
+Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is
+the essential technique.
 
 Traffic Server Core
 ===================
@@ -112,22 +114,8 @@ Transaction arenas for plugin use.
 
 Pending event counting at base event loop / continuation.
 
-Look at allocating SDK Handles from the transaction arena instead of a global allocator, to avoid cleanup issues.
-
-Concurrent Containers
-+++++++++++++++++++++
-
-We should look at importing concurrent containers. Some options are
-
-TBB
-   Thread Building Blocks. The primary issue is this does a lot more than just concurrent containers.
-
-ConcurrencyKit
-   A excellent set of concurrent containers. The issue is this doesn't compile in C++ and would need to
-   be forked and have an API makeover.
-
-Concurrent Data Structures
-   This was suggested on the mailing list. I'm not familiar with it. See `here <https://github.com/khizmax/libcds>`__.
+Look at allocating SDK Handles from the transaction arena instead of a global allocator, to avoid
+cleanup issues.
 
 TLS Extensions
 ++++++++++++++
@@ -136,29 +124,11 @@ It would be interesting in terms of L4 routing to be enable TLS clients to send 
 TLS extension to provide addition L4 routing information or other control data. This needs to be
 design carefully to avoid security issues but I think it could be very powerful.
 
-HTTP/2 Outbound
-===============
-
-|TS| should be able to use HTTP/2 outbound. This will require some restructuring of the internal classes used to model outbound connections (similar to the restructuring needed for inbound HTTP/2 as expressed in TS-3612).
-
-jemalloc and memory allocators
-==============================
-
-We need to proceed with work on testing :code:`jemalloc` and its interaction with |TS| memory allocation.
-
-TLS
-===
-
-openSSL 1.1
-   |TS| needs to be compatible with the openSSL 1.1 library. This is mostly done, it should be primarily verification at this point.
-
-TLS/1.3
-   This is a soon to be standard. We should start planning for it.
-
 Cache API Toolkit
 =================
 
-This is a restructuring of how the cache to enable fine grained control by plugins. Put in a reference to the summit presentation on this.
+This is a restructuring of how the cache to enable fine grained control by plugins. Put in a
+reference to the summit presentation on this.
 
 Live Restart
 ============
@@ -185,4 +155,4 @@ in the old process.
 .. toctree::
    :hidden:
 
-   api/TSVConnArgs.en
+   tsconfig-lua.en.rst
