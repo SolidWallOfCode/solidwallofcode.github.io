@@ -9,10 +9,12 @@
     <title>Testing &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Errata" href="errata.en.html" />
@@ -39,7 +41,7 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
             </a></p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Testing</a><ul>
 <li><a class="reference internal" href="#pure-replay-testing">Pure Replay testing</a></li>
@@ -148,7 +150,7 @@ must be matched up based on other data in the request.</p>
 </div>
 <div class="section" id="diagrams">
 <h2>Diagrams<a class="headerlink" href="#diagrams" title="Permalink to this headline">¶</a></h2>
-<img src="_images/graphviz-7fc48beb5dd194f68bf303d4f31ec6e66fc3417c.png" alt="digraph {
+<div class="graphviz"><img src="_images/graphviz-8cdbc9c577d5a05fc5d93aa8dfc2a30396a6e88d.png" alt="digraph {
     testing_project [label=&quot;Testing&quot; shape=folder];
     replay_file_design [label=&quot;Replay File\nDesign&quot; shape=rect style=rounded];
     replay_file_testing [label=&quot;Replay File\nBased Testing&quot; shape=rect style=rounded]
@@ -157,7 +159,7 @@ must be matched up based on other data in the request.</p>
 
     testing_project -&gt; {replay_file_design};
     replay_file_design -&gt; {production_verification, configuration_verification, replay_file_testing}
-}" />
+}" class="graphviz" /></div>
 </div>
 </div>
 
@@ -185,7 +187,7 @@ must be matched up based on other data in the request.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

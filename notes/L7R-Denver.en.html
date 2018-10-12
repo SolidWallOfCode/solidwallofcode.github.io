@@ -9,10 +9,12 @@
     <title>Traffic Server Layer 7 Working Group &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Hash Container Notes" href="hash-table.en.html" />
@@ -38,7 +40,7 @@
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Traffic Server Layer 7 Working Group</a><ul>
 <li><a class="reference internal" href="#configuration">Configuration</a></li>
@@ -135,7 +137,7 @@ HttpSM -\ Strategizer : result
 note right : Contains response
 Strategizer -/ HttpSM : return: ACTION
 HttpSM -&gt; HttpSM : process response
-HttpSM -&gt; Strategizer : finish" />
+HttpSM -&gt; Strategizer : finish"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Generic Transaction</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
@@ -185,7 +187,7 @@ note right : HTTP 200 Response
 Strategizer -/ HttpSM : return: DONE
 HttpSM -&gt; HttpSM : Read upstream response,\nsend to user agent.
 ...
-HttpSM -&gt; Strategizer : finish" />
+HttpSM -&gt; Strategizer : finish"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Successful Transaction</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
@@ -221,7 +223,7 @@ HttpSM -&gt; HttpSM : Drain upstream response body
 HttpSM -&gt; Strategizer : finish
 ...
 Strategizer -&gt; HttpSM : SESSION_READY
-== As 200 OK case ==" />
+== As 200 OK case =="/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Fail / Retry Transaction</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
@@ -268,7 +270,7 @@ partition Strategy {
 
 partition HttpSM {
    &quot;Destruct&quot; --&gt; (*)
-}" />
+}"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Upstream session logic</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
@@ -296,7 +298,7 @@ ReadResponseHeader : Wait for upstream response
 HandleResponseHeader : Read and validate header
 ReportServerResponse: Report to stategizer\nGet next action
 HandleServerResponse : Send response to User Agent\nSignal strategizer
-DrainResponse : Drain reponse\nSignal strategizer" />
+DrainResponse : Drain reponse\nSignal strategizer"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">State Machine Upstream States</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
@@ -393,7 +395,7 @@ global plugins and therefore can be done statically rather than dynamically.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

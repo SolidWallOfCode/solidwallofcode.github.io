@@ -9,10 +9,12 @@
     <title>Layer 4 Proxying &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Plugin Coordination" href="plugin-coordination.en.html" />
@@ -39,7 +41,7 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
             </a></p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Layer 4 Proxying</a><ul>
 <li><a class="reference internal" href="#use-cases">Use cases</a><ul>
@@ -114,7 +116,7 @@ entity Upstream
 Client -[#green]&gt; Upstream : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
 group Optional
    Client -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;
-end" />
+end"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Simple connection.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
@@ -134,7 +136,7 @@ end
 Proxy -[#green]&gt; Upstream : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
 group Optional
    Proxy -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;
-end" />
+end"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Proxied connection.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
@@ -153,7 +155,7 @@ Client -[#green]&gt; Proxy : &lt;font color=&quot;green&quot;&gt;//TCP Connect//
 Client -[#blue]&gt; Proxy : &lt;font color=&quot;blue&quot;&gt;// TLS Connect //&lt;/font&gt;
 note over Proxy : Client verifies proxy provided\ncertificate as if for Upstream
 Proxy -[#green]&gt; Upstream : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
-Proxy -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;// TLS Connect //&lt;/font&gt;" />
+Proxy -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;// TLS Connect //&lt;/font&gt;"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">TLS Termination</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
@@ -171,7 +173,7 @@ proxy to have the private key for the Server public certificate.</p>
 entity Upstream
 
 Client -[#green]&gt; Upstream : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
-Client -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;" />
+Client -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Simple connection.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
@@ -179,7 +181,7 @@ Client -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;//TLS Connect/
 <p>Using a proxy in this scenario can be done using transparency and routing connections through the proxy. However in most environments this level of control of the routing will not be possible and so the client will need to connect to the proxy as if it were the server. In general this will be done by tweaking DNS or reconfiguring the client. When the client connects to the proxy the proxy must in turn connect to the service. Determing the correct upstream connection is the primary challenge. The advantage of transparency is the upstream destination is indicated by the connection. For a TCP only connection from the client the upstream must be explicitly configured in the proxy. If the client connects using TLS then information can be extracted from the initial TLS handshake.</p>
 <div class="figure align-center" id="id5">
 <p class="plantuml">
-<object data="_images/plantuml-769257e9ec6830fa5bfaa503eeab4f0e50c63ed5.svg" type="image/svg+xml" style="width:511px;height:349px;">
+<object data="_images/plantuml-769257e9ec6830fa5bfaa503eeab4f0e50c63ed5.svg" type="image/svg+xml" style="width:501px;height:349px;">
 <img src="_images/plantuml-769257e9ec6830fa5bfaa503eeab4f0e50c63ed5.png" alt="actor Client
 participant Proxy
 participant Service
@@ -189,7 +191,7 @@ Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;TLS &quot;&quo
 Proxy -[#green]&gt; Service : &lt;font color=&quot;green&quot;&gt;//TCP Connect//&lt;/font&gt;
 Proxy -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;TLS &quot;&quot;Client HELLO&quot;&quot;&lt;/font&gt;
 note right : Duplicate of &lt;font color=&quot;blue&quot;&gt;&quot;&quot;Client HELLO&quot;&quot;&lt;/font&gt;
-Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;" />
+Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">TLS case</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
@@ -207,7 +209,7 @@ actor Client
 
 [Client] &lt;-&gt; [Cloud]
 [Cloud] &lt;-&gt; [Proxy]
-[Proxy] &lt;-&gt; [Service]" />
+[Proxy] &lt;-&gt; [Service]"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Network Structure</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
@@ -223,7 +225,7 @@ Client -[#green]&gt; Proxy : //TCP Connect//
 Client -[#red]&gt; Proxy : &lt;font color=&quot;red&quot;&gt;HTTP &quot;&quot;CONNECT&quot;&quot; Service&lt;/font&gt;
 Proxy -[#green]&gt; Service : //TCP Connect//
 Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;//TLS Connect//&lt;/font&gt;
-note over Proxy : Tunneled by Proxy" />
+note over Proxy : Tunneled by Proxy"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Communications</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
@@ -241,7 +243,7 @@ node &quot;Proxy&quot; as Proxy
 [Client] &lt;-&gt; [Ingress]
 [Ingress] &lt;-&gt; [Cloud]
 [Cloud] &lt;-&gt; [Proxy]
-[Proxy] &lt;-&gt; [Service]" />
+[Proxy] &lt;-&gt; [Service]"/>
 
 </object></p>
 <p class="caption"><span class="caption-text">Adding Local Proxy</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
@@ -275,7 +277,7 @@ node &quot;Proxy&quot; as Proxy
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

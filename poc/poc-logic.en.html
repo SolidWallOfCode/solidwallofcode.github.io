@@ -9,10 +9,12 @@
     <title>Cache Logic / Operations &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Cache Data Structures" href="poc-data-structures.en.html" />
@@ -39,7 +41,7 @@
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Cache Logic / Operations</a><ul>
 <li><a class="reference internal" href="#read">Read</a></li>
@@ -110,7 +112,7 @@ state ReadInit :
 state rReadFirstDoc : Load the first\ndoc fragment.
 
 Cache::open_read --&gt; Probe : Lock miss
-cache::open_read --&gt; ReadInit" />
+cache::open_read --&gt; ReadInit"/>
 
 </object></p>
 </div>
@@ -138,11 +140,11 @@ CacheDisk --&gt; CacheProcessor : [4] diskInitialized()
 
 CacheProcessor --&gt; Cache : [5] open()
 Cache --&gt; VolInit : [6] mainEvent()
-VolInit --&gt; Vol : [7] init()" />
+VolInit --&gt; Vol : [7] init()"/>
 
 </object></p>
 <p>State machine.</p>
-<img src="../_images/graphviz-736c5fe737e61e9ebf2c53e80359449c214274f7.png" alt="digraph cache {
+<div class="graphviz"><img src="../_images/graphviz-abe1fb346cc194dcd816c610aa7973c26afae21a.png" alt="digraph cache {
 
     node
         [shape=Mrecord width=1.5];
@@ -271,7 +273,7 @@ VolInit --&gt; Vol : [7] init()" />
     &quot;CacheVC::openWriteInit::OpenDirEntry&quot; -&gt; &quot;CacheVC::openWriteInit&quot;
         [label=&quot;pop/&quot;]
 
-}" />
+}" class="graphviz" /></div>
 </div>
 <div class="section" id="lock-waiting">
 <h2>Lock Waiting<a class="headerlink" href="#lock-waiting" title="Permalink to this headline">¶</a></h2>
@@ -339,7 +341,7 @@ tend to be less closely coupled to HTTP state machine instances.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

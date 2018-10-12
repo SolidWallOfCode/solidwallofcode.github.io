@@ -9,10 +9,12 @@
     <title>Cache Data Structures &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Cache Types" href="cache-types.en.html" />
@@ -39,7 +41,7 @@
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
             </a></p>
-  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Cache Data Structures</a><ul>
 <li><a class="reference internal" href="#diagrams">Diagrams</a></li>
@@ -120,10 +122,10 @@ class CacheVC {
 
 }
 
-OpenDirEntry::open_writer *- CacheVC" />
+OpenDirEntry::open_writer *- CacheVC"/>
 
 </object></p>
-<img src="../_images/graphviz-38bfae96d30e83365223a363d7a60a627a0ea878.png" alt="digraph data {
+<div class="graphviz"><img src="../_images/graphviz-c29c258668418330ce1ec11e94f7041c4d248cd7.png" alt="digraph data {
 rankdir=LR
 node [shape=plaintext]
 
@@ -172,7 +174,7 @@ HttpCacheAlt:m_earliest -&gt; FragmentDescriptor:name [dir=back,arrowtail=diamon
 Slice:writers -&gt; CacheVC:name [dir=back,arrowtail=odiamond,label=&quot;1:*&quot;]
 Slice:active -&gt; CacheVC:name [dir=back,arrowtail=odiamond,label=&quot;1:*&quot;]
 Slice:waiting -&gt; CacheVC:name [dir=back,arrowtail=odiamond,label=&quot;1:*&quot;]
-}" />
+}" class="graphviz" /></div>
 </div>
 </div>
 
@@ -200,7 +202,7 @@ Slice:waiting -&gt; CacheVC:name [dir=back,arrowtail=odiamond,label=&quot;1:*&qu
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>
