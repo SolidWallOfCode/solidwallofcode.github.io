@@ -7,3 +7,93 @@ Opening remarks
 ================
 
 The primary message was we as a community need to do better about testing at production levels.
+Bringing ATS 8.0.x to production quality has been a long struggle and 8.1.x is not going well either.
+A problem I see is that as the production testing takes longer, the difference between the LTS release
+and the next release gets larger, which makes the whole process take longer. This is a degenerative
+spiral that will end badly.
+
+We need to do better about reviewing pull requests, in particular to get reviews across company
+silos. I think people should do this also because it's good for the reviewer.
+
+Plugin API and WebAssembly
+==========================
+
+Web assembly is the new fad of a byte code executor which can be run in a web browser. The
+ostensible point is to subsume the variety of languages currently used in active web pages to a
+single basic feature [#zend]_. Developers would be able to write code in a variety of lanagues, which is
+condensed to byte code and then executed in a engine based run time environment.
+
+Kit is concerned about the long term viability of the Lua community, given that luajit and other
+libraries have been abandoned. If ATS has a WebAssembly engine, then plugins could be done the
+same way.
+
+All of this is still very wide open - many different incompatible tool chains floating around.
+
+It occurs to me as I write this that there may be some performance implications. It's hard to
+believe the byte code machine can be as fast as native C code. We have some plugins where plugin
+performance is a significant issue.
+
+QUIC Updates
+============
+
+*  HTTP over QUIC is now 'HTTP/3".
+
+    *  Multipath is coming, but final docuemnt not due until May 2020.
+
+*  Still targeting ATS 9.0.
+
+   *  OpenSSL doesn't support API required for QUIC (any supported release at this time). Masaori
+      said there are not current plans to ever support this API. This would require a custome openSSL
+      build for ATS to use openSSL and QUIC.
+
+   *  BoringSSL has QUIC API.
+
+   *  Results from IETF 103, 104 QUIC WG tested against 16 other versions.
+
+      * Depending HTTP/2 outbound for certain client side features.
+
+*  Working on performance improvements, implementation was very slow.
+
+*  Cleanup of loading certificates from "ssl_multicert.config".
+
+*  Review is going to be hard - already 43K lines changed.
+
+There was a long discussion on how and when to bring this in to master.
+
+*  A key issue is how many changes are expected in the future. Moving to master will mean a large
+   slow down in commit speed, because reviews will be required for each PR. Currently the QUIC branch
+   has 1300 commits over two years, which is a very high velocity for this project.
+
+One problem is that if QUIC doesn't go in to ATS 9, it will be another 12-18 months before it is
+released in a supported version.
+
+QUIC Deployment
+===============
+
+Reasons for QUIC
+
+*  RTT costs.
+
+*  Head of Line blocking
+
+*  Mobile connection switching vs. QUIC routing. Possibly load balancers can route by DCID embedded
+   in QUIC packets. Unclear this is commerciall available without local changes. DCID contents
+   encode the ``ET_NET`` thread in this deployment. ``UDP_NET`` threads get packets at random
+   and reschedule to the appropriate ``ET_NET`` thread.
+
+.. rubric:: Commentary
+
+   I'm not sure how of much of a QUIC advantage these things are any more. Most (all?) of them have
+   been migrated back into TCP stacks. E.g. `MPTCP <http://multipath-tcp.org>`__.
+
+Using "BRR" congestion control vs. "New Reno" which is the IETF QUIC recommendation. Claims 10x
+speed improvement for transfering 1MB in 5% packet loss environment. This approximates some third
+world networks.
+
+Using ``SSL_OP_NO_ANTI_REPLAY``. Getting 79% ~ 98% sessions reuse for 0-RTT.
+
+Footnotes
+=========
+
+.. [#zend] This reminds me very much of `Zend Project <https://www.php.net/manual/en/internals2.ze1.php>`__.
+   I'm not sure why this wasn't used, but maybe it was.
