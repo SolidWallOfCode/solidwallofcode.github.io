@@ -29,9 +29,11 @@ same way.
 
 All of this is still very wide open - many different incompatible tool chains floating around.
 
-It occurs to me as I write this that there may be some performance implications. It's hard to
-believe the byte code machine can be as fast as native C code. We have some plugins where plugin
-performance is a significant issue.
+.. topic:: Commentary
+
+    It occurs to me as I write this that there may be some performance implications. It's hard to
+    believe the byte code machine can be as fast as native C code. We have some plugins where plugin
+    performance is a significant issue.
 
 QUIC Updates
 ============
@@ -70,6 +72,8 @@ released in a supported version.
 QUIC Deployment
 ===============
 
+This was about actually deploying a variant of the ATS QUIC implementation (draft 12) in production.
+
 Reasons for QUIC
 
 *  RTT costs.
@@ -81,7 +85,7 @@ Reasons for QUIC
    encode the ``ET_NET`` thread in this deployment. ``UDP_NET`` threads get packets at random
    and reschedule to the appropriate ``ET_NET`` thread.
 
-.. rubric:: Commentary
+.. topic:: Commentary
 
    I'm not sure how of much of a QUIC advantage these things are any more. Most (all?) of them have
    been migrated back into TCP stacks. E.g. `MPTCP <http://multipath-tcp.org>`__.
@@ -90,7 +94,63 @@ Using "BRR" congestion control vs. "New Reno" which is the IETF QUIC recommendat
 speed improvement for transfering 1MB in 5% packet loss environment. This approximates some third
 world networks.
 
-Using ``SSL_OP_NO_ANTI_REPLAY``. Getting 79% ~ 98% sessions reuse for 0-RTT.
+Using `SSL_OP_NO_ANTI_REPLAY
+<https://mailarchive.ietf.org/arch/msg/tls/gDzOxgKQADVfItfC4NyW3ylr7yc>`__. Getting 79%
+~ 98% sessions reuse for 0-RTT.
+
+ATS Internals
+=============
+
+A discussion of ATS internal architecture (based on 6.0.x).
+
+AOI
+---
+
+Asynchronous I/O. This is a thread based module that does blocking I/O internally and provides
+an asynchronous interface using mutex locking and lockless queues.
+
+.. topic:: Commentary
+
+    Should look at using atomics instead of an insert mutex for the AIO queue. That might be
+    problematic for removes.
+
+.. topic:: Commentary
+
+    As far as oknet can tell, the AIO priority isn't used. This implies we may want to look at
+    removing the internal sorted priority queue, since it's not doing anything useful.
+
+There is also the native `Linux AIO <http://man7.org/linux/man-pages/man7/aio.7.html>`__ system.
+Structured similarly to `epoll <http://man7.org/linux/man-pages/man7/epoll.7.html>`__.
+
+DNS
+---
+
+Table of in flight DNS queries, with de-dupping. Each entry can have a list of continuations waiting
+on the results for that query. Can have dedicated DNS thread or share with an ``ET_NET`` thread.
+
+Transform Connections
+---------------------
+
+This is a chain of continuations that process data serially. There is a special :code:`TransformTerminus`
+created by the core which anchor the chain.
+
+.. topic:: Commentary
+
+   I need to get back to providing some more control in this chain. The idea at one point was to
+   be able to pass hints along about how the transform was modifying the content, particularly
+   with regard to length. There would be potential performance improvements if a transform could
+   mark itself as read only or length preserving.
+
+The diagrams were done in `OmniGraffle <https://www.omnigroup.com/omnigraffle>`__.
+
+Thread Scheduling
+=================
+
+The real point of all of this is to support thread affinity. The API is designed to make this
+behave in an orderly and expected way. Conceptually each thread can have an affine thread which
+belongs to a specific thread pool. This makes it possible to easily schedule a continuation on
+the same thread every time, particularly when switching threads. E.g. something does a DNS request
+and needs to be scheduled back to ``ET_NET`` from ``ET_DNS``.
 
 Footnotes
 =========

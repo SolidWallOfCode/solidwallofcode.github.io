@@ -45,6 +45,13 @@
 <li><a class="reference internal" href="#plugin-api-and-webassembly">Plugin API and WebAssembly</a></li>
 <li><a class="reference internal" href="#quic-updates">QUIC Updates</a></li>
 <li><a class="reference internal" href="#quic-deployment">QUIC Deployment</a></li>
+<li><a class="reference internal" href="#ats-internals">ATS Internals</a><ul>
+<li><a class="reference internal" href="#aoi">AOI</a></li>
+<li><a class="reference internal" href="#dns">DNS</a></li>
+<li><a class="reference internal" href="#transform-connections">Transform Connections</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#thread-scheduling">Thread Scheduling</a></li>
 <li><a class="reference internal" href="#footnotes">Footnotes</a></li>
 </ul>
 </li>
@@ -104,9 +111,12 @@ condensed to byte code and then executed in a engine based run time environment.
 libraries have been abandoned. If ATS has a WebAssembly engine, then plugins could be done the
 same way.</p>
 <p>All of this is still very wide open - many different incompatible tool chains floating around.</p>
+<div class="topic">
+<p class="topic-title first">Commentary</p>
 <p>It occurs to me as I write this that there may be some performance implications. It’s hard to
 believe the byte code machine can be as fast as native C code. We have some plugins where plugin
 performance is a significant issue.</p>
+</div>
 </div>
 <div class="section" id="quic-updates">
 <h2>QUIC Updates<a class="headerlink" href="#quic-updates" title="Permalink to this headline">¶</a></h2>
@@ -146,6 +156,7 @@ released in a supported version.</p>
 </div>
 <div class="section" id="quic-deployment">
 <h2>QUIC Deployment<a class="headerlink" href="#quic-deployment" title="Permalink to this headline">¶</a></h2>
+<p>This was about actually deploying a variant of the ATS QUIC implementation (draft 12) in production.</p>
 <p>Reasons for QUIC</p>
 <ul class="simple">
 <li><p>RTT costs.</p></li>
@@ -155,10 +166,63 @@ in QUIC packets. Unclear this is commerciall available without local changes. DC
 encode the <code class="docutils literal notranslate"><span class="pre">ET_NET</span></code> thread in this deployment. <code class="docutils literal notranslate"><span class="pre">UDP_NET</span></code> threads get packets at random
 and reschedule to the appropriate <code class="docutils literal notranslate"><span class="pre">ET_NET</span></code> thread.</p></li>
 </ul>
+<div class="topic">
+<p class="topic-title first">Commentary</p>
+<p>I’m not sure how of much of a QUIC advantage these things are any more. Most (all?) of them have
+been migrated back into TCP stacks. E.g. <a class="reference external" href="http://multipath-tcp.org">MPTCP</a>.</p>
+</div>
 <p>Using “BRR” congestion control vs. “New Reno” which is the IETF QUIC recommendation. Claims 10x
 speed improvement for transfering 1MB in 5% packet loss environment. This approximates some third
 world networks.</p>
-<p>Using <code class="docutils literal notranslate"><span class="pre">SSL_OP_NO_ANTI_REPLAY</span></code>. Getting 79% ~ 98% sessions reuse for 0-RTT.</p>
+<p>Using <a class="reference external" href="https://mailarchive.ietf.org/arch/msg/tls/gDzOxgKQADVfItfC4NyW3ylr7yc">SSL_OP_NO_ANTI_REPLAY</a>. Getting 79%
+~ 98% sessions reuse for 0-RTT.</p>
+</div>
+<div class="section" id="ats-internals">
+<h2>ATS Internals<a class="headerlink" href="#ats-internals" title="Permalink to this headline">¶</a></h2>
+<p>A discussion of ATS internal architecture (based on 6.0.x).</p>
+<div class="section" id="aoi">
+<h3>AOI<a class="headerlink" href="#aoi" title="Permalink to this headline">¶</a></h3>
+<p>Asynchronous I/O. This is a thread based module that does blocking I/O internally and provides
+an asynchronous interface using mutex locking and lockless queues.</p>
+<div class="topic">
+<p class="topic-title first">Commentary</p>
+<p>Should look at using atomics instead of an insert mutex for the AIO queue. That might be
+problematic for removes.</p>
+</div>
+<div class="topic">
+<p class="topic-title first">Commentary</p>
+<p>As far as oknet can tell, the AIO priority isn’t used. This implies we may want to look at
+removing the internal sorted priority queue, since it’s not doing anything useful.</p>
+</div>
+<p>There is also the native <a class="reference external" href="http://man7.org/linux/man-pages/man7/aio.7.html">Linux AIO</a> system.
+Structured similarly to <a class="reference external" href="http://man7.org/linux/man-pages/man7/epoll.7.html">epoll</a>.</p>
+</div>
+<div class="section" id="dns">
+<h3>DNS<a class="headerlink" href="#dns" title="Permalink to this headline">¶</a></h3>
+<p>Table of in flight DNS queries, with de-dupping. Each entry can have a list of continuations waiting
+on the results for that query. Can have dedicated DNS thread or share with an <code class="docutils literal notranslate"><span class="pre">ET_NET</span></code> thread.</p>
+</div>
+<div class="section" id="transform-connections">
+<h3>Transform Connections<a class="headerlink" href="#transform-connections" title="Permalink to this headline">¶</a></h3>
+<p>This is a chain of continuations that process data serially. There is a special <code class="code docutils literal notranslate"><span class="pre">TransformTerminus</span></code>
+created by the core which anchor the chain.</p>
+<div class="topic">
+<p class="topic-title first">Commentary</p>
+<p>I need to get back to providing some more control in this chain. The idea at one point was to
+be able to pass hints along about how the transform was modifying the content, particularly
+with regard to length. There would be potential performance improvements if a transform could
+mark itself as read only or length preserving.</p>
+</div>
+<p>The diagrams were done in <a class="reference external" href="https://www.omnigroup.com/omnigraffle">OmniGraffle</a>.</p>
+</div>
+</div>
+<div class="section" id="thread-scheduling">
+<h2>Thread Scheduling<a class="headerlink" href="#thread-scheduling" title="Permalink to this headline">¶</a></h2>
+<p>The real point of all of this is to support thread affinity. The API is designed to make this
+behave in an orderly and expected way. Conceptually each thread can have an affine thread which
+belongs to a specific thread pool. This makes it possible to easily schedule a continuation on
+the same thread every time, particularly when switching threads. E.g. something does a DNS request
+and needs to be scheduled back to <code class="docutils literal notranslate"><span class="pre">ET_NET</span></code> from <code class="docutils literal notranslate"><span class="pre">ET_DNS</span></code>.</p>
 </div>
 <div class="section" id="footnotes">
 <h2>Footnotes<a class="headerlink" href="#footnotes" title="Permalink to this headline">¶</a></h2>
