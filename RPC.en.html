@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>RPC Refactor &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +12,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="TSConfig / Lua" href="tsconfig-lua.en.html" />
@@ -60,8 +58,6 @@
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -85,40 +81,44 @@ data and <code class="docutils literal notranslate"><span class="pre">traffic_se
 scheduling that causes the socket to be polled every few seconds.</p>
 <p>The phases of the project</p>
 <ol class="arabic simple">
-<li>Determine if there is a propagation delay.<ol class="loweralpha">
-<li>If there is a delay, remove it.</li>
+<li><p>Determine if there is a propagation delay.</p>
+<ol class="loweralpha simple">
+<li><p>If there is a delay, remove it.</p></li>
 </ol>
 </li>
-<li>Find or create documentation for the current RPC mechanism, including<ol class="loweralpha">
-<li>The basics of the serialization mechanism.</li>
-<li>The API for both sides of the RPC.</li>
-<li>The run time structure of the RPC from <code class="docutils literal notranslate"><span class="pre">traffic_ctl</span></code> to <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code>.</li>
-<li>A sequence diagram of how a message is delivered.</li>
+<li><p>Find or create documentation for the current RPC mechanism, including</p>
+<ol class="loweralpha simple">
+<li><p>The basics of the serialization mechanism.</p></li>
+<li><p>The API for both sides of the RPC.</p></li>
+<li><p>The run time structure of the RPC from <code class="docutils literal notranslate"><span class="pre">traffic_ctl</span></code> to <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code>.</p></li>
+<li><p>A sequence diagram of how a message is delivered.</p></li>
 </ol>
 </li>
-<li>Factor out the serialization logic.<ol class="loweralpha">
-<li>Possibly remove the assymetry between <code class="docutils literal notranslate"><span class="pre">requests</span></code> and <code class="docutils literal notranslate"><span class="pre">responses</span></code>. I think this may be the
-root of the assymmetry. See <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/mgmt/api/NetworkMessage.cc">NetworkMessage.cc</a>.</li>
-<li>If this is made in to a library, it will be necessary to make the registration of message and
+<li><p>Factor out the serialization logic.</p>
+<ol class="loweralpha simple">
+<li><p>Possibly remove the assymetry between <code class="docutils literal notranslate"><span class="pre">requests</span></code> and <code class="docutils literal notranslate"><span class="pre">responses</span></code>. I think this may be the
+root of the assymmetry. See <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/mgmt/api/NetworkMessage.cc">NetworkMessage.cc</a>.</p></li>
+<li><p>If this is made in to a library, it will be necessary to make the registration of message and
 type handling a push mechanism rather than a push. That is, currently this information is
-directly embedded in the RPC code, which won’t be possible in a library.</li>
-<li>Make it possible for the core to pass messages back from <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> to command line tools.</li>
-<li>Make it possible for plugins to pass messages back to command line tools.</li>
+directly embedded in the RPC code, which won’t be possible in a library.</p></li>
+<li><p>Make it possible for the core to pass messages back from <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> to command line tools.</p></li>
+<li><p>Make it possible for plugins to pass messages back to command line tools.</p></li>
 </ol>
 </li>
-<li>Create <code class="docutils literal notranslate"><span class="pre">libatsprc</span></code>.<ol class="loweralpha">
-<li>Create the library.</li>
-<li>Change the RPC using code to use the library.</li>
+<li><p>Create <code class="docutils literal notranslate"><span class="pre">libatsprc</span></code>.</p>
+<ol class="loweralpha simple">
+<li><p>Create the library.</p></li>
+<li><p>Change the RPC using code to use the library.</p></li>
 </ol>
 </li>
 </ol>
 <p class="rubric">Notes</p>
-<dl class="docutils">
-<dt>Variadic Template Support</dt>
-<dd>I considered this for serialization but the problem is deserializing. Given a message type, how
+<dl class="simple">
+<dt>Variadic Template Support</dt><dd><p>I considered this for serialization but the problem is deserializing. Given a message type, how
 is a call using variadics to be constructed? You would still need some sort of registration for a
 functor to invoke, at which point it’s not really winning. There would also be the problem of
-matching serialized type data with C++ types, again obviating the advantages.</dd>
+matching serialized type data with C++ types, again obviating the advantages.</p>
+</dd>
 </dl>
 </div>
 
@@ -146,7 +146,7 @@ matching serialized type data with C++ types, again obviating the advantages.</d
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

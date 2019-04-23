@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>2018 Fall Summit &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,11 +12,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Traffic Server Cork Working Group" href="ATS-Cork-WG-Summary.en.html" />
-    <link rel="prev" title="Partial Caching Initial Design" href="../poc/archive-partial-object-caching-prototype.en.html" /> 
+    <link rel="prev" title="2019 Spring Summit" href="ATS-2019-Spring-Summit.en.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -30,7 +28,7 @@
           <a href="ATS-Cork-WG-Summary.en.html" title="Traffic Server Cork Working Group"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../poc/archive-partial-object-caching-prototype.en.html" title="Partial Caching Initial Design"
+          <a href="ATS-2019-Spring-Summit.en.html" title="2019 Spring Summit"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
       </ul>
@@ -58,8 +56,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../poc/archive-partial-object-caching-prototype.en.html"
-                        title="previous chapter">Partial Caching Initial Design</a></p>
+  <p class="topless"><a href="ATS-2019-Spring-Summit.en.html"
+                        title="previous chapter">2019 Spring Summit</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="ATS-Cork-WG-Summary.en.html"
                         title="next chapter">Traffic Server Cork Working Group</a></p>
@@ -76,8 +74,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -115,10 +111,10 @@ lifecycle or TLS hooks).</p>
 <h2>YAML<a class="headerlink" href="#yaml" title="Permalink to this headline">¶</a></h2>
 <p>I talked with Randall about where we want to go with YAML configuration and we’re in basic agreement.</p>
 <ul class="simple">
-<li>Begin with smaller projects to convert to YAML, work up to the more complex configurations.</li>
-<li>Plan for convergence - independent YAML configurations should be designed to be consolidated
-into larger configurations, with the ultimate goal of a single configuration file.</li>
-<li>Use schemas for validation, error reporting, and editor support. These will be JSON Schema based.</li>
+<li><p>Begin with smaller projects to convert to YAML, work up to the more complex configurations.</p></li>
+<li><p>Plan for convergence - independent YAML configurations should be designed to be consolidated
+into larger configurations, with the ultimate goal of a single configuration file.</p></li>
+<li><p>Use schemas for validation, error reporting, and editor support. These will be JSON Schema based.</p></li>
 </ul>
 <p>I described my work on Canned-YAML and Randall thought that would be useful. Bryan and Leif thought
 I should plan for it being independently open sourced. This would be easy since it’s already in a
@@ -146,9 +142,9 @@ to take point on organizing this effort.</p>
 is important to be able to specify both literal host names and regular expressions for host names.
 How is the configuration marked to distinguish these cases?</p>
 <ol class="arabic simple">
-<li>Use the YAML type tagging to mark regular expressions as <code class="docutils literal notranslate"><span class="pre">!!regex</span></code>.</li>
-<li>Use a second boolean value which is set if the primary value is a regular expression.</li>
-<li>Use a distinct name for literal vs. regular expression values, e.g. “host” vs. “host_rx”.</li>
+<li><p>Use the YAML type tagging to mark regular expressions as <code class="docutils literal notranslate"><span class="pre">!!regex</span></code>.</p></li>
+<li><p>Use a second boolean value which is set if the primary value is a regular expression.</p></li>
+<li><p>Use a distinct name for literal vs. regular expression values, e.g. “host” vs. “host_rx”.</p></li>
 </ol>
 </div>
 </div>
@@ -165,22 +161,22 @@ document that.</p>
 <p>Good discussions were done for the log rotation issue (where small rotated logs get swamped by large
 ones) and thread affinity. The concensus was</p>
 <ul class="simple">
-<li><code class="code docutils literal notranslate"><span class="pre">INKContInternal</span></code> instances would get a default thread affinity of the thread on which they
-were created.</li>
-<li>Is it not an error to schedule a continuation on a thread pool to which it is not affine.</li>
-<li>If a continuation is scheduled on a pool and it is affine to a thread in that pool, it will be
+<li><p><code class="code docutils literal notranslate"><span class="pre">INKContInternal</span></code> instances would get a default thread affinity of the thread on which they
+were created.</p></li>
+<li><p>Is it not an error to schedule a continuation on a thread pool to which it is not affine.</p></li>
+<li><p>If a continuation is scheduled on a pool and it is affine to a thread in that pool, it will be
 scheduled on the affine thread. This isn’t a real functional change as scheduling on a pool
-allows the core to select any thread in that pool.</li>
+allows the core to select any thread in that pool.</p></li>
 </ul>
 </div>
 <div class="section" id="ats-9">
 <h2>ATS 9<a class="headerlink" href="#ats-9" title="Permalink to this headline">¶</a></h2>
 <p>ATS 9 is shaping up to be focused on plugins and configuration. A good number of new plugins have already been contributed. There are also several infrastructure projects underway to better suppport plugins.</p>
 <ul class="simple">
-<li>Moving core utilities to where they are accessible by plugins.</li>
-<li>Making remap plugins completely reloadable.</li>
-<li>Plugin coordination, ordering callbacks on hooks and providing plugin introspection.</li>
-<li>Thread affinity and control for plugin continuations.</li>
+<li><p>Moving core utilities to where they are accessible by plugins.</p></li>
+<li><p>Making remap plugins completely reloadable.</p></li>
+<li><p>Plugin coordination, ordering callbacks on hooks and providing plugin introspection.</p></li>
+<li><p>Thread affinity and control for plugin continuations.</p></li>
 </ul>
 <p>For configuration, we expect all of the configuration files to be redone as YAML by the time of the
 ATS 9 release.</p>
@@ -214,14 +210,14 @@ the only impediment being finding someone who has the time to do it.</p>
           <a href="ATS-Cork-WG-Summary.en.html" title="Traffic Server Cork Working Group"
              >next</a> |</li>
         <li class="right" >
-          <a href="../poc/archive-partial-object-caching-prototype.en.html" title="Partial Caching Initial Design"
+          <a href="ATS-2019-Spring-Summit.en.html" title="2019 Spring Summit"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

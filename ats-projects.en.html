@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Traffic Server Projects &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +12,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Cache Tool" href="cache-tool.en.html" />
@@ -85,8 +83,6 @@
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -124,8 +120,8 @@ large diagram of the projects and their dependencies is <a class="reference exte
 <h3>Layer 7 Routing<a class="headerlink" href="#layer-7-routing" title="Permalink to this headline">¶</a></h3>
 <p>Select upstream target based on the HTTP header information.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Need to consider the ability to bypass upstream selection for non-caching objects (e.g., skip a second caching layer for requests that will always end up at the origin anyway).</p>
+<p class="admonition-title">Note</p>
+<p>Need to consider the ability to bypass upstream selection for non-caching objects (e.g., skip a second caching layer for requests that will always end up at the origin anyway).</p>
 </div>
 </div>
 <div class="section" id="logging-tags-from-plugins">
@@ -204,14 +200,15 @@ reference to the summit presentation on this.</p>
 <h3>Live Restart<a class="headerlink" href="#live-restart" title="Permalink to this headline">¶</a></h3>
 <p>A long running request is to be able to do a live restart of Traffic Server. The mechanism would be</p>
 <ul class="simple">
-<li>Start new Traffic Server process.</li>
-<li>New process starts accepting connections.</li>
-<li>Old process stops accepting connections.</li>
-<li>Old process shuts down.<ul>
-<li>When all inbound connections have terminated.</li>
-<li>When there are less than a specified number of inbound connections.</li>
-<li>After a specific amount of time.</li>
-<li>When explicitly requested by the administrator.</li>
+<li><p>Start new Traffic Server process.</p></li>
+<li><p>New process starts accepting connections.</p></li>
+<li><p>Old process stops accepting connections.</p></li>
+<li><p>Old process shuts down.</p>
+<ul>
+<li><p>When all inbound connections have terminated.</p></li>
+<li><p>When there are less than a specified number of inbound connections.</p></li>
+<li><p>After a specific amount of time.</p></li>
+<li><p>When explicitly requested by the administrator.</p></li>
 </ul>
 </li>
 </ul>
@@ -248,7 +245,7 @@ in the old process.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

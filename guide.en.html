@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Open Source Contributions &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +12,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Completed Projects" href="completed.en.html" />
@@ -71,8 +69,6 @@
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -94,32 +90,32 @@ skilled developers in the community who will often see things you miss.</p>
 group where it it not the case that every one knows every one else from chat and summits and there
 is a shared understanding of what makes a good pull request. The following are I think the most basic
 and important things to keep in mind that will help ease the process.</p>
-<dl class="docutils">
-<dt>Separability</dt>
-<dd>Pull requests should be as small as possible. This yields the important result that isolating
+<dl class="simple">
+<dt>Separability</dt><dd><p>Pull requests should be as small as possible. This yields the important result that isolating
 changes that cause problems and recovering from them is much easier. This means that if new
 classes / technology / support is required for a pull request, it is almost always better to
 contribute it in a separate, prior pull request. Pull requests that have a lot of new classes and
 other things have a very difficult time, both because the additional support obscures the real
 point of the pull request and that discussions can get bogged down on details in the support that
-aren’t critical for the overall work.</dd>
-<dt>Parsimony</dt>
-<dd>There is a general concern about code bloat and much effort has been made in the past to decrease
+aren’t critical for the overall work.</p>
+</dd>
+<dt>Parsimony</dt><dd><p>There is a general concern about code bloat and much effort has been made in the past to decrease
 the over all code size. For what Traffic Server can do it has a remarkably small code base. This is not an
 accident. For this reason think twice, then reconsider again, if you really need to add a support
 class. Avoid this if you can, especially if the class is used only once or in limited
 circumstances. Also avoid putting classes in separate files if the class isn’t used in other file
 scopes. See if there are existing classes or other techniques which, with a bit of work, could be
-made to suffice.</dd>
-<dt>Consistency</dt>
-<dd>Traffic Server is an old project with people who have been working on it for over a decade. They are
+made to suffice.</p>
+</dd>
+<dt>Consistency</dt><dd><p>Traffic Server is an old project with people who have been working on it for over a decade. They are
 comfortable with where things are and how things are done. This doesn’t mean it’s perfect but
 unless there is a strong reason to change, you should peruse the code and try to do things in a
 similar way. One example would be initialization. There are various ways to do this in C++, most
 of which result in the same machine code. Therefore it’s a reasonable expectation that you will
 do this in the same way as the existing code. As a newcomer to the community, try to show a bit
 of respect for existing customs and habits, <em>especially</em> when such things have no real impact on
-code quality.</dd>
+code quality.</p>
+</dd>
 </dl>
 <div class="section" id="c-guidelines">
 <h2>C++ Guidelines<a class="headerlink" href="#c-guidelines" title="Permalink to this headline">¶</a></h2>
@@ -164,7 +160,7 @@ can be put in stack allocated buffer of that length without any memory allocatio
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

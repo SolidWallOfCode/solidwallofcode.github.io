@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Traffic Server Cork Working Group &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +12,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Traffic Server Layer 7 Working Group" href="L7R-Denver.en.html" />
@@ -78,8 +76,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -127,23 +123,23 @@ will be required for groups wanting to use Traffic Server but not aware of speci
 <p>It is planned to remove <code class="docutils literal notranslate"><span class="pre">traffic_manager</span></code> for 9.0. The latter will be significantly more
 difficult because <code class="docutils literal notranslate"><span class="pre">traffic_manager</span></code> performs useful functions. Among these are</p>
 <ul class="simple">
-<li>Opening of the proxy ports. This can be shifted without much loss to <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> which
+<li><p>Opening of the proxy ports. This can be shifted without much loss to <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> which
 is already capable of doing this. This will mean lack of open ports while <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> is
-restarting which was considered a minor issue.</li>
-<li>External communcation with command lines tools. The ongoing RPC work will be needed to move
-this functionality in to <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code>.</li>
-<li>Access to statistics and metrics. This data should already be present in <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code>
-and if the RPC work is completed this should be a relatively straight forward project.</li>
+restarting which was considered a minor issue.</p></li>
+<li><p>External communcation with command lines tools. The ongoing RPC work will be needed to move
+this functionality in to <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code>.</p></li>
+<li><p>Access to statistics and metrics. This data should already be present in <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code>
+and if the RPC work is completed this should be a relatively straight forward project.</p></li>
 </ul>
 <p>Internal RPC
 The current <code class="docutils literal notranslate"><span class="pre">libRPC</span></code> project will be abandoned. Instead a third party RPC serialization
 mechanism will be selected and used. This replacement will be required to achieve the design
 goals of <code class="docutils literal notranslate"><span class="pre">libRPC</span></code> –</p>
 <ul class="simple">
-<li>Separately library without executable specific compilation or libraries.</li>
-<li>Bidirectional.</li>
-<li>Type safety.</li>
-<li>External registration to enable subsystems to register their own RPC calls and handling.</li>
+<li><p>Separately library without executable specific compilation or libraries.</p></li>
+<li><p>Bidirectional.</p></li>
+<li><p>Type safety.</p></li>
+<li><p>External registration to enable subsystems to register their own RPC calls and handling.</p></li>
 </ul>
 <p>This is not as simple as it sounds. One key point of the current RPC is it requires no
 allocations. Because it is a simple serialized list of fundamental types the reciever can provide
@@ -256,12 +252,12 @@ requests which need to be managed.</p>
 <p>Based on some work by Masoari for doing better connection draining in Traffic Server, Susan and I
 are investigating doing clean cutovers from one <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> to another. This would involve</p>
 <ul class="simple">
-<li>Start the new instance, wait for it to become ready.</li>
-<li>Mark the old instance to drain.</li>
-<li>Disable cache writing in the old instance.</li>
-<li>Enable cache writing in the new instance.</li>
-<li>Start accepting connections on the new instance.</li>
-<li>When the old instance has few enough connections, shut it down.</li>
+<li><p>Start the new instance, wait for it to become ready.</p></li>
+<li><p>Mark the old instance to drain.</p></li>
+<li><p>Disable cache writing in the old instance.</p></li>
+<li><p>Enable cache writing in the new instance.</p></li>
+<li><p>Start accepting connections on the new instance.</p></li>
+<li><p>When the old instance has few enough connections, shut it down.</p></li>
 </ul>
 <p>The key point is to avoid having two processes write to the cache at the same time, while also
 continuing to provide some level of protection to the upstreams.</p>
@@ -305,7 +301,7 @@ containers. I need to be specific about that so a reasonable decision can be mad
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

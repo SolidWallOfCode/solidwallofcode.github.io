@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Traffic Server Layer 7 Working Group &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +12,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Hash Container Notes" href="hash-table.en.html" />
@@ -71,8 +69,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -103,7 +99,7 @@ this natively).</p>
 marked with a unique tag. There is a globally configured default strategy tag. During remap, this
 can be overridden with a different strategy tag.</p>
 <p>When the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> decides it needs to send the request to an upstream target, it instantiates a
-“strategizer” <a class="footnote-reference" href="#id2" id="id1">[1]</a> which is a run time stateful object based on a specific strategy. That strategy is
+“strategizer” <a class="footnote-reference brackets" href="#id2" id="id1">1</a> which is a run time stateful object based on a specific strategy. That strategy is
 selected by the strategy tag.</p>
 <p>The strategizer is responsible for providing transaction ready sessions to upstream targets. The
 selection of the target and any handling of layer 3 or 4 connection errors is the resposibility of
@@ -117,7 +113,7 @@ Even though the session is open at the time the <code class="code docutils liter
 absence of further network problems.</p>
 <div class="figure align-center" id="id3">
 <p class="plantuml">
-<object data="../_images/plantuml-69d8fd80b473b6ee681613d8862008712c79b1ae.svg" type="image/svg+xml" style="width:465px;height:455px;">
+<object data="../_images/plantuml-69d8fd80b473b6ee681613d8862008712c79b1ae.svg" type="image/svg+xml" style="width:459px;height:455px;">
 <img src="../_images/plantuml-69d8fd80b473b6ee681613d8862008712c79b1ae.png" alt="entity L7Policy
 actor Strategizer
 actor HttpSM
@@ -140,7 +136,8 @@ HttpSM -&gt; HttpSM : process response
 HttpSM -&gt; Strategizer : finish"/>
 
 </object></p>
-<p class="caption"><span class="caption-text">Generic Transaction</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text"><p>Generic Transaction</p>
+</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>The interaction is split out in this manner to accomodate the variety of synchronous and
 asynchronous operations. In particular if there is an HTTP reponse from the upstream then the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code>
@@ -152,12 +149,12 @@ describes what the strategizer will do when the <code class="code docutils liter
 that while the next action may take a long time to perform, <em>determining</em> the next action should be
 a fast computation.</p>
 <p>The current valid actions are</p>
-<dl class="docutils">
-<dt><code class="docutils literal notranslate"><span class="pre">DONE</span></code></dt>
-<dd>The result is a final result that should be sent on to the user agent.</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">RETRY</span></code></dt>
-<dd>The transaction was a failure of some sort but not a permanent one. The strategizer will prepare another
-session after the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> has finished cleaning up the current transaction.</dd>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">DONE</span></code></dt><dd><p>The result is a final result that should be sent on to the user agent.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">RETRY</span></code></dt><dd><p>The transaction was a failure of some sort but not a permanent one. The strategizer will prepare another
+session after the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> has finished cleaning up the current transaction.</p>
+</dd>
 </dl>
 <p>This is clearer with specific examples.</p>
 <p>First consider the case when the upstream request is successful. It is unacceptable to wait for
@@ -166,7 +163,7 @@ The <code class="code docutils literal notranslate"><span class="pre">HttpSM</sp
 must be a synchronous call.</p>
 <div class="figure align-center" id="id4">
 <p class="plantuml">
-<object data="../_images/plantuml-48ea60bdd194290b59121ebfb67c5eb41896fdb7.svg" type="image/svg+xml" style="width:490px;height:498px;">
+<object data="../_images/plantuml-48ea60bdd194290b59121ebfb67c5eb41896fdb7.svg" type="image/svg+xml" style="width:484px;height:498px;">
 <img src="../_images/plantuml-48ea60bdd194290b59121ebfb67c5eb41896fdb7.png" alt="entity L7Policy
 actor Strategizer
 actor HttpSM
@@ -190,7 +187,8 @@ HttpSM -&gt; HttpSM : Read upstream response,\nsend to user agent.
 HttpSM -&gt; Strategizer : finish"/>
 
 </object></p>
-<p class="caption"><span class="caption-text">Successful Transaction</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text"><p>Successful Transaction</p>
+</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>Even in an HTTP failure there is still work for the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code>. In this case, for a <code class="docutils literal notranslate"><span class="pre">404</span></code> response
 status the strategizer will fail over to a different upstream. This behavior is used to probe
@@ -199,7 +197,7 @@ rather than returning the response to the user agent. The <code class="code docu
 but needs to know, while draining, that the body will not be returned to the user agent.</p>
 <div class="figure align-center" id="id5">
 <p class="plantuml">
-<object data="../_images/plantuml-b8efb6194521f6a6d9b28e31faf7fe1c5e9f66fb.svg" type="image/svg+xml" style="width:534px;height:583px;">
+<object data="../_images/plantuml-b8efb6194521f6a6d9b28e31faf7fe1c5e9f66fb.svg" type="image/svg+xml" style="width:527px;height:583px;">
 <img src="../_images/plantuml-b8efb6194521f6a6d9b28e31faf7fe1c5e9f66fb.png" alt="entity L7Policy
 actor Strategizer
 actor HttpSM
@@ -226,12 +224,13 @@ Strategizer -&gt; HttpSM : SESSION_READY
 == As 200 OK case =="/>
 
 </object></p>
-<p class="caption"><span class="caption-text">Fail / Retry Transaction</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text"><p>Fail / Retry Transaction</p>
+</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <p>Another view of the activity demonstrates the “co-routine” like nature of the interaction. Both the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> and strategizer perform blocking operations where the other side must wait for an event or signal to indication the operation has completed. The basic logic is</p>
 <div class="figure align-center" id="id6">
 <p class="plantuml">
-<object data="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.svg" type="image/svg+xml" style="width:897px;height:437px;">
+<object data="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.svg" type="image/svg+xml" style="width:923px;height:437px;">
 <img src="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.png" alt="partition HttpSM {
    (*) --&gt; &quot;Determine strategy tag&quot;
 }
@@ -273,14 +272,15 @@ partition HttpSM {
 }"/>
 
 </object></p>
-<p class="caption"><span class="caption-text">Upstream session logic</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text"><p>Upstream session logic</p>
+</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 <p>The state sequence in the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> is much simplified by this work. In particular, the
 nemesis of redirection or other upstream connection failures requiring rolling back the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> state
 will be avoided. Instead there is a simpler loop which spans a much smaller set of states.</p>
 <div class="figure align-center" id="id7">
 <p class="plantuml">
-<object data="../_images/plantuml-441af616861ab2bacfe88f69e9fffa08f9b5bd46.svg" type="image/svg+xml" style="width:473px;height:700px;">
+<object data="../_images/plantuml-441af616861ab2bacfe88f69e9fffa08f9b5bd46.svg" type="image/svg+xml" style="width:471px;height:700px;">
 <img src="../_images/plantuml-441af616861ab2bacfe88f69e9fffa08f9b5bd46.png" alt="[*] -&gt; ServerOpen
 ServerOpen -&gt; WaitForTransaction
 WaitForTransaction --&gt; HandleServerTransaction : SESSION_READY
@@ -301,7 +301,8 @@ HandleServerResponse : Send response to User Agent\nSignal strategizer
 DrainResponse : Drain reponse\nSignal strategizer"/>
 
 </object></p>
-<p class="caption"><span class="caption-text">State Machine Upstream States</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text"><p>State Machine Upstream States</p>
+</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="next-steps">
@@ -310,10 +311,10 @@ DrainResponse : Drain reponse\nSignal strategizer"/>
 it was agreed the next deliverable would be a plugin or plugins that would emulate the current
 manual host status marking using <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code>. This would enable</p>
 <ul class="simple">
-<li>Valdating the <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code> API.</li>
-<li>Experiment with external tool to <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code> data mechanisms. That is, how can external
-data be pused in to host and IP address records?</li>
-<li>Validate that <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code> data can be used to manipulate upstream selection.</li>
+<li><p>Valdating the <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code> API.</p></li>
+<li><p>Experiment with external tool to <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code> data mechanisms. That is, how can external
+data be pused in to host and IP address records?</p></li>
+<li><p>Validate that <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code> data can be used to manipulate upstream selection.</p></li>
 </ul>
 <p>I think this will also be the keystone of moving forward with <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code> as doing things
 similar to existing code is much easier than building thing ex nihilo. It might even be reasonable,
@@ -325,14 +326,14 @@ internally, because it makes the overall code base much more modular.</p>
 <div class="section" id="open-issues">
 <h2>Open Issues<a class="headerlink" href="#open-issues" title="Permalink to this headline">¶</a></h2>
 <p>There are still a few open issues which aren’t fully resolved.</p>
-<dl class="docutils">
-<dt>Setting upstream address</dt>
-<dd>It is a requirement, for particularly for transparent networking, to be able to explicitly set
+<dl class="simple">
+<dt>Setting upstream address</dt><dd><p>It is a requirement, for particularly for transparent networking, to be able to explicitly set
 the IP addres of the upstream, both in the core and using the plugin API call
-<code class="code docutils literal notranslate"><span class="pre">TSHttpTxnSetTargetAddr</span></code>.</dd>
-<dt>Self Marking</dt>
-<dd>There must be a descriptor that says “the remapped upstream” so that no explicit upstream hosts
-need to be defined. This is needed for the default routing situation and for forward proxying.</dd>
+<code class="code docutils literal notranslate"><span class="pre">TSHttpTxnSetTargetAddr</span></code>.</p>
+</dd>
+<dt>Self Marking</dt><dd><p>There must be a descriptor that says “the remapped upstream” so that no explicit upstream hosts
+need to be defined. This is needed for the default routing situation and for forward proxying.</p>
+</dd>
 </dl>
 </div>
 <div class="section" id="visions">
@@ -348,8 +349,8 @@ the purpose of this would be to replace the current transaction arguments with <
 An issue with this is remap plugins. These have two properties that make it more difficult to use
 <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code>.</p>
 <ul class="simple">
-<li>Different plugins per remap rule using different sets of extended data.</li>
-<li>Reloading, which is another ongoing project.</li>
+<li><p>Different plugins per remap rule using different sets of extended data.</p></li>
+<li><p>Reloading, which is another ongoing project.</p></li>
 </ul>
 <p>For various reasons (including the nature of the proxy allocators) it is not feasible to have
 instances of a class with different extendible schemas. As a result it will probably be necessary to
@@ -363,12 +364,11 @@ other allocations that go on in the <code class="code docutils literal notransla
 supports an array of <code class="code docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">void</span> <span class="pre">*</span> <span class="pre">&gt;</span></code> which are used by plugins. In these cases the use is for
 global plugins and therefore can be done statically rather than dynamically.</p>
 <p class="rubric">Footnotes</p>
-<table class="docutils footnote" frame="void" id="id2" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>This is a stupid name but no one else would provide a better one, which frankly shouldn’t be challenging.</td></tr>
-</tbody>
-</table>
+<dl class="footnote brackets">
+<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>This is a stupid name but no one else would provide a better one, which frankly shouldn’t be challenging.</p>
+</dd>
+</dl>
 </div>
 </div>
 
@@ -395,7 +395,7 @@ global plugins and therefore can be done statically rather than dynamically.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

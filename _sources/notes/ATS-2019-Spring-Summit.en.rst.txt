@@ -1,0 +1,9 @@
+2019 Spring Summit
+******************
+
+These are my notes from the 2019 Spring Summit in Beijing.
+
+Opening remarks
+================
+
+The primary message was we as a community need to do better about testing at production levels.

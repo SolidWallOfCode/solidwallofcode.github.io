@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Glossary &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +12,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Partal Object Caching" href="archive-partial-object-caching.en.html" />
@@ -60,8 +58,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -76,30 +72,30 @@
             
   <div class="section" id="glossary">
 <span id="id1"></span><h1>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h1>
-<dl class="glossary docutils">
-<dt id="term-alternate">alternate<dt id="term-alternates">alternates</dt>
-<dd>Different variants of a single cache object.</dd>
-<dt id="term-alternate-selection">alternate selection</dt>
-<dd>Selecting a specific alternate for an HTTP object.</dd>
-<dt id="term-alternate-vector">alternate vector</dt>
-<dd>A vector of alternate descriptors, instances of <a class="reference internal" href="cache-types.en.html#_CPPv312HTTPCacheAlt" title="HTTPCacheAlt"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">HTTPCacheAlt</span></code></a>.</dd>
-<dt id="term-cache-object">cache object</dt>
-<dd>A resource identified by a URL. A cache object can have various forms which are called
+<dl class="glossary simple">
+<dt id="term-alternate">alternate</dt><dt id="term-alternates">alternates</dt><dd><p>Different variants of a single cache object.</p>
+</dd>
+<dt id="term-alternate-selection">alternate selection</dt><dd><p>Selecting a specific alternate for an HTTP object.</p>
+</dd>
+<dt id="term-alternate-vector">alternate vector</dt><dd><p>A vector of alternate descriptors, instances of <a class="reference internal" href="cache-types.en.html#_CPPv412HTTPCacheAlt" title="HTTPCacheAlt"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">HTTPCacheAlt</span></code></a>.</p>
+</dd>
+<dt id="term-cache-object">cache object</dt><dd><p>A resource identified by a URL. A cache object can have various forms which are called
 <a class="reference internal" href="#term-alternates"><span class="xref std std-term">alternates</span></a>. These can vary by encoding, format, or other properties. Every alternate
-of an object is considered semantically equivalent.</dd>
-<dt id="term-cache-volume">cache volume</dt>
-<dd>A logical unit of cache storage.</dd>
-<dt id="term-revalidation">revalidation<dt id="term-revalidated">revalidated</dt>
-<dd>Revalidation is done by sending a conditional request to an origin server to check the status
+of an object is considered semantically equivalent.</p>
+</dd>
+<dt id="term-cache-volume">cache volume</dt><dd><p>A logical unit of cache storage.</p>
+</dd>
+<dt id="term-revalidation">revalidation</dt><dt id="term-revalidated">revalidated</dt><dd><p>Revalidation is done by sending a conditional request to an origin server to check the status
 of a specific alternate. Once the response is received and process the alternate has been
-revalidated and is presumably fresh.</dd>
-<dt id="term-slice">slice</dt>
-<dd>A version of an <a class="reference internal" href="#term-alternate"><span class="xref std std-term">alternate</span></a>. Slices are temporal. Different slices of an alternate are variations of the alternate through
-time. An alternate has more than one slice on when it is active, cache objects in storage have exactly one slice per alternate.</dd>
-<dt id="term-span">span</dt>
-<dd>A contiguous range of bytes on a storage device.</dd>
-<dt id="term-stripe">stripe</dt>
-<dd>A subrange of a <a class="reference internal" href="#term-span"><span class="xref std std-term">span</span></a> that is associated with a specific <a class="reference internal" href="#term-cache-volume"><span class="xref std std-term">cache volume</span></a>.</dd>
+revalidated and is presumably fresh.</p>
+</dd>
+<dt id="term-slice">slice</dt><dd><p>A version of an <a class="reference internal" href="#term-alternate"><span class="xref std std-term">alternate</span></a>. Slices are temporal. Different slices of an alternate are variations of the alternate through
+time. An alternate has more than one slice on when it is active, cache objects in storage have exactly one slice per alternate.</p>
+</dd>
+<dt id="term-span">span</dt><dd><p>A contiguous range of bytes on a storage device.</p>
+</dd>
+<dt id="term-stripe">stripe</dt><dd><p>A subrange of a <a class="reference internal" href="#term-span"><span class="xref std std-term">span</span></a> that is associated with a specific <a class="reference internal" href="#term-cache-volume"><span class="xref std std-term">cache volume</span></a>.</p>
+</dd>
 </dl>
 </div>
 
@@ -127,7 +123,7 @@ time. An alternate has more than one slice on when it is active, cache objects i
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>
