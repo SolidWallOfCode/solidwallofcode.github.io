@@ -55,6 +55,9 @@
 <li><a class="reference internal" href="#cwiki-changes">CWiki Changes</a></li>
 <li><a class="reference internal" href="#plugin-reload">Plugin Reload</a></li>
 <li><a class="reference internal" href="#parent-selection-and-traffic-manager">Parent Selection and traffic_manager</a></li>
+<li><a class="reference internal" href="#tls-state-of-the-onion">TLS State of the Onion</a></li>
+<li><a class="reference internal" href="#plugin-review">Plugin Review</a></li>
+<li><a class="reference internal" href="#general-notes">General Notes</a></li>
 <li><a class="reference internal" href="#footnotes">Footnotes</a></li>
 </ul>
 </li>
@@ -287,17 +290,155 @@ does not scale well. This is another aspect of how the internal RPC is messed up
 <p>The only thing that <strong class="program">traffic_manager</strong> provides that is not easily put into
 <strong class="program">traffic_server</strong> is the external process RPC. To me, this is once again wrapped up with
 the overall brokenness of the RPC.</p>
+<p><a class="reference external" href="rpc">Long discussion about RPC</a>.</p>
+</div>
+<div class="section" id="tls-state-of-the-onion">
+<h2>TLS State of the Onion<a class="headerlink" href="#tls-state-of-the-onion" title="Permalink to this headline">¶</a></h2>
+<p>Susan’s slides, I couldn’t take notes.</p>
+<p>Masaori talked about refactoring “ssl_multicert.config” based on work with QUIC.</p>
+<dl>
+<dt>Require openSSL 1.0.2+ for ATS 9</dt><dd><p>This means droppping support for CentOS 6 and Ubuntu 14.04. Currently ATS 8 only requires
+openSSL 0.9.4+ which is far too old.</p>
+</dd>
+<dt>Common Mistakes for Configuration</dt><dd><p>Frequent use of <cite>#ifdef</cite> instead of <cite>#if</cite>.</p>
+<p>Use of <code class="code docutils literal notranslate"><span class="pre">AC_CHECK_HEADER</span></code> definitions without actually calling ;code:<cite>AC_CHECK_HEADER</cite>.</p>
+</dd>
+<dt>Cleanup</dt><dd><ul class="simple">
+<li><p>Replace tokenizer with <code class="code docutils literal notranslate"><span class="pre">TextView</span></code>.</p></li>
+<li><p>Drop NPN support for ATS 9?</p></li>
+<li><p>Agreed that “<a href="#id2"><span class="problematic" id="id3">I_</span></a>” and “P” prefixes are obsolete and should be removed.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Need to talk about how to organize include files in order to deprecate the “<a href="#id4"><span class="problematic" id="id5">I_</span></a>” and “<a href="#id6"><span class="problematic" id="id7">P_</span></a>” prefixes.</p>
+<p>We want to move the “<a href="#id8"><span class="problematic" id="id9">ssl_</span></a>” prefixed functions from globals to a namespace.</p>
+</div>
+<div class="section" id="plugin-review">
+<h2>Plugin Review<a class="headerlink" href="#plugin-review" title="Permalink to this headline">¶</a></h2>
+<p>Concern about the process of promoting plugins from experiment to stable. Therefore this is a
+walk through of current plugins and what should be done with them.</p>
+<dl class="simple">
+<dt>access_control</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>acme</dt><dd><p>Unclear about what this does and what support it has. This supports “Let’s Encrypt” use. “Acme”
+is a protocol of which “Let’s Encrypt” is an implementation. Remain experimental.</p>
+</dd>
+<dt>balancer</dt><dd><p>Deprecate? This is being moved in to the core.</p>
+</dd>
+<dt>buffer_upload</dt><dd><p>Ancient and unchanging. Should be deprecated or promoted.</p>
+</dd>
+<dt>cache_key_genid</dt><dd><p>What does this do? Look at deprecating, move functionality into another plugin.</p>
+</dd>
+<dt>cache_promote</dt><dd><p>Promote to stable.</p>
+</dd>
+<dt>cache_range_requests</dt><dd><p>Used by <strong class="program">traffic_ctl</strong>. Promote when documented.</p>
+</dd>
+<dt>cachekey</dt><dd><p>Already promoted.</p>
+</dd>
+<dt>certifier</dt><dd><p>Promote to stable or move to examples. Much of this is being moved in to the core.</p>
+</dd>
+<dt>collapsed_forwarding</dt><dd><p>Check with Comcast. Used by Kit.</p>
+</dd>
+<dt>cookie_remap</dt><dd><p>Keep in experimental.</p>
+</dd>
+<dt>custom_redirect</dt><dd><p>Investigate - does any one use this?</p>
+</dd>
+<dt>fastcgi</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>fq_pacing</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>geoip_acl</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>header_freq</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>header_normalize</dt><dd><p>Deprecate. Obsolete functionality.</p>
+</dd>
+<dt>hipes</dt><dd><p>Deprecate. Obsolete functionality.</p>
+</dd>
+<dt>hook-trace</dt><dd><p>Experimental</p>
+</dd>
+<dt>inliner</dt><dd><p>Consider deprecating? Functionality covered by <code class="code docutils literal notranslate"><span class="pre">pagespeed</span></code>?</p>
+</dd>
+<dt>ja3_fingerprint</dt><dd><p>Experimental.</p>
+</dd>
+<dt>magick</dt><dd><p>Experimental.</p>
+</dd>
+<dt>memcache</dt><dd><p>Deprecate. Move to example as a prorotocol plugin example?</p>
+</dd>
+<dt>memcached_remap</dt><dd><p>Deprecate.</p>
+</dd>
+<dt>metalink</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>money_trace</dt><dd><p>JvD will ask if this is still viable.</p>
+</dd>
+<dt>mp4</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>multiplexer</dt><dd><p>Promote to stable.</p>
+</dd>
+<dt>mysql_remap</dt><dd><p>Deprecate.</p>
+</dd>
+<dt>prefetch</dt><dd><p>Promote to stable.</p>
+</dd>
+<dt>remap_purge</dt><dd><p>Promote to stable.</p>
+</dd>
+<dt>remap_stats</dt><dd><p>Promote when documented.</p>
+</dd>
+<dt>server_push_preload</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>slicer</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>webp_transform</dt><dd><p>Functionality replaced by <code class="code docutils literal notranslate"><span class="pre">magick</span></code>. Deprecate when the latter is promoted.</p>
+</dd>
+<dt>ssl_session_reuse</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>sslheaders</dt><dd><p>Remain experimental. Try to move functionality to <code class="code docutils literal notranslate"><span class="pre">header_rewrite</span></code>.</p>
+</dd>
+<dt>stale_while_revalidate</dt><dd><p>Deprecated already. Should remove code.</p>
+</dd>
+<dt>stream_editor</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>system_stats</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>tls_bridge</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>traffic_dump</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>uri_signing</dt><dd><p>Remain experimental.</p>
+</dd>
+<dt>url_sig</dt><dd><p>Remain experimental.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="general-notes">
+<h2>General Notes<a class="headerlink" href="#general-notes" title="Permalink to this headline">¶</a></h2>
+<p>Leif wants it to be noted the rule about string manipulation should be</p>
+<p class="centered">
+<strong>Use <code class="code docutils literal notranslate"><span class="pre">std::string_view</span></code> unless methods from <code class="code docutils literal notranslate"><span class="pre">ts::TextView</span></code> are explicitly needed.</strong></p><p id="rpc">There’s general agreement the current internal RPC is messed up and/or broken. It’s also the
+concensus that a <a class="reference external" href="http://jsonrpc.org">JSON-RPC</a> compatible protocol should be used.</p>
 <p>Discussion on how the external connectivity for the RPC - should it be done via the normal proxy
 ports or keep it as a specialized communication channel (e.g. via UNIX domain sockets). Long
 discussion about this. I think there is more concern about the complexity of the transport than is
 warrented. I also think even if the overall implementations are different between a custom channel
 and an HTTP based channel are different, the core implementation is identical. That part is the
 request parsing, dispatch, and response generation.</p>
+<div class="topic">
+<p class="topic-title first">Commentary</p>
+<p>I have no doubt a proxy port based approach would be quite nice in many ways. My concern is
+primarily that the additional complexity due to security concerns will be more than the effort
+to make it work on a custom channel. I understand what is needed for the latter case but we
+don’t seem to have any designs for how to deal with the security issues for the former.</p>
+</div>
 <p>Kit brought up the issue of <strong class="program">traffic_manager</strong> keeping the proxy ports open means the listen
 queue for the proxy ports is also maintained across <strong class="program">traffic_server</strong> restarts. It would be
 possible to write a custom wrapper that does this in very little code. Miles pointed out this can
 also be handled by fronting load balancers, even though they are on different hardware. From the
 point of view of the inbound client this is irrelevant.</p>
+<div class="topic">
+<p class="topic-title first">Commentary</p>
+<p>I think I should make an attempt at doing this quickly, to try to get the scope better in mind
+and determine who is correct about the level of effort. At a minimum I can get the parse,
+dispatch, response logic working which will be required for any eventuality.</p>
+</div>
 </div>
 <div class="section" id="footnotes">
 <h2>Footnotes<a class="headerlink" href="#footnotes" title="Permalink to this headline">¶</a></h2>
