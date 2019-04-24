@@ -52,6 +52,9 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#thread-scheduling">Thread Scheduling</a></li>
+<li><a class="reference internal" href="#cwiki-changes">CWiki Changes</a></li>
+<li><a class="reference internal" href="#plugin-reload">Plugin Reload</a></li>
+<li><a class="reference internal" href="#parent-selection-and-traffic-manager">Parent Selection and traffic_manager</a></li>
 <li><a class="reference internal" href="#footnotes">Footnotes</a></li>
 </ul>
 </li>
@@ -223,6 +226,78 @@ behave in an orderly and expected way. Conceptually each thread can have an affi
 belongs to a specific thread pool. This makes it possible to easily schedule a continuation on
 the same thread every time, particularly when switching threads. E.g. something does a DNS request
 and needs to be scheduled back to <code class="docutils literal notranslate"><span class="pre">ET_NET</span></code> from <code class="docutils literal notranslate"><span class="pre">ET_DNS</span></code>.</p>
+<p>Talk about clean shutdown, primarily to avoid crashes from out of order clean up of static data.</p>
+<p>JEMalloc differences are small - order of 1-2% more for JEMalloc. However, having some locking
+issues under stress, still investigating.</p>
+</div>
+<div class="section" id="cwiki-changes">
+<h2>CWiki Changes<a class="headerlink" href="#cwiki-changes" title="Permalink to this headline">¶</a></h2>
+<p>Generally agreed. The concensus was</p>
+<ul class="simple">
+<li><p>If it’s about the software, it goes in Sphinx in the code base.</p></li>
+<li><p>If it’s about the community, it goes in the Wiki.</p></li>
+<li><p>Projects go to github projects.</p></li>
+</ul>
+</div>
+<div class="section" id="plugin-reload">
+<h2>Plugin Reload<a class="headerlink" href="#plugin-reload" title="Permalink to this headline">¶</a></h2>
+<p>Goal is to change plugin code by loading new versions of dynamic libraries, cleaning up the old
+ones. Old code needs to be removed to do cleanup and to release resources.</p>
+<p>One issue is the internal dynamic library loader tracks the loaded library files, not reloading if
+already loaded. This isn’t affected by replacing the dynmaic library file.</p>
+<p>This change does Continuation context tracking, using the mechanism from the Plugin Coordination
+project. That is, each Continuation has a member that is a pointer to a context. When a Continuation
+is created the context is passed from the executing Continuation to the Continuation being created.</p>
+<p>This is only for remap plugins and remap configuration reload.</p>
+<p>The context objects are reference counted so that the context is preserved as long as a Continuation
+is using it. This leads to the problem with plugins that schedules events after a transaction or
+does a persistent periodic task. In this case it would be possible to accumulate a large number of
+old plugin context objects. There is also the problem that the plugin could have multiple instances
+running concurrently. To me this seems to overlap with Fei’s work on clean shutdown. This is
+fundamentally the same, where a version of a plugin needs to shut down in a clean manner. Because
+this particular case it’s less of an issue because there is already a hook for shutting down remap
+plugin instances.</p>
+<p>Leif went on at great length about optimizing the reloading of the dynamic libraries. It would be
+worthwhile to keep a modified time stamp for each dynamic library and only actually reload if that
+time has changed. This is because it’s quite unusual for the dynamic library to change, it’s a rare
+but critical case.</p>
+<p>In the long run we want to unify global and remap plugins, so there are only plugins. This means
+being able to reload any plugin, and having hooks for global plugins to indicate load, reload, and
+shutdown. The plugin context structures would also be unified. In the not so long term, we can look
+at providing hooks for global plugins to be informed of dynamic library reloads.</p>
+<p>Discussion on <code class="code docutils literal notranslate"><span class="pre">TSRemapOSResponse</span></code> - what is the use of this? Kit said it was because it is
+always called, in contrast to <code class="code docutils literal notranslate"><span class="pre">ReadResponseHdrHook</span></code> which is only called after a successful
+connection to the upstream. Using both enables detecting upstream connection failures.</p>
+<p>Discussion on whether this should be optional - is that useful? One argument is that it would ease
+transition. Is it sufficient to just make the “only reload if the timestamp changed” update?</p>
+</div>
+<div class="section" id="parent-selection-and-traffic-manager">
+<h2>Parent Selection and traffic_manager<a class="headerlink" href="#parent-selection-and-traffic-manager" title="Permalink to this headline">¶</a></h2>
+<p>Project goal is to be able to have more complex selection criteria for upstream selection.</p>
+<p>Added ability mark upstream status, via <strong class="program">traffic_ctl</strong> or plugin API. This includes
+reasons for the status.</p>
+<p>A major problem has been the only data that flows <em>from</em> <strong class="program">traffic_server</strong> <em>to</em>
+<strong class="program">traffic_manager</strong> is statistics, and so that has been used. However this approach
+does not scale well. This is another aspect of how the internal RPC is messed up.</p>
+<p>Working on</p>
+<ul class="simple">
+<li><p>updating to YAML for “parent.config” and better integration with “remap.config”.</p></li>
+<li><p>API support for tweaking selection strategies.</p></li>
+</ul>
+<p>The only thing that <strong class="program">traffic_manager</strong> provides that is not easily put into
+<strong class="program">traffic_server</strong> is the external process RPC. To me, this is once again wrapped up with
+the overall brokenness of the RPC.</p>
+<p>Discussion on how the external connectivity for the RPC - should it be done via the normal proxy
+ports or keep it as a specialized communication channel (e.g. via UNIX domain sockets). Long
+discussion about this. I think there is more concern about the complexity of the transport than is
+warrented. I also think even if the overall implementations are different between a custom channel
+and an HTTP based channel are different, the core implementation is identical. That part is the
+request parsing, dispatch, and response generation.</p>
+<p>Kit brought up the issue of <strong class="program">traffic_manager</strong> keeping the proxy ports open means the listen
+queue for the proxy ports is also maintained across <strong class="program">traffic_server</strong> restarts. It would be
+possible to write a custom wrapper that does this in very little code. Miles pointed out this can
+also be handled by fronting load balancers, even though they are on different hardware. From the
+point of view of the inbound client this is irrelevant.</p>
 </div>
 <div class="section" id="footnotes">
 <h2>Footnotes<a class="headerlink" href="#footnotes" title="Permalink to this headline">¶</a></h2>

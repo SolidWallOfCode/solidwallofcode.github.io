@@ -152,6 +152,96 @@ belongs to a specific thread pool. This makes it possible to easily schedule a c
 the same thread every time, particularly when switching threads. E.g. something does a DNS request
 and needs to be scheduled back to ``ET_NET`` from ``ET_DNS``.
 
+Talk about clean shutdown, primarily to avoid crashes from out of order clean up of static data.
+
+JEMalloc differences are small - order of 1-2% more for JEMalloc. However, having some locking
+issues under stress, still investigating.
+
+CWiki Changes
+=============
+
+Generally agreed. The concensus was
+
+*  If it's about the software, it goes in Sphinx in the code base.
+*  If it's about the community, it goes in the Wiki.
+*  Projects go to github projects.
+
+Plugin Reload
+=============
+
+Goal is to change plugin code by loading new versions of dynamic libraries, cleaning up the old
+ones. Old code needs to be removed to do cleanup and to release resources.
+
+One issue is the internal dynamic library loader tracks the loaded library files, not reloading if
+already loaded. This isn't affected by replacing the dynmaic library file.
+
+This change does Continuation context tracking, using the mechanism from the Plugin Coordination
+project. That is, each Continuation has a member that is a pointer to a context. When a Continuation
+is created the context is passed from the executing Continuation to the Continuation being created.
+
+This is only for remap plugins and remap configuration reload.
+
+The context objects are reference counted so that the context is preserved as long as a Continuation
+is using it. This leads to the problem with plugins that schedules events after a transaction or
+does a persistent periodic task. In this case it would be possible to accumulate a large number of
+old plugin context objects. There is also the problem that the plugin could have multiple instances
+running concurrently. To me this seems to overlap with Fei's work on clean shutdown. This is
+fundamentally the same, where a version of a plugin needs to shut down in a clean manner. Because
+this particular case it's less of an issue because there is already a hook for shutting down remap
+plugin instances.
+
+Leif went on at great length about optimizing the reloading of the dynamic libraries. It would be
+worthwhile to keep a modified time stamp for each dynamic library and only actually reload if that
+time has changed. This is because it's quite unusual for the dynamic library to change, it's a rare
+but critical case.
+
+In the long run we want to unify global and remap plugins, so there are only plugins. This means
+being able to reload any plugin, and having hooks for global plugins to indicate load, reload, and
+shutdown. The plugin context structures would also be unified. In the not so long term, we can look
+at providing hooks for global plugins to be informed of dynamic library reloads.
+
+Discussion on :code:`TSRemapOSResponse` - what is the use of this? Kit said it was because it is
+always called, in contrast to :code:`ReadResponseHdrHook` which is only called after a successful
+connection to the upstream. Using both enables detecting upstream connection failures.
+
+Discussion on whether this should be optional - is that useful? One argument is that it would ease
+transition. Is it sufficient to just make the "only reload if the timestamp changed" update?
+
+Parent Selection and traffic_manager
+====================================
+
+Project goal is to be able to have more complex selection criteria for upstream selection.
+
+Added ability mark upstream status, via :program:`traffic_ctl` or plugin API. This includes
+reasons for the status.
+
+A major problem has been the only data that flows *from* :program:`traffic_server` *to*
+:program:`traffic_manager` is statistics, and so that has been used. However this approach
+does not scale well. This is another aspect of how the internal RPC is messed up.
+
+Working on
+
+*  updating to YAML for "parent.config" and better integration with "remap.config".
+
+*  API support for tweaking selection strategies.
+
+The only thing that :program:`traffic_manager` provides that is not easily put into
+:program:`traffic_server` is the external process RPC. To me, this is once again wrapped up with
+the overall brokenness of the RPC.
+
+Discussion on how the external connectivity for the RPC - should it be done via the normal proxy
+ports or keep it as a specialized communication channel (e.g. via UNIX domain sockets). Long
+discussion about this. I think there is more concern about the complexity of the transport than is
+warrented. I also think even if the overall implementations are different between a custom channel
+and an HTTP based channel are different, the core implementation is identical. That part is the
+request parsing, dispatch, and response generation.
+
+Kit brought up the issue of :program:`traffic_manager` keeping the proxy ports open means the listen
+queue for the proxy ports is also maintained across :program:`traffic_server` restarts. It would be
+possible to write a custom wrapper that does this in very little code. Miles pointed out this can
+also be handled by fronting load balancers, even though they are on different hardware. From the
+point of view of the inbound client this is irrelevant.
+
 Footnotes
 =========
 
