@@ -250,11 +250,11 @@ Common Mistakes for Configuration
 Cleanup
    *  Replace tokenizer with :code:`TextView`.
    *  Drop NPN support for ATS 9?
-   *  Agreed that "I_" and "P" prefixes are obsolete and should be removed.
+   *  Agreed that "I\_" and "P\_" prefixes are obsolete and should be removed.
 
-Need to talk about how to organize include files in order to deprecate the "I_" and "P_" prefixes.
+Need to talk about how to organize include files in order to deprecate the "I\_" and "P\_" prefixes.
 
-We want to move the "ssl_" prefixed functions from globals to a namespace.
+We want to move the "ssl\_" prefixed functions from globals to a namespace.
 
 
 Plugin Review
@@ -396,6 +396,53 @@ uri_signing
 url_sig
    Remain experimental.
 
+Kubernetes
+==========
+
+Project goal is to support Kubernetes as a general corporate infrastructure. ATS would be used as
+a routing engine.
+
+Using :program:`tmgr_plugin` because the frequency of updates is on the same scale as the time
+delay for :program:`traffic_ctl` making the latter unusable in production.
+
+ATS is put in a docker container image, using an image built from a local build along with plugins
+and configuration. This is then deployed as part of a Kubernetes pod.
+
+There is a caching ATS in the Kubernetes infrastructure, then the "parent.config" is updated
+automatically to forward requests to the caching  instance(s). This means that updating the
+"parent.config" means doing a full configuration reload. It would be nice to be able to do more
+incremental updates to the upstream selection.
+
+To integrate ATS in to Kubernetes we would need something to process from Kubernetes YAML to
+ATS configurations. This may already exist, done by unixwitch, but it hasn't been updated since
+July 2017.
+
+Remap
+=====
+
+A descent in to madness. Leif pushed for doing a complete redesign of url rewriting and other
+configurations. The idea is that remap is restructured along different lines in order to support
+more complex configurations. We would also incorporate other configurations that are URL dependent,
+such as "hosting.config", in to the URL rewrite. In essence URL rewrite becomes something like what
+was envisioned for Layer 7 Routing, where a request is passed in to a feature extractor and then
+a decision tree, which yields a data record. That record determines behavior for the request for
+various modules (e.g. upstream selection, cache properties, etc.).
+
+There was no real resolution, execpt Miles seems to have gotten stuck with leading a working group
+to do the design. I managed to limit myself to just doing the coding and YAML support.
+
+Although the current project for YAML for "remap.config" is not going to fly, some general comments
+were
+
+*  Get rid of named filters entirely. All filters must be defined in line per rule. To save typing,
+   if that's desired, YAML anchors and references could be used.
+
+*  Rule 3 [#rule3]_ for filters was grudgingly accepted. It wasn't liked, but it was agreed it
+   matched the "intuitive" behavior.
+
+*  Filters should not affect matching.
+
+*  It's fine to unify all the rules and use extra tags / options to map to existing types of rules.
 
 General Notes
 =============
@@ -433,10 +480,14 @@ point of view of the inbound client this is irrelevant.
 
     I think I should make an attempt at doing this quickly, to try to get the scope better in mind
     and determine who is correct about the level of effort. At a minimum I can get the parse,
-    dispatch, response logic working which will be required for any eventuality.
+    dispatch, response logic working which will be required for any eventuality. Also there have
+    been numerous instances where the poor RPC implementation has been a blocker.
 
 Footnotes
 =========
 
 .. [#zend] This reminds me very much of `Zend Project <https://www.php.net/manual/en/internals2.ze1.php>`__.
    I'm not sure why this wasn't used, but maybe it was.
+
+.. [#rule3] "There is an implicit trailing match all with an action that is the opposite of the last
+   explicit action"

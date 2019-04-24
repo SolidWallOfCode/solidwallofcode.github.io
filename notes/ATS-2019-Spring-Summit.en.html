@@ -57,6 +57,8 @@
 <li><a class="reference internal" href="#parent-selection-and-traffic-manager">Parent Selection and traffic_manager</a></li>
 <li><a class="reference internal" href="#tls-state-of-the-onion">TLS State of the Onion</a></li>
 <li><a class="reference internal" href="#plugin-review">Plugin Review</a></li>
+<li><a class="reference internal" href="#kubernetes">Kubernetes</a></li>
+<li><a class="reference internal" href="#remap">Remap</a></li>
 <li><a class="reference internal" href="#general-notes">General Notes</a></li>
 <li><a class="reference internal" href="#footnotes">Footnotes</a></li>
 </ul>
@@ -306,12 +308,12 @@ openSSL 0.9.4+ which is far too old.</p>
 <dt>Cleanup</dt><dd><ul class="simple">
 <li><p>Replace tokenizer with <code class="code docutils literal notranslate"><span class="pre">TextView</span></code>.</p></li>
 <li><p>Drop NPN support for ATS 9?</p></li>
-<li><p>Agreed that “<a href="#id2"><span class="problematic" id="id3">I_</span></a>” and “P” prefixes are obsolete and should be removed.</p></li>
+<li><p>Agreed that “I_” and “P_” prefixes are obsolete and should be removed.</p></li>
 </ul>
 </dd>
 </dl>
-<p>Need to talk about how to organize include files in order to deprecate the “<a href="#id4"><span class="problematic" id="id5">I_</span></a>” and “<a href="#id6"><span class="problematic" id="id7">P_</span></a>” prefixes.</p>
-<p>We want to move the “<a href="#id8"><span class="problematic" id="id9">ssl_</span></a>” prefixed functions from globals to a namespace.</p>
+<p>Need to talk about how to organize include files in order to deprecate the “I_” and “P_” prefixes.</p>
+<p>We want to move the “ssl_” prefixed functions from globals to a namespace.</p>
 </div>
 <div class="section" id="plugin-review">
 <h2>Plugin Review<a class="headerlink" href="#plugin-review" title="Permalink to this headline">¶</a></h2>
@@ -409,6 +411,44 @@ is a protocol of which “Let’s Encrypt” is an implementation. Remain experi
 </dd>
 </dl>
 </div>
+<div class="section" id="kubernetes">
+<h2>Kubernetes<a class="headerlink" href="#kubernetes" title="Permalink to this headline">¶</a></h2>
+<p>Project goal is to support Kubernetes as a general corporate infrastructure. ATS would be used as
+a routing engine.</p>
+<p>Using <strong class="program">tmgr_plugin</strong> because the frequency of updates is on the same scale as the time
+delay for <strong class="program">traffic_ctl</strong> making the latter unusable in production.</p>
+<p>ATS is put in a docker container image, using an image built from a local build along with plugins
+and configuration. This is then deployed as part of a Kubernetes pod.</p>
+<p>There is a caching ATS in the Kubernetes infrastructure, then the “parent.config” is updated
+automatically to forward requests to the caching  instance(s). This means that updating the
+“parent.config” means doing a full configuration reload. It would be nice to be able to do more
+incremental updates to the upstream selection.</p>
+<p>To integrate ATS in to Kubernetes we would need something to process from Kubernetes YAML to
+ATS configurations. This may already exist, done by unixwitch, but it hasn’t been updated since
+July 2017.</p>
+</div>
+<div class="section" id="remap">
+<h2>Remap<a class="headerlink" href="#remap" title="Permalink to this headline">¶</a></h2>
+<p>A descent in to madness. Leif pushed for doing a complete redesign of url rewriting and other
+configurations. The idea is that remap is restructured along different lines in order to support
+more complex configurations. We would also incorporate other configurations that are URL dependent,
+such as “hosting.config”, in to the URL rewrite. In essence URL rewrite becomes something like what
+was envisioned for Layer 7 Routing, where a request is passed in to a feature extractor and then
+a decision tree, which yields a data record. That record determines behavior for the request for
+various modules (e.g. upstream selection, cache properties, etc.).</p>
+<p>There was no real resolution, execpt Miles seems to have gotten stuck with leading a working group
+to do the design. I managed to limit myself to just doing the coding and YAML support.</p>
+<p>Although the current project for YAML for “remap.config” is not going to fly, some general comments
+were</p>
+<ul class="simple">
+<li><p>Get rid of named filters entirely. All filters must be defined in line per rule. To save typing,
+if that’s desired, YAML anchors and references could be used.</p></li>
+<li><p>Rule 3 <a class="footnote-reference brackets" href="#rule3" id="id2">2</a> for filters was grudgingly accepted. It wasn’t liked, but it was agreed it
+matched the “intuitive” behavior.</p></li>
+<li><p>Filters should not affect matching.</p></li>
+<li><p>It’s fine to unify all the rules and use extra tags / options to map to existing types of rules.</p></li>
+</ul>
+</div>
 <div class="section" id="general-notes">
 <h2>General Notes<a class="headerlink" href="#general-notes" title="Permalink to this headline">¶</a></h2>
 <p>Leif wants it to be noted the rule about string manipulation should be</p>
@@ -437,7 +477,8 @@ point of view of the inbound client this is irrelevant.</p>
 <p class="topic-title first">Commentary</p>
 <p>I think I should make an attempt at doing this quickly, to try to get the scope better in mind
 and determine who is correct about the level of effort. At a minimum I can get the parse,
-dispatch, response logic working which will be required for any eventuality.</p>
+dispatch, response logic working which will be required for any eventuality. Also there have
+been numerous instances where the poor RPC implementation has been a blocker.</p>
 </div>
 </div>
 <div class="section" id="footnotes">
@@ -446,6 +487,10 @@ dispatch, response logic working which will be required for any eventuality.</p>
 <dt class="label" id="zend"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
 <dd><p>This reminds me very much of <a class="reference external" href="https://www.php.net/manual/en/internals2.ze1.php">Zend Project</a>.
 I’m not sure why this wasn’t used, but maybe it was.</p>
+</dd>
+<dt class="label" id="rule3"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dd><p>“There is an implicit trailing match all with an action that is the opposite of the last
+explicit action”</p>
 </dd>
 </dl>
 </div>
