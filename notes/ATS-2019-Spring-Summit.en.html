@@ -60,6 +60,10 @@
 <li><a class="reference internal" href="#kubernetes">Kubernetes</a></li>
 <li><a class="reference internal" href="#remap">Remap</a></li>
 <li><a class="reference internal" href="#general-notes">General Notes</a></li>
+<li><a class="reference internal" href="#wrapup">Wrapup</a><ul>
+<li><a class="reference internal" href="#threads">Threads</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#footnotes">Footnotes</a></li>
 </ul>
 </li>
@@ -448,6 +452,8 @@ matched the “intuitive” behavior.</p></li>
 <li><p>Filters should not affect matching.</p></li>
 <li><p>It’s fine to unify all the rules and use extra tags / options to map to existing types of rules.</p></li>
 </ul>
+<p>The implementation of YAML should be as independent as possible. I want to try to do this as a
+plugin first. Use txn-box as the platform to experiment.</p>
 </div>
 <div class="section" id="general-notes">
 <h2>General Notes<a class="headerlink" href="#general-notes" title="Permalink to this headline">¶</a></h2>
@@ -479,6 +485,58 @@ point of view of the inbound client this is irrelevant.</p>
 and determine who is correct about the level of effort. At a minimum I can get the parse,
 dispatch, response logic working which will be required for any eventuality. Also there have
 been numerous instances where the poor RPC implementation has been a blocker.</p>
+</div>
+</div>
+<div class="section" id="wrapup">
+<h2>Wrapup<a class="headerlink" href="#wrapup" title="Permalink to this headline">¶</a></h2>
+<p>Discussion on next summits, for Fall 2019 and Spring 2020. Concensus is to aim for first half of
+October. For Spring 2020, considering London (Apple, VZM), St. Croix (Go Daddy), Cork (Apple), or
+Trondheim (Vespa).</p>
+<p>For ATS 9</p>
+<ul class="simple">
+<li><p>Merge QUIC branch to master. Claim “draft compliance” as an experimental feature. Do it the same
+way as with SPDY and HTTP/2.</p></li>
+<li><p>YAML cleanup so everything is composable.</p>
+<ul>
+<li><p>Clean up logging, IP Allow, parent config, SSL server name.</p></li>
+<li><p>Make sure the YAML is consistent with current best practices.</p></li>
+</ul>
+</li>
+<li><p>Incompatible changes</p>
+<ul>
+<li><p>Remove file name configuration variables and rely on layout / runroot.</p></li>
+<li><p>“ssl_multicert.config” cleanup. Hopefully remove this file.</p></li>
+<li><p>Leif needs to make a list of things to remove.</p></li>
+</ul>
+</li>
+</ul>
+<p>We should have a real plan got ATS 10 instead of everyone just going wild. Probably branching at
+ATS 9 in Jun 2019, release in Oct 2019.</p>
+<dl class="simple">
+<dt>ATS 9.0</dt><dd><p>QUIC plumbing / draft</p>
+</dd>
+<dt>ATS 9.1</dt><dd><p>JSON-RPC</p>
+</dd>
+<dt>ATS 9.2</dt><dd><p>Add remap YAML on the side.</p>
+</dd>
+</dl>
+<p>Overall we need to focus on reliability over features and reduce the feature velocity on master until
+we can get stable releases out in a reasonable amount of time.</p>
+<div class="section" id="threads">
+<h3>Threads<a class="headerlink" href="#threads" title="Permalink to this headline">¶</a></h3>
+<p>There is an issue where it’s possible to get Continuations skewed across threads. The primary
+example in the discussion is a plugin which has its own thread A and calls (for example
+<code class="code docutils literal notranslate"><span class="pre">TSNetConnect</span></code>) which creates a NetVC. But that NetVC needs to run on an <code class="docutils literal notranslate"><span class="pre">ET_NET</span></code>. The
+problem is this is done by requiring the Coninuation to be locked and extracting the affine thread
+from the mutex. It would be better to use thread affinity to get this information. This
+unfortunately will need to be done on an ad hoc basis because the various functions are
+idiosyncratic about this. It might also be necessary to have a mechanism to set thread affinity
+to a pool before scheduling, so that things such as pre thread proxy allocators can be used
+correctly (because a thing can’t be scheduled before it’s allocated).</p>
+<p>I’m still not sure I really understand what the problem is, or why it’s a new problem. As far as I
+can tell it either works, or has been problematic for a long time. It’s been on my list for a while
+to do better documentation on how threads, mutexes, and Continuations should interact inside
+plugins.</p>
 </div>
 </div>
 <div class="section" id="footnotes">

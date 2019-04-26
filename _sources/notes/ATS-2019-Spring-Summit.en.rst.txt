@@ -444,6 +444,9 @@ were
 
 *  It's fine to unify all the rules and use extra tags / options to map to existing types of rules.
 
+The implementation of YAML should be as independent as possible. I want to try to do this as a
+plugin first. Use txn-box as the platform to experiment.
+
 General Notes
 =============
 
@@ -482,6 +485,65 @@ point of view of the inbound client this is irrelevant.
     and determine who is correct about the level of effort. At a minimum I can get the parse,
     dispatch, response logic working which will be required for any eventuality. Also there have
     been numerous instances where the poor RPC implementation has been a blocker.
+
+Wrapup
+======
+
+Discussion on next summits, for Fall 2019 and Spring 2020. Concensus is to aim for first half of
+October. For Spring 2020, considering London (Apple, VZM), St. Croix (Go Daddy), Cork (Apple), or
+Trondheim (Vespa).
+
+For ATS 9
+
+*  Merge QUIC branch to master. Claim "draft compliance" as an experimental feature. Do it the same
+   way as with SPDY and HTTP/2.
+
+*  YAML cleanup so everything is composable.
+
+   *  Clean up logging, IP Allow, parent config, SSL server name.
+
+   *  Make sure the YAML is consistent with current best practices.
+
+*  Incompatible changes
+
+   *  Remove file name configuration variables and rely on layout / runroot.
+
+   *  "ssl_multicert.config" cleanup. Hopefully remove this file.
+
+   *  Leif needs to make a list of things to remove.
+
+We should have a real plan got ATS 10 instead of everyone just going wild. Probably branching at
+ATS 9 in Jun 2019, release in Oct 2019.
+
+ATS 9.0
+   QUIC plumbing / draft
+
+ATS 9.1
+   JSON-RPC
+
+ATS 9.2
+   Add remap YAML on the side.
+
+Overall we need to focus on reliability over features and reduce the feature velocity on master until
+we can get stable releases out in a reasonable amount of time.
+
+Threads
+-------
+
+There is an issue where it's possible to get Continuations skewed across threads. The primary
+example in the discussion is a plugin which has its own thread A and calls (for example
+:code:`TSNetConnect`) which creates a NetVC. But that NetVC needs to run on an ``ET_NET``. The
+problem is this is done by requiring the Coninuation to be locked and extracting the affine thread
+from the mutex. It would be better to use thread affinity to get this information. This
+unfortunately will need to be done on an ad hoc basis because the various functions are
+idiosyncratic about this. It might also be necessary to have a mechanism to set thread affinity
+to a pool before scheduling, so that things such as pre thread proxy allocators can be used
+correctly (because a thing can't be scheduled before it's allocated).
+
+I'm still not sure I really understand what the problem is, or why it's a new problem. As far as I
+can tell it either works, or has been problematic for a long time. It's been on my list for a while
+to do better documentation on how threads, mutexes, and Continuations should interact inside
+plugins.
 
 Footnotes
 =========
