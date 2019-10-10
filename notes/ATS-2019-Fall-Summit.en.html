@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>2019 Fall Summit &#8212; AMC Traffic Server Documentation</title>
+    <title>ATS Summit Fall 2019 &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
@@ -40,7 +40,7 @@
             </a></p>
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">2019 Fall Summit</a><ul>
+<li><a class="reference internal" href="#">ATS Summit Fall 2019</a><ul>
 <li><a class="reference internal" href="#new-committers">New Committers</a></li>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#outbound-refactoring">Outbound Refactoring</a></li>
@@ -57,6 +57,13 @@
 <li><a class="reference internal" href="#network-and-http-2-performance-issues">Network and HTTP/2 Performance Issues</a></li>
 <li><a class="reference internal" href="#tls-1-3-0-rtt">TLS 1.3 0-RTT</a></li>
 <li><a class="reference internal" href="#low-latency-hls">Low Latency HLS</a></li>
+<li><a class="reference internal" href="#delain-concert">Delain Concert</a></li>
+<li><a class="reference internal" href="#lightning-talks">Lightning Talks</a><ul>
+<li><a class="reference internal" href="#netlify">Netlify</a></li>
+<li><a class="reference internal" href="#systemtap-in-ats">SystemTap in ATS</a></li>
+<li><a class="reference internal" href="#session-logging">Session Logging</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -92,8 +99,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="fall-summit">
-<h1>2019 Fall Summit<a class="headerlink" href="#fall-summit" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="ats-summit-fall-2019">
+<h1>ATS Summit Fall 2019<a class="headerlink" href="#ats-summit-fall-2019" title="Permalink to this headline">¶</a></h1>
 <p>The summit was held in Building B at Yahoo! on 8 Oct to 10 Oct 2019.</p>
 <p>These notes are my personal views of the summit, things I found of interest that were not obvious
 in the slides. I have tried to not duplicate too much slide information.</p>
@@ -195,6 +202,8 @@ to track the decisions. Having problems with dealing with requests that are non 
 on server response, and not determinable at request time. Varnish can make a note of the
 non-cacheablility. I think this is distinct from negative caching.</p>
 <p>Using named pipe for logging. Pondered writing to Kafka, not done yet.</p>
+<p>Note all of the code and even performance graphs are publically available. Lots of interesting
+Puppet scripts.</p>
 </div>
 <div class="section" id="nexthop-selection-strategies">
 <h2>Nexthop selection strategies<a class="headerlink" href="#nexthop-selection-strategies" title="Permalink to this headline">¶</a></h2>
@@ -287,6 +296,77 @@ to restrict methods on a per domain basis, or look at being able to do this in �
 </div>
 <div class="section" id="low-latency-hls">
 <h2>Low Latency HLS<a class="headerlink" href="#low-latency-hls" title="Permalink to this headline">¶</a></h2>
+<p>Changes to the basic HLS spec to enable much lower latency for live video. Goal is to compete in
+latency with standard satellite broadcasts. The biggest problems seemed to me to be the 6 second
+chunk, which implies a minimum 6 second delay. The official list is</p>
+<ul class="simple">
+<li><p>Shrink the segment size from 6 seconds to much smaller.</p></li>
+<li><p>Do long polling from user agent to upstream to get the next update of the index file.</p></li>
+<li><p>User agent can ask for a push of the next segment when fetching the index file.</p></li>
+<li><p>Delta for index files.</p></li>
+<li><p>Index files can specify the alternate rate files to make adaptive switching faster.</p></li>
+</ul>
+<p><a class="reference external" href="https://developer.apple.com/videos/play/wwdc2019/502/">Official Talk</a>.</p>
+</div>
+<div class="section" id="delain-concert">
+<h2>Delain Concert<a class="headerlink" href="#delain-concert" title="Permalink to this headline">¶</a></h2>
+<p>AWESOME!</p>
+</div>
+<div class="section" id="lightning-talks">
+<h2>Lightning Talks<a class="headerlink" href="#lightning-talks" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="netlify">
+<h3>Netlify<a class="headerlink" href="#netlify" title="Permalink to this headline">¶</a></h3>
+<p>Provides hosting services to developers. Host over 174K distinct domains. L7 routing is done by
+mapping everything to service on a localhost address / port.</p>
+<p>Demonstrated how basically a random user can create a github repository which can then be linked and
+distributed by Netlify.</p>
+<p>Can set up alternate sites based on pull requuests to the main website branch.</p>
+<p>Supports redirects (really remap) rules to map paths to other paths. Can have generic redirects that
+allow arbitrary URLS to map to a fixed page, but files are exempted therefore the remapping must
+be able to detect files. This is done during deployment of the website.</p>
+<p>Original remapping service was written in Go, and so not really suitable for a plugin. Working on
+converting to plugin.</p>
+</div>
+<div class="section" id="systemtap-in-ats">
+<h3>SystemTap in ATS<a class="headerlink" href="#systemtap-in-ats" title="Permalink to this headline">¶</a></h3>
+<p>Used system tap to tap into <code class="code docutils literal notranslate"><span class="pre">state_cache_open_read</span></code> to detect how many cache write lock
+retries have done in order to tune that parameters.</p>
+<p>Problem is the taps require intimate knowledge of ATS internals and even specific line numbers. It
+is possible to define tap points in the code. These can have arguments as well, which provide data
+to the tapper. Man page claims this is assembled to a <code class="code docutils literal notranslate"><span class="pre">NOP</span></code> and only data about how to find
+the arguments is stored in a side file.</p>
+<p>This is similar to <cite>gdb</cite> macros.</p>
+<p>Might be reasonable to tweak the <code class="code docutils literal notranslate"><span class="pre">DEBUG</span></code> macro to provide tap points. If it’s interesting for
+debugging by logs, it should be interesting for tapping. Would need to have another argument
+for the tap point name. Each tap point is distinguished by a <cite>provider/name</cite> pair which must
+be globally unique.</p>
+<p><a class="reference external" href="https://github.com/wikimedia/puppet/tree/production/modules/trafficserver/files">Example Files</a>.</p>
+<p>Bryan Call then spoke <cite>gdb</cite> macros for examing data in cores and live in production instances of
+<cite>traffic_server</cite>. Supports conditional break and resume. To avoid problems with dropped connections
+causing problems you need</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handle</span> <span class="n">SIGPIPE</span> <span class="n">nostop</span>
+<span class="n">handle</span> <span class="n">SIGPIPE</span> <span class="n">noprint</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="session-logging">
+<h3>Session Logging<a class="headerlink" href="#session-logging" title="Permalink to this headline">¶</a></h3>
+<p>In most cases, there is a lot of transaction logging data that is idnetical across all transactions
+for a given sessions. It would be handy if there was as session log and have a key per entry
+which can be logged with a transaction.</p>
+<p>One issue would be the ability to have IDs that distinguish inbound vs. outbound sessions. This
+doesn’t seem a large hurdle. All the data needed is already there.</p>
+<p>Some of the motivations are</p>
+<ul class="simple">
+<li><p>Potentially save a lot of log space by not duplicating session level data.</p></li>
+<li><p>Session logs are useful on their own - much network analysis is session based.</p></li>
+<li><p>Overall, we’re moving into a state where sessions are becoming more central, particularly
+with regard to hooks and overridable configurations. This is just part of the same issue.</p></li>
+</ul>
+<p>With regard to outbound vs. inbound sessions, there are some synchronization issues with when
+data is accessed for transaction level logging.</p>
+<p>We should move session based data that needs log caching (e.g.</p>
+</div>
 </div>
 </div>
 

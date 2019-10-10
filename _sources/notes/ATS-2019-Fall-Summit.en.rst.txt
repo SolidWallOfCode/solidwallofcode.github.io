@@ -1,5 +1,5 @@
-2019 Fall Summit
-****************
+ATS Summit Fall 2019
+********************
 
 The summit was held in Building B at Yahoo! on 8 Oct to 10 Oct 2019.
 
@@ -130,6 +130,9 @@ non-cacheablility. I think this is distinct from negative caching.
 
 Using named pipe for logging. Pondered writing to Kafka, not done yet.
 
+Note all of the code and even performance graphs are publically available. Lots of interesting
+Puppet scripts.
+
 Nexthop selection strategies
 ============================
 
@@ -256,3 +259,92 @@ to restrict methods on a per domain basis, or look at being able to do this in "
 
 Low Latency HLS
 ===============
+
+Changes to the basic HLS spec to enable much lower latency for live video. Goal is to compete in
+latency with standard satellite broadcasts. The biggest problems seemed to me to be the 6 second
+chunk, which implies a minimum 6 second delay. The official list is
+
+*  Shrink the segment size from 6 seconds to much smaller.
+*  Do long polling from user agent to upstream to get the next update of the index file.
+*  User agent can ask for a push of the next segment when fetching the index file.
+*  Delta for index files.
+*  Index files can specify the alternate rate files to make adaptive switching faster.
+
+`Official Talk <https://developer.apple.com/videos/play/wwdc2019/502/>`__.
+
+Delain Concert
+==============
+
+AWESOME!
+
+Lightning Talks
+===============
+
+Netlify
+-------
+
+Provides hosting services to developers. Host over 174K distinct domains. L7 routing is done by
+mapping everything to service on a localhost address / port.
+
+Demonstrated how basically a random user can create a github repository which can then be linked and
+distributed by Netlify.
+
+Can set up alternate sites based on pull requuests to the main website branch.
+
+Supports redirects (really remap) rules to map paths to other paths. Can have generic redirects that
+allow arbitrary URLS to map to a fixed page, but files are exempted therefore the remapping must
+be able to detect files. This is done during deployment of the website.
+
+Original remapping service was written in Go, and so not really suitable for a plugin. Working on
+converting to plugin.
+
+SystemTap in ATS
+----------------
+
+Used system tap to tap into :code:`state_cache_open_read` to detect how many cache write lock
+retries have done in order to tune that parameters.
+
+Problem is the taps require intimate knowledge of ATS internals and even specific line numbers. It
+is possible to define tap points in the code. These can have arguments as well, which provide data
+to the tapper. Man page claims this is assembled to a :code:`NOP` and only data about how to find
+the arguments is stored in a side file.
+
+This is similar to `gdb` macros.
+
+Might be reasonable to tweak the :code:`DEBUG` macro to provide tap points. If it's interesting for
+debugging by logs, it should be interesting for tapping. Would need to have another argument
+for the tap point name. Each tap point is distinguished by a `provider/name` pair which must
+be globally unique.
+
+`Example Files <https://github.com/wikimedia/puppet/tree/production/modules/trafficserver/files>`__.
+
+Bryan Call then spoke `gdb` macros for examing data in cores and live in production instances of
+`traffic_server`. Supports conditional break and resume. To avoid problems with dropped connections
+causing problems you need ::
+
+   handle SIGPIPE nostop
+   handle SIGPIPE noprint
+
+Session Logging
+---------------
+
+In most cases, there is a lot of transaction logging data that is idnetical across all transactions
+for a given sessions. It would be handy if there was as session log and have a key per entry
+which can be logged with a transaction.
+
+One issue would be the ability to have IDs that distinguish inbound vs. outbound sessions. This
+doesn't seem a large hurdle. All the data needed is already there.
+
+Some of the motivations are
+
+*  Potentially save a lot of log space by not duplicating session level data.
+
+*  Session logs are useful on their own - much network analysis is session based.
+
+*  Overall, we're moving into a state where sessions are becoming more central, particularly
+   with regard to hooks and overridable configurations. This is just part of the same issue.
+
+With regard to outbound vs. inbound sessions, there are some synchronization issues with when
+data is accessed for transaction level logging.
+
+We should move session based data that needs log caching (e.g.
