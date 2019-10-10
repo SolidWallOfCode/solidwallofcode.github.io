@@ -136,8 +136,7 @@ HttpSM -&gt; HttpSM : process response
 HttpSM -&gt; Strategizer : finish"/>
 
 </object></p>
-<p class="caption"><span class="caption-text"><p>Generic Transaction</p>
-</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">Generic Transaction</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>The interaction is split out in this manner to accomodate the variety of synchronous and
 asynchronous operations. In particular if there is an HTTP reponse from the upstream then the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code>
@@ -187,8 +186,7 @@ HttpSM -&gt; HttpSM : Read upstream response,\nsend to user agent.
 HttpSM -&gt; Strategizer : finish"/>
 
 </object></p>
-<p class="caption"><span class="caption-text"><p>Successful Transaction</p>
-</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">Successful Transaction</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>Even in an HTTP failure there is still work for the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code>. In this case, for a <code class="docutils literal notranslate"><span class="pre">404</span></code> response
 status the strategizer will fail over to a different upstream. This behavior is used to probe
@@ -224,13 +222,12 @@ Strategizer -&gt; HttpSM : SESSION_READY
 == As 200 OK case =="/>
 
 </object></p>
-<p class="caption"><span class="caption-text"><p>Fail / Retry Transaction</p>
-</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">Fail / Retry Transaction</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <p>Another view of the activity demonstrates the “co-routine” like nature of the interaction. Both the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> and strategizer perform blocking operations where the other side must wait for an event or signal to indication the operation has completed. The basic logic is</p>
 <div class="figure align-center" id="id6">
 <p class="plantuml">
-<object data="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.svg" type="image/svg+xml" style="width:923px;height:437px;">
+<object data="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.svg" type="image/svg+xml" style="width:1283px;height:340px;">
 <img src="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.png" alt="partition HttpSM {
    (*) --&gt; &quot;Determine strategy tag&quot;
 }
@@ -272,8 +269,7 @@ partition HttpSM {
 }"/>
 
 </object></p>
-<p class="caption"><span class="caption-text"><p>Upstream session logic</p>
-</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">Upstream session logic</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 <p>The state sequence in the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> is much simplified by this work. In particular, the
 nemesis of redirection or other upstream connection failures requiring rolling back the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> state
@@ -301,8 +297,7 @@ HandleServerResponse : Send response to User Agent\nSignal strategizer
 DrainResponse : Drain reponse\nSignal strategizer"/>
 
 </object></p>
-<p class="caption"><span class="caption-text"><p>State Machine Upstream States</p>
-</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">State Machine Upstream States</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="next-steps">

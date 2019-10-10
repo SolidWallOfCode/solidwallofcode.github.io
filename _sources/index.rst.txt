@@ -25,6 +25,7 @@ Event Notes
 .. toctree::
    :maxdepth: 1
 
+   notes/ATS-2019-Fall-Summit.en
    notes/ATS-2019-Spring-Summit.en
    notes/ATS-2018-Fall-Summit.en
    notes/ATS-Cork-WG-Summary.en

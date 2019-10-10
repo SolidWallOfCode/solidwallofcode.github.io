@@ -1,0 +1,319 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ATS Summit Fall 2019 &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2019 Spring Summit" href="ATS-2019-Spring-Summit.en.html" />
+    <link rel="prev" title="Partial Caching Initial Design" href="../poc/archive-partial-object-caching-prototype.en.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ATS-2019-Spring-Summit.en.html" title="2019 Spring Summit"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../poc/archive-partial-object-caching-prototype.en.html" title="Partial Caching Initial Design"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ATS Summit Fall 2019</a><ul>
+<li><a class="reference internal" href="#new-committers">New Committers</a></li>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#outbound-refactoring">Outbound Refactoring</a></li>
+<li><a class="reference internal" href="#http-3-quic">HTTP/3 QUIC</a></li>
+<li><a class="reference internal" href="#unified-routing">Unified Routing</a></li>
+<li><a class="reference internal" href="#serving-wikipedia-with-ats">Serving Wikipedia with ATS</a></li>
+<li><a class="reference internal" href="#nexthop-selection-strategies">Nexthop selection strategies</a></li>
+<li><a class="reference internal" href="#amc-tech-corner">AMC Tech Corner</a></li>
+<li><a class="reference internal" href="#reloadable-remap-plugins">Reloadable Remap Plugins</a></li>
+<li><a class="reference internal" href="#http-replay">Http Replay</a></li>
+<li><a class="reference internal" href="#webassembly">WebAssembly</a></li>
+<li><a class="reference internal" href="#analytics-with-ats-logs">Analytics with ATS Logs</a></li>
+<li><a class="reference internal" href="#ats-ingress-controller">ATS Ingress Controller</a></li>
+<li><a class="reference internal" href="#network-and-http-2-performance-issues">Network and HTTP/2 Performance Issues</a></li>
+<li><a class="reference internal" href="#tls-1-3-0-rtt">TLS 1.3 0-RTT</a></li>
+<li><a class="reference internal" href="#low-latency-hls">Low Latency HLS</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../poc/archive-partial-object-caching-prototype.en.html"
+                        title="previous chapter">Partial Caching Initial Design</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ATS-2019-Spring-Summit.en.html"
+                        title="next chapter">2019 Spring Summit</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notes/ATS-2019-Fall-Summit.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ats-summit-fall-2019">
+<h1>ATS Summit Fall 2019<a class="headerlink" href="#ats-summit-fall-2019" title="Permalink to this headline">¶</a></h1>
+<p>The summit was held in Building B at Yahoo! on 8 Oct to 10 Oct 2019.</p>
+<p>These notes are my personal views of the summit, things I found of interest that were not obvious
+in the slides. I have tried to not duplicate too much slide information.</p>
+<div class="section" id="new-committers">
+<h2>New Committers<a class="headerlink" href="#new-committers" title="Permalink to this headline">¶</a></h2>
+<p>Aaron Canary, Peter Chou.</p>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Need more cross company PR reviews. This will require other companies to spend time on this,
+the current cabal can’t make this happen.</p></li>
+<li><p>Switched over to Slack. Anyone in the channel can invite others, just need to find anyone
+already there.</p></li>
+<li><p>Decisions from last summit</p>
+<ul>
+<li><p>Move to YAML for configurations.</p></li>
+<li><p>Remove LuaJIT from the core.</p></li>
+</ul>
+</li>
+<li><p>ATS 9</p>
+<ul>
+<li><p>HTTP/3 QUIC - alpha. Based on draft-20.</p></li>
+<li><p>Minimum OpenSSL is now 1.0.2.</p></li>
+<li><p>Tentatively drop support for Solaris - no support, no way to even build it.</p></li>
+<li><p>Blockers for ATS 9 release should be added to issue 5932.</p></li>
+</ul>
+</li>
+</ul>
+<p>Long discussion about live testing and configuration validation on production systems. Apple uses an
+internal tool called “CDN Checker” to do this. This is embedded tightly with Voluspa and wouldn’t be
+easily separated. There were requests for more common tools to do this kind of thing. I think this
+is a perfect application for Http Replay, but despite all the talks about it at summits no one else
+seems to be aware of it. I’ve also presented on using AuTest for live testing, but that was
+apparently forgotten.</p>
+<p>For ATS 10 and onwards, we want to move to having the release notes in the documentation. PRs that
+make non-compatible changes should also contain updates to the release notes.</p>
+<p>Some discussion about Layer 7 Routing and A/B testing. Sudheer mentioned wanting to do ramping load
+balancing where load is gradually shifted between sets of upstreams.</p>
+</div>
+<div class="section" id="outbound-refactoring">
+<h2>Outbound Refactoring<a class="headerlink" href="#outbound-refactoring" title="Permalink to this headline">¶</a></h2>
+<p>Work is on feature branch “h1-outbound”. Discussion about how much of the renaming should be on
+master and ATS 9.</p>
+<p>Kit asked about better manipulation of HTTP/2 with regard to gRPC proxying and handling trailing
+headers.</p>
+<p>Sudheer mentioned there is a need to be able to do session level property setting for outbound
+sessions, which currently is done in a poor way by using transaction based hooks. A cleaner way is
+needed for this. It seems this can mostly be done if there are outbound session hooks.</p>
+</div>
+<div class="section" id="http-3-quic">
+<h2>HTTP/3 QUIC<a class="headerlink" href="#http-3-quic" title="Permalink to this headline">¶</a></h2>
+<p>QUIC is a generic transport layer, and HTTP/3 is really HTTP over QUIC.</p>
+<p>Experimental support is available in ATS 9. This requires a special version of OpenSSL. There is
+still a feature branch, <cite>quic-latest</cite>. This is intended to be merged to master after every
+successful InterOp.</p>
+<ul class="simple">
+<li><p>QUIC : draft-20</p></li>
+<li><p>HTTP/3 : draft-20</p></li>
+<li><p>QUACK : draft-03</p></li>
+</ul>
+<p>There are a number of missing features and not suitable for production use. It is a a good base for
+people interested in working on HTTP/3. InterOP tests are done using an internal client
+<cite>traffic_quic</cite> which is based on the ATS QUIC libraries.</p>
+<p>Should also take care to not break BoringSLL support when working on OpenSSL code.</p>
+</div>
+<div class="section" id="unified-routing">
+<h2>Unified Routing<a class="headerlink" href="#unified-routing" title="Permalink to this headline">¶</a></h2>
+<p>Current routing is basically “remap.config” and a few plugins such as “regex_remap”. Mostly host or
+path based. Want “ramping” or “A/B testing” to have partial routing between distinct groups of
+upstreams.</p>
+<p>Very similar to TxnBox - have a set of routing criteria (“features”) and then apply actions
+(“directives”) based on the criteria.</p>
+<p>Key ordering is predetermined by the code. Longest / most specific rules are matched first.</p>
+<p>Rules can be conditional based on internal tracking of upstream results. Rules can be linked to
+“cascade” selection.</p>
+<p>Can be configured via an external API. Rules can be created and listed. Rules have an index and a
+hash key which is computed from properties of the key.</p>
+</div>
+<div class="section" id="serving-wikipedia-with-ats">
+<h2>Serving Wikipedia with ATS<a class="headerlink" href="#serving-wikipedia-with-ats" title="Permalink to this headline">¶</a></h2>
+<p>Spent 12 months work on using ATS for Wikipedia. Was served by Varnish, now a mix of ATS and
+Varnish. This means all of the Wikipedia foundation (more than just Wikipedia).</p>
+<p>Run their own CDN for general autonomy. All of the software and tools are open source and available
+on github.</p>
+<p>Old split was two proxy instances, one ram only and the other disk only. Replacing the disk only
+proxies with ATS. Will be continuing with conversions of other proxies to ATS. Looks like the
+Varnish killer was the lack of TLS support.</p>
+<p>Found several issues: #4466, #4635, #5179, #5787.</p>
+<p>Using ATS 8.0.5.</p>
+<p>Using Lua plugin</p>
+<ul class="simple">
+<li><p>path normalization, RFC 3986</p></li>
+<li><p>Tweak headers for MediaWiki processing.</p></li>
+<li><p>Cache control.</p></li>
+</ul>
+<p>Quite a bit of work on determining the logic for whether a response is cached, using system tap
+to track the decisions. Having problems with dealing with requests that are non cacheable based
+on server response, and not determinable at request time. Varnish can make a note of the
+non-cacheablility. I think this is distinct from negative caching.</p>
+<p>Using named pipe for logging. Pondered writing to Kafka, not done yet.</p>
+</div>
+<div class="section" id="nexthop-selection-strategies">
+<h2>Nexthop selection strategies<a class="headerlink" href="#nexthop-selection-strategies" title="Permalink to this headline">¶</a></h2>
+<p>This is primarily a reworking of parent selection. Checks for remap, and if not remapped uses
+parent selection.</p>
+<p>Single config file that contains multiple strategies. Updated “remap.config” parsing to enable a
+“strategy” option that specifies which strategy from the configuration should be used.
+Synchronization between the two files is done by always reloading the strategy config file when the
+“remap.config” is reloaded. Configuration files are linked via a special <cite>#include</cite> mechanism.</p>
+<p>Planning on having plugins at some point.</p>
+</div>
+<div class="section" id="amc-tech-corner">
+<h2>AMC Tech Corner<a class="headerlink" href="#amc-tech-corner" title="Permalink to this headline">¶</a></h2>
+<p>Still hard push for not supporting old and new configuration instances.</p>
+<p>Cache config YAML accepted, no real objects.</p>
+<p>For down server handling, in the “service not available” case make sure cache “serve while stale”
+works.</p>
+<p>No comments on working on Cache Tool outside of ATS repo.</p>
+<p>For disabling ram cache - per volume is OK. JvD wants to look at remap level of preventing specific
+objects from being promoted to ram cache.</p>
+</div>
+<div class="section" id="reloadable-remap-plugins">
+<h2>Reloadable Remap Plugins<a class="headerlink" href="#reloadable-remap-plugins" title="Permalink to this headline">¶</a></h2>
+<p>Currently on master. This works for remap plugins. May be extended to L7R plugins.</p>
+<p>Mostly a demo, showing how remap plugins get notified. The big change is that the dynamic libraries
+get unloaded and reloaded. Continuations created by the remap plugins is tracked and the library
+kept loaded until all the Continuations are destroyed.</p>
+</div>
+<div class="section" id="http-replay">
+<h2>Http Replay<a class="headerlink" href="#http-replay" title="Permalink to this headline">¶</a></h2>
+<p>Using for performance and testing.</p>
+</div>
+<div class="section" id="webassembly">
+<h2>WebAssembly<a class="headerlink" href="#webassembly" title="Permalink to this headline">¶</a></h2>
+<p>Use for TS plugins.</p>
+<p>Reloading - can reload libraries, but that’s not the core problem, which is dangling Continuations.</p>
+<p>Trying to make an ABI that makes it possible to use the same plugins on different proxies.</p>
+<p>Multiple plugins done by linking them into a single VM. A framework does the function call routing.</p>
+<p>VMs have API to get functions (calls to VM from proxy) and callback registration (calls from VM to
+proxy), plus memory copy (in and out).</p>
+<p>Not clear on the state model. There are context objects, perhaps those are the equivalent of Lua
+states or “light weight threads” sort of thing. That is, “context switching” for different
+transactions is done by selecting a corresopnding context object. (Appears to be correct). The
+internal context has both state data and the methods / functions available in the context. The
+functions are represented as methods on an object and extracted during compilation.</p>
+<p>In essence, to get other language support, we would need a “WASM API” kind of like the C++ API
+which wraps the C plugin API. This API is a concrete implementation of an abstract “proxy VM”
+defined by WASM. Once this works, then WASM takes care of interfacing from other languages to
+the concrete proxy VM.</p>
+</div>
+<div class="section" id="analytics-with-ats-logs">
+<h2>Analytics with ATS Logs<a class="headerlink" href="#analytics-with-ats-logs" title="Permalink to this headline">¶</a></h2>
+<p>Primary goal was to figure out how well the CDN was serving. Wanted to distinguish between regions
+and / or networks to be able to track down issues. Ended up using ATS logs along with other logs
+and beacon measurements.</p>
+<p>Generates reports via Hadoop cluster, then uses Druid / Pivot to view the reports and graphs. Doing
+this with the network team enables tracking down real network problems. Has resulted in many
+actual fixes for problems.</p>
+<p>Want to do real time streaming in the future.</p>
+</div>
+<div class="section" id="ats-ingress-controller">
+<h2>ATS Ingress Controller<a class="headerlink" href="#ats-ingress-controller" title="Permalink to this headline">¶</a></h2>
+<p>(Originally listed as “ATS and Kubernetes”)</p>
+<p>Uses “Ingress Controller” process in a pod to control ATS, which in turns proxies access to the
+services in other pods. Seems like another good place for a better RPC for updating configuration
+and retrieving status information.</p>
+<p>Ingress Controller dynamically adjusts the proxy state to handle changes in the service mesh. New
+instances, new services, services or instances removed, etc.</p>
+<p>Need to implement more control of routing.</p>
+</div>
+<div class="section" id="network-and-http-2-performance-issues">
+<h2>Network and HTTP/2 Performance Issues<a class="headerlink" href="#network-and-http-2-performance-issues" title="Permalink to this headline">¶</a></h2>
+<p>Initially some throttling problems, have fixes for this in HostDB and accept logic.</p>
+<p>An issue is transaction processing happens on the <cite>ET_NET</cite> threads and if HTTP/2 processing is
+expensive, this can cause cross talk latency.</p>
+<p>In general, a number of minor issues that add up. For instance, inefficient memory handling in
+HPACK using <code class="code docutils literal notranslate"><span class="pre">HdrHeap</span></code>.</p>
+<p>Discussion of issue with accepting connections, dedicated threads vs. <cite>ET_NET</cite> acceptance. Lots
+of discussion, probably need to do something in this area.</p>
+<p>There is other work going with regard to HTTP/2, mostly by Susan and Masaori.</p>
+</div>
+<div class="section" id="tls-1-3-0-rtt">
+<h2>TLS 1.3 0-RTT<a class="headerlink" href="#tls-1-3-0-rtt" title="Permalink to this headline">¶</a></h2>
+<p>Combine initial client data with handshake. This requires quite a lot of changes in ATS.</p>
+<p>Biggest problem was figuring out what the OpenSSL options for early data are and how they work.</p>
+<p>Early data is put in to a specific sidecar buffer.</p>
+<p>Need some specific replay protections as the built in ones don’t work in our use case.</p>
+<p>Part of the replay protection is limiting early requests to specific methods. Request for being able
+to restrict methods on a per domain basis, or look at being able to do this in “remap.config”.</p>
+</div>
+<div class="section" id="low-latency-hls">
+<h2>Low Latency HLS<a class="headerlink" href="#low-latency-hls" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ATS-2019-Spring-Summit.en.html" title="2019 Spring Summit"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../poc/archive-partial-object-caching-prototype.en.html" title="Partial Caching Initial Design"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+    </div>
+  </body>
+</html>
