@@ -62,6 +62,7 @@
 <li><a class="reference internal" href="#netlify">Netlify</a></li>
 <li><a class="reference internal" href="#systemtap-in-ats">SystemTap in ATS</a></li>
 <li><a class="reference internal" href="#session-logging">Session Logging</a></li>
+<li><a class="reference internal" href="#debugging">Debugging</a></li>
 </ul>
 </li>
 </ul>
@@ -365,7 +366,40 @@ with regard to hooks and overridable configurations. This is just part of the sa
 </ul>
 <p>With regard to outbound vs. inbound sessions, there are some synchronization issues with when
 data is accessed for transaction level logging.</p>
-<p>We should move session based data that needs log caching (e.g.</p>
+<p>We should move session based data that needs log caching (e.g. outbound IP addresses) to a separate
+structure that’s session based.</p>
+<p>Leif wanted to have four possible logs</p>
+<ul class="simple">
+<li><p>Inbound transactions</p></li>
+<li><p>Outbound transactions</p></li>
+<li><p>Inbound sessions</p></li>
+<li><p>Outbound sessions</p></li>
+</ul>
+<p>I’m not convinced of the utility of splitting the transaction logs. Need to talk to our “data
+scientists” about it.</p>
+</div>
+<div class="section" id="debugging">
+<h3>Debugging<a class="headerlink" href="#debugging" title="Permalink to this headline">¶</a></h3>
+<p>Leif, Bryan, Emmanuelle, I (and maybe some others) talked about system tap probe points and ATS
+debugging. Leif wanted to re-organize the debug namespace. The general consensus was</p>
+<dl class="simple">
+<dt>#  Do a test where all the current calls to <code class="code docutils literal notranslate"><span class="pre">DEBUG</span></code> also create a probe point. The name</dt><dd><p>can be the file and line number to guarantee uniqueness. Then test this in production to see
+what the performance impact is. If it’s undetectable, then we don’t have to worry about it.</p>
+</dd>
+<dt>#  Look at Walt’s proposal for improving <code class="code docutils literal notranslate"><span class="pre">DEBUG</span></code> tag checking performance. This means</dt><dd><p>using <code class="code docutils literal notranslate"><span class="pre">DEBUG</span></code> to create local static objects that are globally registered. When the
+debug tag string is updated, update flags in these objects to indicate whether it’s active.
+Then the lookup cost is once per setting of the configuration variable, not for every time
+the tag is hit.</p>
+</dd>
+<dt>#  While working on the previous, come up with a better name space organization for debug tags.</dt><dd><p>In particular, we need more “long” names so that debugging can be more focused. For instance
+the “http” tags should be more varied to be more selective about what’s logged.</p>
+</dd>
+<dt>#  In the end, the <code class="code docutils literal notranslate"><span class="pre">DEBUG</span></code> should be able to take an optional tag that indicates it should</dt><dd><p>also be a probe point.</p>
+</dd>
+</dl>
+<p>Although it seems reasonable at the start to make all <code class="code docutils literal notranslate"><span class="pre">DEBUG</span></code> calls in to probe points, this
+is problematic because it makes so many probe points as to render them unusable. Instead we’ll
+have to be a bit more selective.</p>
 </div>
 </div>
 </div>
