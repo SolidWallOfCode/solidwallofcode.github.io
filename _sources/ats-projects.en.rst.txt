@@ -22,6 +22,7 @@ Projects
    l4r.en
    plugin-coordination.en
    RPC.en
+   delain.en
 
 ======================
 Less Detailed Projects
@@ -83,6 +84,18 @@ Bijection
 Given the compacting arena and :code:`TSHashTable` buidling the bijection class is straightforward.
 Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is
 the essential technique.
+
+Utilities
+=========
+
+There are a number of utility classes that would be useful, particularly in replacing old and
+increasingly inadequate containers.
+
+SplitVector
+   This would have an API very similar to :code:`std::vector` but would take a template size
+   parameter and statically allocate that many elements. This is a pattern used in several places in
+   |TS| frequently in an ad hoc way. The :code:`DynArray` class does this but has other defects.
+   :code:`SplitVector` would replace all of these uses.
 
 Traffic Server Core
 ===================

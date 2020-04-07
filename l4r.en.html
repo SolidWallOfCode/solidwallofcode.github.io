@@ -177,7 +177,7 @@ Client -[#blue]&gt; Upstream : &lt;font color=&quot;blue&quot;&gt;//TLS Connect/
 <p>Using a proxy in this scenario can be done using transparency and routing connections through the proxy. However in most environments this level of control of the routing will not be possible and so the client will need to connect to the proxy as if it were the server. In general this will be done by tweaking DNS or reconfiguring the client. When the client connects to the proxy the proxy must in turn connect to the service. Determing the correct upstream connection is the primary challenge. The advantage of transparency is the upstream destination is indicated by the connection. For a TCP only connection from the client the upstream must be explicitly configured in the proxy. If the client connects using TLS then information can be extracted from the initial TLS handshake.</p>
 <div class="figure align-center" id="id5">
 <p class="plantuml">
-<object data="_images/plantuml-769257e9ec6830fa5bfaa503eeab4f0e50c63ed5.svg" type="image/svg+xml" style="width:497px;height:349px;">
+<object data="_images/plantuml-769257e9ec6830fa5bfaa503eeab4f0e50c63ed5.svg" type="image/svg+xml" style="width:507px;height:349px;">
 <img src="_images/plantuml-769257e9ec6830fa5bfaa503eeab4f0e50c63ed5.png" alt="actor Client
 participant Proxy
 participant Service
@@ -198,7 +198,7 @@ Client -[#blue]-&gt; Service : &lt;font color=&quot;blue&quot;&gt;//TLS Connect/
 <p>In this case the client does a remote proxy connection to the service.</p>
 <div class="figure align-center" id="id6">
 <p class="plantuml">
-<object data="_images/plantuml-ac0e4a8924e8fd0f949020c10e513dafefefa0d6.svg" type="image/svg+xml" style="width:359px;height:101px;">
+<object data="_images/plantuml-ac0e4a8924e8fd0f949020c10e513dafefefa0d6.svg" type="image/svg+xml" style="width:349px;height:101px;">
 <img src="_images/plantuml-ac0e4a8924e8fd0f949020c10e513dafefefa0d6.png" alt="hide empty members
 cloud Cloud
 actor Client
@@ -229,7 +229,7 @@ note over Proxy : Tunneled by Proxy"/>
 <p>If the requirement is to secure the connection from the client to the proxy this requires adding local proxy to the client, which then forwards to the remote proxy.</p>
 <div class="figure align-center" id="id8">
 <p class="plantuml">
-<object data="_images/plantuml-3ca00765515acb56570c9bb8b646967ad69100da.svg" type="image/svg+xml" style="width:546px;height:101px;">
+<object data="_images/plantuml-3ca00765515acb56570c9bb8b646967ad69100da.svg" type="image/svg+xml" style="width:536px;height:101px;">
 <img src="_images/plantuml-3ca00765515acb56570c9bb8b646967ad69100da.png" alt="hide empty members
 cloud Cloud
 actor Client

@@ -347,43 +347,4 @@ Some of the motivations are
 With regard to outbound vs. inbound sessions, there are some synchronization issues with when
 data is accessed for transaction level logging.
 
-We should move session based data that needs log caching (e.g. outbound IP addresses) to a separate
-structure that's session based.
-
-Leif wanted to have four possible logs
-
-*  Inbound transactions
-*  Outbound transactions
-*  Inbound sessions
-*  Outbound sessions
-
-I'm not convinced of the utility of splitting the transaction logs. Need to talk to our "data
-scientists" about it.
-
-Debugging
----------
-
-Leif, Bryan, Emmanuelle, I (and maybe some others) talked about system tap probe points and ATS
-debugging. Leif wanted to re-organize the debug namespace. The general consensus was
-
-#  Do a test where all the current calls to :code:`DEBUG` also create a probe point. The name
-   can be the file and line number to guarantee uniqueness. Then test this in production to see
-   what the performance impact is. If it's undetectable, then we don't have to worry about it.
-
-#  Look at Walt's proposal for improving :code:`DEBUG` tag checking performance. This means
-   using :code:`DEBUG` to create local static objects that are globally registered. When the
-   debug tag string is updated, update flags in these objects to indicate whether it's active.
-   Then the lookup cost is once per setting of the configuration variable, not for every time
-   the tag is hit.
-
-#  While working on the previous, come up with a better name space organization for debug tags.
-   In particular, we need more "long" names so that debugging can be more focused. For instance
-   the "http" tags should be more varied to be more selective about what's logged.
-
-#  In the end, the :code:`DEBUG` should be able to take an optional tag that indicates it should
-   also be a probe point.
-
-Although it seems reasonable at the start to make all :code:`DEBUG` calls in to probe points, this
-is problematic because it makes so many probe points as to render them unusable. Instead we'll
-have to be a bit more selective.
-
+We should move session based data that needs log caching (e.g.

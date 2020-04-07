@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>RPC Refactor &#8212; AMC Traffic Server Documentation</title>
+    <title>Administrative JSON RPC &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="TSConfig / Lua" href="tsconfig-lua.en.html" />
+    <link rel="next" title="Delain" href="delain.en.html" />
     <link rel="prev" title="Plugin Coordination" href="plugin-coordination.en.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -25,7 +25,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="tsconfig-lua.en.html" title="TSConfig / Lua"
+          <a href="delain.en.html" title="Delain"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="plugin-coordination.en.html" title="Plugin Coordination"
@@ -39,12 +39,25 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
             </a></p>
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Administrative JSON RPC</a><ul>
+<li><a class="reference internal" href="#standard-rpc">Standard RPC</a></li>
+<li><a class="reference internal" href="#internal-extensibility">Internal extensibility</a></li>
+<li><a class="reference internal" href="#argument-handling">Argument handling</a></li>
+<li><a class="reference internal" href="#synchronicity">Synchronicity</a></li>
+<li><a class="reference internal" href="#dynamic-configuration">Dynamic configuration</a></li>
+<li><a class="reference internal" href="#code-structure">Code Structure</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="plugin-coordination.en.html"
                         title="previous chapter">Plugin Coordination</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="tsconfig-lua.en.html"
-                        title="next chapter">TSConfig / Lua</a></p>
+  <p class="topless"><a href="delain.en.html"
+                        title="next chapter">Delain</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -70,56 +83,54 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rpc-refactor">
-<span id="id1"></span><h1>RPC Refactor<a class="headerlink" href="#rpc-refactor" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="administrative-json-rpc">
+<span id="rpc-refactor"></span><h1>Administrative JSON RPC<a class="headerlink" href="#administrative-json-rpc" title="Permalink to this headline">¶</a></h1>
 <p>To communicate between <code class="docutils literal notranslate"><span class="pre">traffic_manager</span></code> and <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> there is an RPC mechanism in
-<code class="docutils literal notranslate"><span class="pre">mgmt/api</span></code>. This is a simple serialization style RPC which runs over sockets. Current the logic is
-tightly embedded in the management library. It would be useful for various reasons to extract this
-in to a separate library.</p>
-<p>In addition there seems to be a delay between a command line tool such as <code class="docutils literal notranslate"><span class="pre">traffic_ctl</span></code> sending
-data and <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> receiving the data. This is likely due to <code class="code docutils literal notranslate"><span class="pre">Continuation</span></code>
-scheduling that causes the socket to be polled every few seconds.</p>
-<p>The phases of the project</p>
-<ol class="arabic simple">
-<li><p>Determine if there is a propagation delay.</p>
-<ol class="loweralpha simple">
-<li><p>If there is a delay, remove it.</p></li>
-</ol>
-</li>
-<li><p>Find or create documentation for the current RPC mechanism, including</p>
-<ol class="loweralpha simple">
-<li><p>The basics of the serialization mechanism.</p></li>
-<li><p>The API for both sides of the RPC.</p></li>
-<li><p>The run time structure of the RPC from <code class="docutils literal notranslate"><span class="pre">traffic_ctl</span></code> to <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code>.</p></li>
-<li><p>A sequence diagram of how a message is delivered.</p></li>
-</ol>
-</li>
-<li><p>Factor out the serialization logic.</p>
-<ol class="loweralpha simple">
-<li><p>Possibly remove the assymetry between <code class="docutils literal notranslate"><span class="pre">requests</span></code> and <code class="docutils literal notranslate"><span class="pre">responses</span></code>. I think this may be the
-root of the assymmetry. See <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/mgmt/api/NetworkMessage.cc">NetworkMessage.cc</a>.</p></li>
-<li><p>If this is made in to a library, it will be necessary to make the registration of message and
-type handling a push mechanism rather than a push. That is, currently this information is
-directly embedded in the RPC code, which won’t be possible in a library.</p></li>
-<li><p>Make it possible for the core to pass messages back from <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> to command line tools.</p></li>
-<li><p>Make it possible for plugins to pass messages back to command line tools.</p></li>
-</ol>
-</li>
-<li><p>Create <code class="docutils literal notranslate"><span class="pre">libatsprc</span></code>.</p>
-<ol class="loweralpha simple">
-<li><p>Create the library.</p></li>
-<li><p>Change the RPC using code to use the library.</p></li>
-</ol>
-</li>
-</ol>
-<p class="rubric">Notes</p>
-<dl class="simple">
-<dt>Variadic Template Support</dt><dd><p>I considered this for serialization but the problem is deserializing. Given a message type, how
-is a call using variadics to be constructed? You would still need some sort of registration for a
-functor to invoke, at which point it’s not really winning. There would also be the problem of
-matching serialized type data with C++ types, again obviating the advantages.</p>
-</dd>
-</dl>
+<code class="docutils literal notranslate"><span class="pre">mgmt/api</span></code>. This is a simple serialization style RPC which runs over sockets. The goal of this
+project is to replace this with a <a class="reference external" href="https://www.jsonrpc.org/specification">JSON-RPC</a> based implementation. The key benefits would be</p>
+<ul class="simple">
+<li><p>A standard RPC mechanism that is widely supported.</p></li>
+<li><p>Enable internal extensibility.</p></li>
+<li><p>More robust argument handling.</p></li>
+<li><p>Synchronous management actions (also, remove unnecessary delays).</p></li>
+<li><p>Zero config, dynamic configuration.</p></li>
+</ul>
+<p>The current logic is hand rolled and the messages and arguments are deeply embedded in the implementation, which makes changing them difficult and risky. This has an effect on most of these properties. A clean implementation that is generic would do much all by itself to ameloriate most of these issues, irrespective of it being JSON-RPC.</p>
+<div class="section" id="standard-rpc">
+<h2>Standard RPC<a class="headerlink" href="#standard-rpc" title="Permalink to this headline">¶</a></h2>
+<p>Currently only Traffic Server specific implementations can access the external management API. This means interacting with any sort of standard managemet tools is very difficult, requiring custom code. Traffic Server ships with a Perl library to enable access via Perl, but this code is old, unmaintained, and painful to build.</p>
+<p>In contrast, a JSON-RPC based API opens up a wide variety of libraries and tools in most (if not all) of the popular languages. There would be no need to provide any explicit support in the Traffic Server code base, as these existing tools are better than anything our community is likely to build.</p>
+<p>One concern is performance, but in general the performance contraints for management APIs are much less severe than production traffic and in my view not a serious blocker for this application.</p>
+</div>
+<div class="section" id="internal-extensibility">
+<h2>Internal extensibility<a class="headerlink" href="#internal-extensibility" title="Permalink to this headline">¶</a></h2>
+<p>The functionality of the management API is limited primarily because it is so difficult. The new implementation must support a subsystem adding message types to the RPC without code changes in the RPC library. This will make adding additional functionality easy and make providing additional features much more feasible.</p>
+</div>
+<div class="section" id="argument-handling">
+<h2>Argument handling<a class="headerlink" href="#argument-handling" title="Permalink to this headline">¶</a></h2>
+<p>This is a mixed bag. On the one hand, using JSON-RPC will mean sending message arguments as JSON encoded data, effectively strings. This means converting to and from strings as the messages pass. Although it is a judgement call to say that will not be a problem. one can point to the large number of production web servers that use JSON-RPC (or just JSON encoded data) at production traffic levels.</p>
+<p>On the other hand JSON encoded data is very easy to pass around and extend. If a new management API function needs a new type, it does not need any modification or additional support in the RPC library. The RPC library will be expected to handle only JSON encoded data. It may the case that an encoding framework is provided, but in general I have found it easier to directly print JSON encoded data than to use such a framework. Decoding is somewhat more challenging and we will need to look at what support can be provided by the RPC library. The RPC library will be responsible for parsing from text to JSON (or equivalent) data strutures. Other core components should need only to do direct type conversions. The RPC library must provide a set of basic converters for standard JSON types (integer, floats, booleans, possibly a few others).</p>
+</div>
+<div class="section" id="synchronicity">
+<h2>Synchronicity<a class="headerlink" href="#synchronicity" title="Permalink to this headline">¶</a></h2>
+<p>A key problem from the operators point of view is the “fire and forget” style of the current management API. The command line tools can verify the <em>reciept</em> of a message, but not any action done because of that message. The new implementation must be able to support synchronous messages for two reasons.</p>
+<ul class="simple">
+<li><p>First so that the operators (or their tools) can know the message has been acted upon.</p></li>
+<li><p>Enable message processing to pass back diagnostic information directly to the caller, rather than by spewing to a log file in the (frequently vain) hope an operator will notice.</p></li>
+</ul>
+<p>It is acceptable for synchronicity to depend on the message, or on flags in the messages, but it must be possible.</p>
+<p>In addition, there are multi-second delays built in to the current management API, for no particularly good reason I can see. A polling style is used, which seems unnecessary. Eliminating those delays would be worth while by itself, independent of using JSON-RPC.</p>
+</div>
+<div class="section" id="dynamic-configuration">
+<h2>Dynamic configuration<a class="headerlink" href="#dynamic-configuration" title="Permalink to this headline">¶</a></h2>
+<p>I dare to dream big - I want a Traffic Server which can start up with almost no (or literally no) configuration and then be fully configured via the management API. It has been a goal to minimize the required configuration need for a working Traffic Server for other reasons, but as the ability to configure via a management API is, in my opinion, critical for the long term success of Traffic Server.</p>
+<p>As cloud based computing increases, operators will want ot embed Traffic Server in such systems (e.g. inside Kubernetes). Having to package configuration files is painful in such environments. What is wanted is the ability to deploy with a small amount of generic configuration (e.g. something that can be embeded in a RPM package) and bootstrap from that to the specific configuration needed.</p>
+</div>
+<div class="section" id="code-structure">
+<h2>Code Structure<a class="headerlink" href="#code-structure" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned, the new implementation should be done in a library style, so that it depends on (at most) the already existing “tscore” library, but <em>none</em> of the proxy specific code. This is, in my view, the greatest single issue with the current code, its excessively complicated dependencies and linking. The new implementation must be a simple library with simple dependencies that don’t reach all over the code base.</p>
+<p>Although not needed in the first phase, it should be kept in mind that the ability of <em>plugins</em> to register management API calls would be a very powerful feature. The design and implementation of this first phase should keep this in mind as a future feature.</p>
+</div>
 </div>
 
 
@@ -135,7 +146,7 @@ matching serialized type data with C++ types, again obviating the advantages.</p
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="tsconfig-lua.en.html" title="TSConfig / Lua"
+          <a href="delain.en.html" title="Delain"
              >next</a> |</li>
         <li class="right" >
           <a href="plugin-coordination.en.html" title="Plugin Coordination"

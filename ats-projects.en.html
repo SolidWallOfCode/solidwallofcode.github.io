@@ -52,6 +52,7 @@
 <li><a class="reference internal" href="#id1">Bijection</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#utilities">Utilities</a></li>
 <li><a class="reference internal" href="#traffic-server-core">Traffic Server Core</a><ul>
 <li><a class="reference internal" href="#tls-extensions">TLS Extensions</a></li>
 </ul>
@@ -109,7 +110,8 @@ large diagram of the projects and their dependencies is <a class="reference exte
 <li class="toctree-l1"><a class="reference internal" href="body-factory.en.html">Body Factory Refactoring</a></li>
 <li class="toctree-l1"><a class="reference internal" href="l4r.en.html">Layer 4 Proxying</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugin-coordination.en.html">Plugin Coordination</a></li>
-<li class="toctree-l1"><a class="reference internal" href="RPC.en.html">RPC Refactor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RPC.en.html">Administrative JSON RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="delain.en.html">Delain</a></li>
 </ul>
 </div>
 </div>
@@ -163,6 +165,18 @@ desired memory allocation properties.</p>
 Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is
 the essential technique.</p>
 </div>
+</div>
+<div class="section" id="utilities">
+<h3>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h3>
+<p>There are a number of utility classes that would be useful, particularly in replacing old and
+increasingly inadequate containers.</p>
+<dl class="simple">
+<dt>SplitVector</dt><dd><p>This would have an API very similar to <code class="code docutils literal notranslate"><span class="pre">std::vector</span></code> but would take a template size
+parameter and statically allocate that many elements. This is a pattern used in several places in
+Traffic Server frequently in an ad hoc way. The <code class="code docutils literal notranslate"><span class="pre">DynArray</span></code> class does this but has other defects.
+<code class="code docutils literal notranslate"><span class="pre">SplitVector</span></code> would replace all of these uses.</p>
+</dd>
+</dl>
 </div>
 <div class="section" id="traffic-server-core">
 <h3>Traffic Server Core<a class="headerlink" href="#traffic-server-core" title="Permalink to this headline">¶</a></h3>

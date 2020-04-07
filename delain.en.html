@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Diagrams &#8212; AMC Traffic Server Documentation</title>
+    <title>Delain &#8212; AMC Traffic Server Documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
@@ -15,8 +15,8 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Open Source Contributions" href="guide.en.html" />
-    <link rel="prev" title="Hash Container Notes" href="notes/hash-table.en.html" /> 
+    <link rel="next" title="TSConfig / Lua" href="tsconfig-lua.en.html" />
+    <link rel="prev" title="Administrative JSON RPC" href="RPC.en.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -25,12 +25,13 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="guide.en.html" title="Open Source Contributions"
+          <a href="tsconfig-lua.en.html" title="TSConfig / Lua"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="notes/hash-table.en.html" title="Hash Container Notes"
+          <a href="RPC.en.html" title="Administrative JSON RPC"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -38,16 +39,24 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/balcora-gate-400x400.jpg" alt="Logo"/>
             </a></p>
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Delain</a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
-  <p class="topless"><a href="notes/hash-table.en.html"
-                        title="previous chapter">Hash Container Notes</a></p>
+  <p class="topless"><a href="RPC.en.html"
+                        title="previous chapter">Administrative JSON RPC</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="guide.en.html"
-                        title="next chapter">Open Source Contributions</a></p>
+  <p class="topless"><a href="tsconfig-lua.en.html"
+                        title="next chapter">TSConfig / Lua</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/reference.en.rst.txt"
+      <li><a href="_sources/delain.en.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -69,44 +78,18 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="diagrams">
-<span id="reference"></span><h1>Diagrams<a class="headerlink" href="#diagrams" title="Permalink to this headline">¶</a></h1>
-<p>Process start up</p>
-<p class="plantuml">
-<object data="_images/plantuml-c8cf12721c92d0f8032ef0eccbc8ba18fd872dea.svg" type="image/svg+xml" style="width:943px;height:740px;">
-<img src="_images/plantuml-c8cf12721c92d0f8032ef0eccbc8ba18fd872dea.png" alt="&#64;startuml
-
-:netProcessor.init();
-:init_HttpProxyServer();
-:eventProcessor::start();
-note right: ET_NET threads start here
-:plugin_init();
-note right: Global plugin initialization
-:cacheProcessor.start();
-fork
-:udpNet::start();
-:init_accept_HttpProxyServer();
-:TS_EVENT_LIFECYCLE_PORTS_INITIALIZED&gt;
-if (cache_wait) then (ready)
-:start_HttpProxyServer();
-:TS_EVENT_LIFECYCLE_PORTS_READY&gt;
-else (not ready)
-:cache_wait = waited;
-endif
-:tasksProcessor.start();
-fork again
-:Cache Initialization;
-if (cache_waited) then (waited)
-:start_HttpProxyServer();
-:TS_EVENT_LIFECYCLE_PORTS_READY&gt;
-else (not ready)
-:cache_waited = ready;
-endif
-:TS_EVENT_LIFECYCLE_CACHE_READY&gt;
-end fork
-&#64;enduml"/>
-
-</object></p>
+  <div class="section" id="delain">
+<span id="id1"></span><h1>Delain<a class="headerlink" href="#delain" title="Permalink to this headline">¶</a></h1>
+<p>“Delain” is a the code name for a Traffic Server plugin until I find a more descriptive name. This plugin will
+be a substitute for both the cookie remap and header rewrite plugins. The primary goals of the project are</p>
+<ul class="simple">
+<li><p>A YAML based plugin for these functions.</p></li>
+<li><p>Demonstrate Canned-YAML as a YAML configuration support library.</p></li>
+<li><p>Demonstrate the utility of libswoc++.</p></li>
+</ul>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 
@@ -122,12 +105,13 @@ end fork
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="guide.en.html" title="Open Source Contributions"
+          <a href="tsconfig-lua.en.html" title="TSConfig / Lua"
              >next</a> |</li>
         <li class="right" >
-          <a href="notes/hash-table.en.html" title="Hash Container Notes"
+          <a href="RPC.en.html" title="Administrative JSON RPC"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
