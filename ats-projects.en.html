@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Traffic Server Projects &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Cache Tool" href="cache-tool.en.html" />
@@ -30,9 +31,161 @@
         <li class="right" >
           <a href="index.html" title="Solid Wall Of Code Documents"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Traffic Server Projects</a></li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="traffic-server-projects">
+<span id="ats-projects"></span><h1>Traffic Server Projects<a class="headerlink" href="#traffic-server-projects" title="Permalink to this headline">¶</a></h1>
+<p>These are my personal projects for Traffic Server. These vary from very personal ones to collaborative work. A
+large diagram of the projects and their dependencies is <a class="reference external" href="_images/ts-projects.png">here</a>.</p>
+<section id="projects">
+<h2>Projects<a class="headerlink" href="#projects" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cache-tool.en.html">Cache Tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.en.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errata.en.html">Errata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="body-factory.en.html">Body Factory Refactoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l4r.en.html">Layer 4 Proxying</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugin-coordination.en.html">Plugin Coordination</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RPC.en.html">Administrative JSON RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="delain.en.html">Delain</a></li>
+</ul>
+</div>
+</section>
+<section id="less-detailed-projects">
+<h2>Less Detailed Projects<a class="headerlink" href="#less-detailed-projects" title="Permalink to this headline">¶</a></h2>
+<p>Most these should be in separate pages but I have not yet had time to properly document them.</p>
+<section id="layer-7-routing">
+<h3>Layer 7 Routing<a class="headerlink" href="#layer-7-routing" title="Permalink to this headline">¶</a></h3>
+<p>Select upstream target based on the HTTP header information.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Need to consider the ability to bypass upstream selection for non-caching objects (e.g., skip a second caching layer for requests that will always end up at the origin anyway).</p>
+</div>
+</section>
+<section id="logging-tags-from-plugins">
+<h3>Logging tags from plugins<a class="headerlink" href="#logging-tags-from-plugins" title="Permalink to this headline">¶</a></h3>
+<p>This has been a desire for a long time but the implementation is a bit tricky with regard to timing,
+due to logging being done as the transaction is being terminated and data may have already
+disappeared. I have some ideas but those would require some additional infrastructure such as better
+arenas.</p>
+</section>
+<section id="c-abi-to-core">
+<h3>C++ ABI to Core<a class="headerlink" href="#c-abi-to-core" title="Permalink to this headline">¶</a></h3>
+<p>There is currently a C++ API for plugins but this is really a wrapper on the C API. It would be good
+to be able to have actual C++ APIs in to the core. There are a number of core features that should
+be made available to plugins, such as the network address handling code and the string view classes.
+The primary problem is the fragility of the C++ ABI, some mechanism would be needed to deal with
+this.</p>
+</section>
+<section id="plugin-c-api">
+<h3>Plugin C++ API<a class="headerlink" href="#plugin-c-api" title="Permalink to this headline">¶</a></h3>
+<p>The plugin C++ API needs a lot of polishing and updating.</p>
+</section>
+<section id="bijection">
+<h3>Bijection<a class="headerlink" href="#bijection" title="Permalink to this headline">¶</a></h3>
+<p>Bijection is a class I wrote for my own product software long ago, but it depends on some
+sophisticated Boost library support and so could not be easily ported to Traffic Server. It was a very useful
+class, particularly for configuration work and enumeration support. It is a goal of mine because
+building will create a good amount of powerful infrastructure which will be useful in other
+situations.</p>
+<section id="replace-tcl-hash-maps">
+<h4>Replace TCL hash maps<a class="headerlink" href="#replace-tcl-hash-maps" title="Permalink to this headline">¶</a></h4>
+<p>There is currently a templated hash map table but it requires externally allocated memory. This has
+its benefits in complex situations but is simply annoying for basic hash table use. Adding the
+compacting arena to the current <code class="code docutils literal notranslate"><span class="pre">TSHashTable</span></code> would yield an easily usable hash table with the
+desired memory allocation properties.</p>
+</section>
+<section id="id1">
+<h4>Bijection<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>Given the compacting arena and <code class="code docutils literal notranslate"><span class="pre">TSHashTable</span></code> buidling the bijection class is straightforward.
+Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is
+the essential technique.</p>
+</section>
+</section>
+<section id="utilities">
+<h3>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h3>
+<p>There are a number of utility classes that would be useful, particularly in replacing old and
+increasingly inadequate containers.</p>
+<dl class="simple">
+<dt>SplitVector</dt><dd><p>This would have an API very similar to <code class="code docutils literal notranslate"><span class="pre">std::vector</span></code> but would take a template size
+parameter and statically allocate that many elements. This is a pattern used in several places in
+Traffic Server frequently in an ad hoc way. The <code class="code docutils literal notranslate"><span class="pre">DynArray</span></code> class does this but has other defects.
+<code class="code docutils literal notranslate"><span class="pre">SplitVector</span></code> would replace all of these uses.</p>
+</dd>
+</dl>
+</section>
+<section id="traffic-server-core">
+<h3>Traffic Server Core<a class="headerlink" href="#traffic-server-core" title="Permalink to this headline">¶</a></h3>
+<p>Restructure the overridable configs to remove cyclic dependencies. Already discussed with community
+and I have a design.</p>
+<p>Potentially the “proxy-protocol” extension.</p>
+<p>Internal version of the <a class="reference external" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0218r0.html">C++17 filesystem library</a>.</p>
+<p>Fix <code class="code docutils literal notranslate"><span class="pre">TSNetConnect</span></code> to have options instead of a multiplying set of API calls.</p>
+<p>Make remap rules be pure first match (long term).</p>
+<p>The crypto hash support needs to be cleaned up.</p>
+<p>Add log tags to dump transaction headers in full. This would be useful for the operations teams. The
+idea is a custom log is setup that logs the full headers but is filtered by error return codes. The
+result is a log of full headers only for failed transactions. We had originally looked at doing this
+with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing
+logging mechanisms.</p>
+<p>Use <code class="code docutils literal notranslate"><span class="pre">std::chrono</span></code>.</p>
+<p>Prevent restart on cache failure (bad disks).</p>
+<p>Transaction arenas for plugin use.</p>
+<p>Pending event counting at base event loop / continuation.</p>
+<p>Look at allocating SDK Handles from the transaction arena instead of a global allocator, to avoid
+cleanup issues.</p>
+<section id="tls-extensions">
+<h4>TLS Extensions<a class="headerlink" href="#tls-extensions" title="Permalink to this headline">¶</a></h4>
+<p>It would be interesting in terms of L4 routing to be enable TLS clients to send a Traffic Server specialized
+TLS extension to provide addition L4 routing information or other control data. This needs to be
+design carefully to avoid security issues but I think it could be very powerful.</p>
+</section>
+</section>
+<section id="cache-api-toolkit">
+<h3>Cache API Toolkit<a class="headerlink" href="#cache-api-toolkit" title="Permalink to this headline">¶</a></h3>
+<p>This is a restructuring of how the cache to enable fine grained control by plugins. Put in a
+reference to the summit presentation on this.</p>
+</section>
+<section id="live-restart">
+<h3>Live Restart<a class="headerlink" href="#live-restart" title="Permalink to this headline">¶</a></h3>
+<p>A long running request is to be able to do a live restart of Traffic Server. The mechanism would be</p>
+<ul class="simple">
+<li><p>Start new Traffic Server process.</p></li>
+<li><p>New process starts accepting connections.</p></li>
+<li><p>Old process stops accepting connections.</p></li>
+<li><p>Old process shuts down.</p>
+<ul>
+<li><p>When all inbound connections have terminated.</p></li>
+<li><p>When there are less than a specified number of inbound connections.</p></li>
+<li><p>After a specific amount of time.</p></li>
+<li><p>When explicitly requested by the administrator.</p></li>
+</ul>
+</li>
+</ul>
+<p>The main difficulty for this is handling the cache. To some extent the cache would need to be
+multi-process. To make this more feasible the access would be single writer and the control of
+writing would pass from the old process to the new process. This may mean terminating cache writes
+in the old process.</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
@@ -79,165 +232,15 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="traffic-server-projects">
-<span id="ats-projects"></span><h1>Traffic Server Projects<a class="headerlink" href="#traffic-server-projects" title="Permalink to this headline">¶</a></h1>
-<p>These are my personal projects for Traffic Server. These vary from very personal ones to collaborative work. A
-large diagram of the projects and their dependencies is <a class="reference external" href="_images/ts-projects.png">here</a>.</p>
-<div class="section" id="projects">
-<h2>Projects<a class="headerlink" href="#projects" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="cache-tool.en.html">Cache Tool</a></li>
-<li class="toctree-l1"><a class="reference internal" href="testing.en.html">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="errata.en.html">Errata</a></li>
-<li class="toctree-l1"><a class="reference internal" href="body-factory.en.html">Body Factory Refactoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="l4r.en.html">Layer 4 Proxying</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugin-coordination.en.html">Plugin Coordination</a></li>
-<li class="toctree-l1"><a class="reference internal" href="RPC.en.html">Administrative JSON RPC</a></li>
-<li class="toctree-l1"><a class="reference internal" href="delain.en.html">Delain</a></li>
-</ul>
-</div>
-</div>
-<div class="section" id="less-detailed-projects">
-<h2>Less Detailed Projects<a class="headerlink" href="#less-detailed-projects" title="Permalink to this headline">¶</a></h2>
-<p>Most these should be in separate pages but I have not yet had time to properly document them.</p>
-<div class="section" id="layer-7-routing">
-<h3>Layer 7 Routing<a class="headerlink" href="#layer-7-routing" title="Permalink to this headline">¶</a></h3>
-<p>Select upstream target based on the HTTP header information.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Need to consider the ability to bypass upstream selection for non-caching objects (e.g., skip a second caching layer for requests that will always end up at the origin anyway).</p>
-</div>
-</div>
-<div class="section" id="logging-tags-from-plugins">
-<h3>Logging tags from plugins<a class="headerlink" href="#logging-tags-from-plugins" title="Permalink to this headline">¶</a></h3>
-<p>This has been a desire for a long time but the implementation is a bit tricky with regard to timing,
-due to logging being done as the transaction is being terminated and data may have already
-disappeared. I have some ideas but those would require some additional infrastructure such as better
-arenas.</p>
-</div>
-<div class="section" id="c-abi-to-core">
-<h3>C++ ABI to Core<a class="headerlink" href="#c-abi-to-core" title="Permalink to this headline">¶</a></h3>
-<p>There is currently a C++ API for plugins but this is really a wrapper on the C API. It would be good
-to be able to have actual C++ APIs in to the core. There are a number of core features that should
-be made available to plugins, such as the network address handling code and the string view classes.
-The primary problem is the fragility of the C++ ABI, some mechanism would be needed to deal with
-this.</p>
-</div>
-<div class="section" id="plugin-c-api">
-<h3>Plugin C++ API<a class="headerlink" href="#plugin-c-api" title="Permalink to this headline">¶</a></h3>
-<p>The plugin C++ API needs a lot of polishing and updating.</p>
-</div>
-<div class="section" id="bijection">
-<h3>Bijection<a class="headerlink" href="#bijection" title="Permalink to this headline">¶</a></h3>
-<p>Bijection is a class I wrote for my own product software long ago, but it depends on some
-sophisticated Boost library support and so could not be easily ported to Traffic Server. It was a very useful
-class, particularly for configuration work and enumeration support. It is a goal of mine because
-building will create a good amount of powerful infrastructure which will be useful in other
-situations.</p>
-<div class="section" id="replace-tcl-hash-maps">
-<h4>Replace TCL hash maps<a class="headerlink" href="#replace-tcl-hash-maps" title="Permalink to this headline">¶</a></h4>
-<p>There is currently a templated hash map table but it requires externally allocated memory. This has
-its benefits in complex situations but is simply annoying for basic hash table use. Adding the
-compacting arena to the current <code class="code docutils literal notranslate"><span class="pre">TSHashTable</span></code> would yield an easily usable hash table with the
-desired memory allocation properties.</p>
-</div>
-<div class="section" id="id1">
-<h4>Bijection<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
-<p>Given the compacting arena and <code class="code docutils literal notranslate"><span class="pre">TSHashTable</span></code> buidling the bijection class is straightforward.
-Two hash tables (or a hash table an arra) can easily be constructed on the same elements which is
-the essential technique.</p>
-</div>
-</div>
-<div class="section" id="utilities">
-<h3>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h3>
-<p>There are a number of utility classes that would be useful, particularly in replacing old and
-increasingly inadequate containers.</p>
-<dl class="simple">
-<dt>SplitVector</dt><dd><p>This would have an API very similar to <code class="code docutils literal notranslate"><span class="pre">std::vector</span></code> but would take a template size
-parameter and statically allocate that many elements. This is a pattern used in several places in
-Traffic Server frequently in an ad hoc way. The <code class="code docutils literal notranslate"><span class="pre">DynArray</span></code> class does this but has other defects.
-<code class="code docutils literal notranslate"><span class="pre">SplitVector</span></code> would replace all of these uses.</p>
-</dd>
-</dl>
-</div>
-<div class="section" id="traffic-server-core">
-<h3>Traffic Server Core<a class="headerlink" href="#traffic-server-core" title="Permalink to this headline">¶</a></h3>
-<p>Restructure the overridable configs to remove cyclic dependencies. Already discussed with community
-and I have a design.</p>
-<p>Potentially the “proxy-protocol” extension.</p>
-<p>Internal version of the <a class="reference external" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0218r0.html">C++17 filesystem library</a>.</p>
-<p>Fix <code class="code docutils literal notranslate"><span class="pre">TSNetConnect</span></code> to have options instead of a multiplying set of API calls.</p>
-<p>Make remap rules be pure first match (long term).</p>
-<p>The crypto hash support needs to be cleaned up.</p>
-<p>Add log tags to dump transaction headers in full. This would be useful for the operations teams. The
-idea is a custom log is setup that logs the full headers but is filtered by error return codes. The
-result is a log of full headers only for failed transactions. We had originally looked at doing this
-with a plugin but Dan Xu discovered that it would be easier to add these tags and use the existing
-logging mechanisms.</p>
-<p>Use <code class="code docutils literal notranslate"><span class="pre">std::chrono</span></code>.</p>
-<p>Prevent restart on cache failure (bad disks).</p>
-<p>Transaction arenas for plugin use.</p>
-<p>Pending event counting at base event loop / continuation.</p>
-<p>Look at allocating SDK Handles from the transaction arena instead of a global allocator, to avoid
-cleanup issues.</p>
-<div class="section" id="tls-extensions">
-<h4>TLS Extensions<a class="headerlink" href="#tls-extensions" title="Permalink to this headline">¶</a></h4>
-<p>It would be interesting in terms of L4 routing to be enable TLS clients to send a Traffic Server specialized
-TLS extension to provide addition L4 routing information or other control data. This needs to be
-design carefully to avoid security issues but I think it could be very powerful.</p>
-</div>
-</div>
-<div class="section" id="cache-api-toolkit">
-<h3>Cache API Toolkit<a class="headerlink" href="#cache-api-toolkit" title="Permalink to this headline">¶</a></h3>
-<p>This is a restructuring of how the cache to enable fine grained control by plugins. Put in a
-reference to the summit presentation on this.</p>
-</div>
-<div class="section" id="live-restart">
-<h3>Live Restart<a class="headerlink" href="#live-restart" title="Permalink to this headline">¶</a></h3>
-<p>A long running request is to be able to do a live restart of Traffic Server. The mechanism would be</p>
-<ul class="simple">
-<li><p>Start new Traffic Server process.</p></li>
-<li><p>New process starts accepting connections.</p></li>
-<li><p>Old process stops accepting connections.</p></li>
-<li><p>Old process shuts down.</p>
-<ul>
-<li><p>When all inbound connections have terminated.</p></li>
-<li><p>When there are less than a specified number of inbound connections.</p></li>
-<li><p>After a specific amount of time.</p></li>
-<li><p>When explicitly requested by the administrator.</p></li>
-</ul>
-</li>
-</ul>
-<p>The main difficulty for this is handling the cache. To some extent the cache would need to be
-multi-process. To make this more feasible the access would be single writer and the control of
-writing would pass from the old process to the new process. This may mean terminating cache writes
-in the old process.</p>
-<div class="toctree-wrapper compound">
-</div>
-</div>
-</div>
-</div>
-
-
-          </div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -254,12 +257,13 @@ in the old process.</p>
         <li class="right" >
           <a href="index.html" title="Solid Wall Of Code Documents"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Traffic Server Projects</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

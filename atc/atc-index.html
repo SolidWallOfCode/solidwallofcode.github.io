@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Apache Traffic Control &#8212; AMC Traffic Server Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Partial Object Caching" href="../poc/poc-index.html" />
+    <link rel="prev" title="TSConfig / Lua" href="../tsconfig-lua.en.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../poc/poc-index.html" title="Partial Object Caching"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../tsconfig-lua.en.html" title="TSConfig / Lua"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Apache Traffic Control</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="apache-traffic-control">
+<h1>Apache Traffic Control<a class="headerlink" href="#apache-traffic-control" title="Permalink to this headline">¶</a></h1>
+<p>My notes on creating a prototype CDN using ATC and ATS. All of this is specifically for CentOS 8.</p>
+<section id="traffic-ops">
+<h2>Traffic Ops<a class="headerlink" href="#traffic-ops" title="Permalink to this headline">¶</a></h2>
+<p>The Traffic Ops host will host both the Postgresql database and the ATC “traffic_ops” package.
+“traffic_ops” is the central engine of ATC - most other components connect to “traffic_ops” and
+treat it as the source of truth. The current recommendation is to install the database and this on
+the same host to avoid having to configure external access to the database.</p>
+<ol class="arabic">
+<li><p>Install Postgresql. An install script can be obtained from <a class="reference external" href="https://www.postgresql.org/download/linxu/redhat">here</a>
+or this one can be used (which was obtained from that webpage).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the repository RPM:</span>
+<span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">postgresql</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">pub</span><span class="o">/</span><span class="n">repos</span><span class="o">/</span><span class="n">yum</span><span class="o">/</span><span class="n">reporpms</span><span class="o">/</span><span class="n">EL</span><span class="o">-</span><span class="mi">8</span><span class="o">-</span><span class="n">x86_64</span><span class="o">/</span><span class="n">pgdg</span><span class="o">-</span><span class="n">redhat</span><span class="o">-</span><span class="n">repo</span><span class="o">-</span><span class="n">latest</span><span class="o">.</span><span class="n">noarch</span><span class="o">.</span><span class="n">rpm</span>
+
+<span class="c1"># Disable the built-in PostgreSQL module:</span>
+<span class="n">sudo</span> <span class="n">dnf</span> <span class="o">-</span><span class="n">qy</span> <span class="n">module</span> <span class="n">disable</span> <span class="n">postgresql</span>
+
+<span class="c1"># Install PostgreSQL:</span>
+<span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">postgresql13</span><span class="o">-</span><span class="n">server</span>
+
+<span class="c1"># Optionally initialize the database and enable automatic start:</span>
+<span class="n">sudo</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">pgsql</span><span class="o">-</span><span class="mi">13</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">postgresql</span><span class="o">-</span><span class="mi">13</span><span class="o">-</span><span class="n">setup</span> <span class="n">initdb</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">postgresql</span><span class="o">-</span><span class="mi">13</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">start</span> <span class="n">postgresql</span><span class="o">-</span><span class="mi">13</span>
+</pre></div>
+</div>
+<p>Differences:</p>
+<ul class="simple">
+<li><p>No configuration to enable access from other hosts. All access will be from this host.</p></li>
+<li><p>Root access is via user id, not password.</p></li>
+</ul>
+</li>
+<li><p>Install <a class="reference external" href="https://fedoraproject.org/wiki/EPEL">EPEL</a> which provides some of the “traffic_ops” requirements.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="o">-</span><span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">epel</span><span class="o">-</span><span class="n">release</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install the “traffic_ops” RPM. This should also install all dependencies.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">powertools</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">epel</span> <span class="o">-</span><span class="n">y</span> <span class="n">traffic_ops</span><span class="o">-</span><span class="mf">6.0.0</span><span class="o">-</span><span class="mf">11512.e4469</span><span class="n">f55</span><span class="o">.</span><span class="n">el8</span><span class="o">.</span><span class="n">x86_64</span><span class="o">.</span><span class="n">rpm</span>
+</pre></div>
+</div>
+</li>
+<li><p>Initialize the databases.</p>
+<p>Run a shell as the “postgres” user.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">su</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;bash -l&quot;</span> <span class="o">-</span> <span class="n">postgress</span>
+</pre></div>
+</div>
+<p>Create the “traffic_ops” user, in this case with the password “vgl”. In production this should be
+something a bit more secure.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psql</span>
+<span class="n">CREATE</span> <span class="n">USER</span> <span class="n">traffic_ops</span> <span class="k">with</span> <span class="n">encrypted</span> <span class="n">password</span> <span class="s1">&#39;vgl&#39;</span><span class="p">;</span>
+\<span class="n">q</span>
+</pre></div>
+</div>
+<p>Then at the shell command prompt (<em>not</em> in the <code class="docutils literal notranslate"><span class="pre">psql</span></code> environment) create the databases.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">createdb</span> <span class="n">traffic_ops</span> <span class="o">--</span><span class="n">owner</span> <span class="n">traffic_ops</span>
+<span class="n">createdb</span> <span class="n">traffic_vault</span> <span class="o">--</span><span class="n">owner</span> <span class="n">traffic_ops</span>
+</pre></div>
+</div>
+<p>Then <code class="docutils literal notranslate"><span class="pre">exit</span></code> from the “postgres” user shell.</p>
+</li>
+<li><p>Finalization</p>
+<p>The script “/opt/traffic_ops/install/bin/postinstall” needs to be invoked as root. Unfortunately
+The check for postgresql superuser may not work. Line 38 may need to be changed to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [[ ! $(su -c &#39;psql -c &quot;show is_superuser&quot;&#39; - postgres &lt;/dev/null 2&gt;/dev/null) =~ &#39;on&#39; ]]; then
+</pre></div>
+</div>
+<p>At some point I will submit a PR to fix this.</p>
+</li>
+</ol>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://traffic-control-cdn.readthedocs.io/en/latest/admin/traffic_ops.html">Installing Traffic Ops</a></p></li>
+<li><p><a class="reference external" href="https://www.postgresql.org/download/linxu/redhat">Installing Postgresql</a></p></li>
+</ul>
+<p class="rubric">Notes</p>
+<dl>
+<dt>postgresql</dt><dd><p><code class="docutils literal notranslate"><span class="pre">createdb</span></code> is a command line tool, not an SQL command used inside the <code class="docutils literal notranslate"><span class="pre">psql</span></code> context.</p>
+<p>Switching user id to “postgres” is needed only for root database control. This setup will be
+listening on the standard postgresql port on localhost (IPv4 and IPv6) which is what “traffic_ops”
+will use to perform its operations, logging as the user created for it.</p>
+<p>Do <em>not</em> install the standard postgresql package - that causes problems. One effect seems to be
+the command line utilities don’t get installed in “/usr/bin” which causes other problems.</p>
+</dd>
+</dl>
+</section>
+<section id="traffic-portal">
+<h2>Traffic Portal<a class="headerlink" href="#traffic-portal" title="Permalink to this headline">¶</a></h2>
+<p>The base instructions worked.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">silent</span> <span class="o">--</span><span class="n">location</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">rpm</span><span class="o">.</span><span class="n">nodesource</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">setup_14</span><span class="o">.</span><span class="n">x</span> <span class="o">|</span> <span class="n">sudo</span> <span class="n">bash</span> <span class="o">-</span>
+<span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">nodejs</span>
+<span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">traffic_portal</span><span class="o">-</span><span class="mf">6.0.0</span><span class="o">-</span><span class="mf">11512.e4469</span><span class="n">f55</span><span class="o">.</span><span class="n">el8</span><span class="o">.</span><span class="n">x86_64</span><span class="o">.</span><span class="n">rpm</span>
+</pre></div>
+</div>
+<p>It is expected that Traffic Portal will accept incoming browser requests and then make requests
+to the Traffic Ops host for data.</p>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://traffic-control-cdn.readthedocs.io/en/latest/admin/traffic_portal/installation.html">Installing Traffic Portal</a></p></li>
+</ul>
+</section>
+<section id="tools">
+<h2>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">¶</a></h2>
+<p>Communications should be over TLS and that requires certificates. For the prototype I generated my
+own root certificate and used it to sign the deployed certificates. It is expected that instead of
+answering prompts, the scripts will be edited to put the appropriate values in the certificates.</p>
+<p>Note - this is fine for proof of concept and prototyping, but not for actual production use.</p>
+<p>The script to generate the root certificate.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1"># Generate root certificate.</span>
+<span class="c1"># Note - after running this, no existing signed certificate will work with the new root CA.</span>
+
+<span class="c1"># the openssl.cnf file requires two environment variables</span>
+<span class="c1"># PREFIX - the certificate prexifx. This is used to decorate the distinguished name.</span>
+<span class="c1"># DN - this must be &quot;CA&quot; for root certs and &quot;Signed&quot; for signed certs.</span>
+
+<span class="c1"># Set serial number for signed certs.</span>
+<span class="n">echo</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">ca</span><span class="o">-</span><span class="n">serial</span><span class="o">-</span><span class="n">no</span><span class="o">.</span><span class="n">txt</span>
+
+<span class="c1"># Generate the root cert key.</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">vgl</span><span class="o">-</span><span class="n">ca</span><span class="o">.</span><span class="n">key</span>
+<span class="n">openssl</span> <span class="n">genrsa</span> <span class="o">-</span><span class="n">passout</span> <span class="k">pass</span><span class="p">:</span><span class="n">claudio</span> <span class="o">-</span><span class="n">des3</span> <span class="o">-</span><span class="n">out</span> <span class="n">vgl</span><span class="o">-</span><span class="n">ca</span><span class="o">.</span><span class="n">key</span> <span class="mi">2048</span>
+
+<span class="c1"># Create the root cert.</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">f</span> <span class="n">vgl</span><span class="o">-</span><span class="n">ca</span><span class="o">.</span><span class="n">pem</span>
+<span class="n">PREFIX</span><span class="o">=</span><span class="n">vgl</span> <span class="n">DN</span><span class="o">=</span><span class="n">CA</span> <span class="n">openssl</span> <span class="n">req</span> <span class="o">-</span><span class="n">passin</span> <span class="k">pass</span><span class="p">:</span><span class="n">claudio</span> <span class="o">-</span><span class="n">config</span> <span class="o">./</span><span class="n">openssl</span><span class="o">.</span><span class="n">cnf</span> <span class="o">-</span><span class="n">x509</span> <span class="o">-</span><span class="n">new</span> <span class="o">-</span><span class="n">nodes</span> \
+   <span class="o">-</span><span class="n">key</span> <span class="n">vgl</span><span class="o">-</span><span class="n">ca</span><span class="o">.</span><span class="n">key</span> <span class="o">-</span><span class="n">sha256</span> <span class="o">-</span><span class="n">days</span> <span class="mi">36500</span> <span class="o">-</span><span class="n">batch</span> <span class="o">-</span><span class="n">out</span> <span class="n">vgl</span><span class="o">-</span><span class="n">ca</span><span class="o">.</span><span class="n">pem</span>
+</pre></div>
+</div>
+<p>Once the root certificate has been generated, signed certificates for deployment are generated
+with this script.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># SPDX-License-Identifier: Apache-2.0
+# Bash script to generate signed certificates.
+
+# the openssl.cnf file requires two environment variables
+# PREFIX - the certificate prefix. This is used to decorate the distinguished name.
+# DN - this must be &quot;CA&quot; for root certs and &quot;Signed&quot; for signed certs.
+
+let N=$(cat ca-serial-no.txt) # signed certificate serial number.
+
+# Generate key for the signed cert.
+name=&quot;vgl-signed-${N}&quot;
+key_file=&quot;${name}.key&quot;
+cert_file=&quot;${name}.pem&quot;
+
+rm -f ${key_file}
+PREFIX=vgl DN=Signed openssl genrsa -passout pass:claudio -out ${key_file} 2048
+
+# Generate the CSR for the signed cert.
+rm -f tmp.csr
+PREFIX=vgl DN=Signed openssl req -passin pass:claudio -config ./openssl.cnf -new -key ${key_file} -batch -out tmp.csr
+
+# Generate the signed certificate.
+rm -f ${cert_file}
+PREFIX=vgl DN=Signed openssl x509 -passin pass:claudio -req -in tmp.csr -CA vgl-ca.pem -CAkey vgl-ca.key \
+     -set_serial 0$N -out ${cert_file} -days 36500 -sha256
+
+# cleanup.
+rm -f tmp.csr
+let N=N+1
+echo ${N} &gt; ca-serial-no.txt
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Apache Traffic Control</a><ul>
+<li><a class="reference internal" href="#traffic-ops">Traffic Ops</a></li>
+<li><a class="reference internal" href="#traffic-portal">Traffic Portal</a></li>
+<li><a class="reference internal" href="#tools">Tools</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../tsconfig-lua.en.html"
+                        title="previous chapter">TSConfig / Lua</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../poc/poc-index.html"
+                        title="next chapter">Partial Object Caching</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/atc/atc-index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../poc/poc-index.html" title="Partial Object Caching"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../tsconfig-lua.en.html" title="TSConfig / Lua"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Apache Traffic Control</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, amc@apache.org.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
+    </div>
+  </body>
+</html>

@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Cache Types &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Glossary" href="cache-glossary.en.html" />
@@ -31,9 +32,58 @@
           <a href="poc-data-structures.en.html" title="Cache Data Structures"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="poc-index.html" accesskey="U">Partial Object Caching</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="poc-index.html" accesskey="U">Partial Object Caching</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Cache Types</a></li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="cache-types">
+<span id="id1"></span><h1>Cache Types<a class="headerlink" href="#cache-types" title="Permalink to this headline">¶</a></h1>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv412HttpCacheKey">
+<span id="_CPPv312HttpCacheKey"></span><span id="_CPPv212HttpCacheKey"></span><span id="HttpCacheKey"></span><span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HttpCacheKey</span></span></span><a class="headerlink" href="#_CPPv412HttpCacheKey" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>The type used to hold a full cache key.</p>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv412HTTPCacheAlt">
+<span id="_CPPv312HTTPCacheAlt"></span><span id="_CPPv212HTTPCacheAlt"></span><span id="HTTPCacheAlt"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HTTPCacheAlt</span></span></span><a class="headerlink" href="#_CPPv412HTTPCacheAlt" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Description of an alternate in the cache. This contains the metadata for the alternate, such as the fragment table and the request and response headers.</p>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv413CacheHTTPInfo">
+<span id="_CPPv313CacheHTTPInfo"></span><span id="_CPPv213CacheHTTPInfo"></span><span id="CacheHTTPInfo"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CacheHTTPInfo</span></span></span><a class="headerlink" href="#_CPPv413CacheHTTPInfo" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>A wrapper class for a pointer to a <a class="reference internal" href="#_CPPv412HTTPCacheAlt" title="HTTPCacheAlt"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">HTTPCacheAlt</span></code></a>.</p>
+</dd></dl>
+
+</section>
+<section id="traffic-server-types">
+<h1>Traffic Server Types<a class="headerlink" href="#traffic-server-types" title="Permalink to this headline">¶</a></h1>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv46HttpSM">
+<span id="_CPPv36HttpSM"></span><span id="_CPPv26HttpSM"></span><span id="HttpSM"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HttpSM</span></span></span><a class="headerlink" href="#_CPPv46HttpSM" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>The HTTP transaction state machine, which also represents the transaction.</p>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv410HttpTunnel">
+<span id="_CPPv310HttpTunnel"></span><span id="_CPPv210HttpTunnel"></span><span id="HttpTunnel"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HttpTunnel</span></span></span><a class="headerlink" href="#_CPPv410HttpTunnel" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Contains the data sources and sinks for the <a class="reference internal" href="#_CPPv46HttpSM" title="HttpSM"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">HttpSM</span></code></a>.</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
@@ -59,62 +109,15 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="cache-types">
-<span id="id1"></span><h1>Cache Types<a class="headerlink" href="#cache-types" title="Permalink to this headline">¶</a></h1>
-<dl class="type">
-<dt id="_CPPv412HttpCacheKey">
-<span id="_CPPv312HttpCacheKey"></span><span id="_CPPv212HttpCacheKey"></span><span id="HttpCacheKey"></span><em class="property">type </em><code class="descname">HttpCacheKey</code><a class="headerlink" href="#_CPPv412HttpCacheKey" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>The type used to hold a full cache key.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="_CPPv412HTTPCacheAlt">
-<span id="_CPPv312HTTPCacheAlt"></span><span id="_CPPv212HTTPCacheAlt"></span><span id="HTTPCacheAlt"></span><em class="property">class </em><code class="descname">HTTPCacheAlt</code><a class="headerlink" href="#_CPPv412HTTPCacheAlt" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Description of an alternate in the cache. This contains the metadata for the alternate, such as the fragment table and the request and response headers.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="_CPPv413CacheHTTPInfo">
-<span id="_CPPv313CacheHTTPInfo"></span><span id="_CPPv213CacheHTTPInfo"></span><span id="CacheHTTPInfo"></span><em class="property">class </em><code class="descname">CacheHTTPInfo</code><a class="headerlink" href="#_CPPv413CacheHTTPInfo" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>A wrapper class for a pointer to a <a class="reference internal" href="#_CPPv412HTTPCacheAlt" title="HTTPCacheAlt"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">HTTPCacheAlt</span></code></a>.</p>
-</dd></dl>
-
-</div>
-<div class="section" id="traffic-server-types">
-<h1>Traffic Server Types<a class="headerlink" href="#traffic-server-types" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="_CPPv46HttpSM">
-<span id="_CPPv36HttpSM"></span><span id="_CPPv26HttpSM"></span><span id="HttpSM"></span><em class="property">class </em><code class="descname">HttpSM</code><a class="headerlink" href="#_CPPv46HttpSM" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>The HTTP transaction state machine, which also represents the transaction.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="_CPPv410HttpTunnel">
-<span id="_CPPv310HttpTunnel"></span><span id="_CPPv210HttpTunnel"></span><span id="HttpTunnel"></span><em class="property">class </em><code class="descname">HttpTunnel</code><a class="headerlink" href="#_CPPv410HttpTunnel" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Contains the data sources and sinks for the <a class="reference internal" href="#_CPPv46HttpSM" title="HttpSM"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">HttpSM</span></code></a>.</p>
-</dd></dl>
-
-</div>
-
-
-          </div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -132,12 +135,13 @@
           <a href="poc-data-structures.en.html" title="Cache Data Structures"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="poc-index.html" >Partial Object Caching</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="poc-index.html" >Partial Object Caching</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Cache Types</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

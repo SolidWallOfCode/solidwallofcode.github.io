@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Hash Container Notes &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Diagrams" href="../reference.en.html" />
@@ -30,66 +31,22 @@
         <li class="right" >
           <a href="L7R-Denver.en.html" title="Traffic Server Layer 7 Working Group"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Hash Container Notes</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
-            </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Hash Container Notes</a><ul>
-<li><a class="reference internal" href="#use-cases">Use Cases</a></li>
-<li><a class="reference internal" href="#designs">Designs</a><ul>
-<li><a class="reference internal" href="#standard-template-library">Standard Template Library</a></li>
-<li><a class="reference internal" href="#intrusive-containers">Intrusive Containers</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#concurrency">Concurrency</a></li>
-<li><a class="reference internal" href="#conclusions">Conclusions</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="L7R-Denver.en.html"
-                        title="previous chapter">Traffic Server Layer 7 Working Group</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../reference.en.html"
-                        title="next chapter">Diagrams</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/notes/hash-table.en.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="hash-container-notes">
+  <section id="hash-container-notes">
 <span id="id1"></span><h1>Hash Container Notes<a class="headerlink" href="#hash-container-notes" title="Permalink to this headline">¶</a></h1>
 <p>Currently there is a plethora of hash table in the Traffic Server core. One the initiatives from the Cork was
 to attempt to reduce this number. Before doing that successfully it is necessary to understand the
 uses cases inside Traffic Server.</p>
-<div class="section" id="use-cases">
+<section id="use-cases">
 <h2>Use Cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
 <dt>Simple Hash Table</dt><dd><p>Use of a hash table for rapid lookup of stored items.</p>
@@ -116,11 +73,11 @@ intrusive container which does not require such memory management.</p>
 object as a key. While the key can be split off, this tends to tie the object to the container.
 Alternatively the key can be duplicated but if key requires local storage this requires another
 memory allocation for each object created.</p>
-</div>
-<div class="section" id="designs">
+</section>
+<section id="designs">
 <h2>Designs<a class="headerlink" href="#designs" title="Permalink to this headline">¶</a></h2>
 <p>There are two basic approaches to supporting hash containers in Traffic Server.</p>
-<div class="section" id="standard-template-library">
+<section id="standard-template-library">
 <h3>Standard Template Library<a class="headerlink" href="#standard-template-library" title="Permalink to this headline">¶</a></h3>
 <p>The Standard Template Library provides the containers <code class="code docutils literal notranslate"><span class="pre">std::unordered_set</span></code> and
 <code class="code docutils literal notranslate"><span class="pre">std::unordered_map</span></code>. These suffice for basic hash container use. The main concerns with the
@@ -145,8 +102,8 @@ change in this area for C++11 is allocators can now be stateful. This is critica
 migration between two containers, e.g. if memory is allocated from an allocator for container A, it
 is not used for container B. However, currently this requires an update to <code class="code docutils literal notranslate"><span class="pre">MemArena</span></code> which is
 blocked.</p>
-</div>
-<div class="section" id="intrusive-containers">
+</section>
+<section id="intrusive-containers">
 <h3>Intrusive Containers<a class="headerlink" href="#intrusive-containers" title="Permalink to this headline">¶</a></h3>
 <p>Traffic Server has to a large extent rolled its own containers, primarily intrusive ones where the objects
 directly support the containers. This is likely due to the style of memory management where objects
@@ -205,9 +162,9 @@ it relatively easy to replace current uses of internal legacy hash containers wi
 that, in my view, we will want this class for this reason, it seems a low marginal cost effort to
 use the class in the other situations mentioned above. Not doing so will not remove the need for
 this class.</p>
-</div>
-</div>
-<div class="section" id="concurrency">
+</section>
+</section>
+<section id="concurrency">
 <h2>Concurrency<a class="headerlink" href="#concurrency" title="Permalink to this headline">¶</a></h2>
 <p>Concurrency is hard to get right and fast. Currently there are custom concurrent hash containers in
 Traffic Server. These use the technique of splitting locks per bucket, or using a pool locks <a class="footnote-reference brackets" href="#id3" id="id2">1</a>. The
@@ -238,8 +195,8 @@ will not even compile as C++ without extension re-skinning. It has been discusse
 is a completed project, there is no active development.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="conclusions">
+</section>
+<section id="conclusions">
 <h2>Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h2>
 <p>While the various merits and costs of the various concurrent container libraries can be debated, the
 reality is likely we will adopt which ever of these is first brought in to compatibility with Traffic Server.
@@ -283,11 +240,57 @@ specific need to do so exists.</p></li>
 effectively the same as a mutex per bucket.</p>
 </dd>
 </dl>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Hash Container Notes</a><ul>
+<li><a class="reference internal" href="#use-cases">Use Cases</a></li>
+<li><a class="reference internal" href="#designs">Designs</a><ul>
+<li><a class="reference internal" href="#standard-template-library">Standard Template Library</a></li>
+<li><a class="reference internal" href="#intrusive-containers">Intrusive Containers</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#concurrency">Concurrency</a></li>
+<li><a class="reference internal" href="#conclusions">Conclusions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="L7R-Denver.en.html"
+                        title="previous chapter">Traffic Server Layer 7 Working Group</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../reference.en.html"
+                        title="next chapter">Diagrams</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notes/hash-table.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -304,12 +307,13 @@ effectively the same as a mutex per bucket.</p>
         <li class="right" >
           <a href="L7R-Denver.en.html" title="Traffic Server Layer 7 Working Group"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Hash Container Notes</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

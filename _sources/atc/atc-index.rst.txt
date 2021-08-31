@@ -1,0 +1,192 @@
+.. include:: ../common.defs
+
+**********************
+Apache Traffic Control
+**********************
+
+My notes on creating a prototype CDN using ATC and ATS. All of this is specifically for CentOS 8.
+
+Traffic Ops
+***********
+
+The Traffic Ops host will host both the Postgresql database and the ATC "traffic_ops" package.
+"traffic_ops" is the central engine of ATC - most other components connect to "traffic_ops" and
+treat it as the source of truth. The current recommendation is to install the database and this on
+the same host to avoid having to configure external access to the database.
+
+#. Install Postgresql. An install script can be obtained from `here <https://www.postgresql.org/download/linxu/redhat>`__
+   or this one can be used (which was obtained from that webpage).
+
+   .. code-block::
+
+      # Install the repository RPM:
+      sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+      # Disable the built-in PostgreSQL module:
+      sudo dnf -qy module disable postgresql
+
+      # Install PostgreSQL:
+      sudo dnf install -y postgresql13-server
+
+      # Optionally initialize the database and enable automatic start:
+      sudo /usr/pgsql-13/bin/postgresql-13-setup initdb
+      sudo systemctl enable postgresql-13
+      sudo systemctl start postgresql-13
+
+   Differences:
+
+   *  No configuration to enable access from other hosts. All access will be from this host.
+   *  Root access is via user id, not password.
+
+#. Install `EPEL <https://fedoraproject.org/wiki/EPEL>`__ which provides some of the "traffic_ops" requirements.
+
+   .. code-block::
+
+      sudo dnf -install -y epel-release
+
+#. Install the "traffic_ops" RPM. This should also install all dependencies.
+
+   .. code-block::
+
+      sudo dnf install --enablerepo=powertools --enablerepo=epel -y traffic_ops-6.0.0-11512.e4469f55.el8.x86_64.rpm
+
+#. Initialize the databases.
+
+   Run a shell as the "postgres" user.
+
+   .. code-block::
+
+      sudo su -c "bash -l" - postgress
+
+   Create the "traffic_ops" user, in this case with the password "vgl". In production this should be
+   something a bit more secure.
+
+   .. code-block::
+
+      psql
+      CREATE USER traffic_ops with encrypted password 'vgl';
+      \q
+
+   Then at the shell command prompt (*not* in the ``psql`` environment) create the databases.
+
+   .. code-block::
+
+      createdb traffic_ops --owner traffic_ops
+      createdb traffic_vault --owner traffic_ops
+
+   Then ``exit`` from the "postgres" user shell.
+
+#. Finalization
+
+   The script "/opt/traffic_ops/install/bin/postinstall" needs to be invoked as root. Unfortunately
+   The check for postgresql superuser may not work. Line 38 may need to be changed to
+
+   .. code-block::
+
+       if [[ ! $(su -c 'psql -c "show is_superuser"' - postgres </dev/null 2>/dev/null) =~ 'on' ]]; then
+
+   At some point I will submit a PR to fix this.
+
+.. rubric:: References
+
+* `Installing Traffic Ops <https://traffic-control-cdn.readthedocs.io/en/latest/admin/traffic_ops.html>`__
+* `Installing Postgresql <https://www.postgresql.org/download/linxu/redhat>`__
+
+.. rubric:: Notes
+
+postgresql
+   ``createdb`` is a command line tool, not an SQL command used inside the ``psql`` context.
+
+   Switching user id to "postgres" is needed only for root database control. This setup will be
+   listening on the standard postgresql port on localhost (IPv4 and IPv6) which is what "traffic_ops"
+   will use to perform its operations, logging as the user created for it.
+
+   Do *not* install the standard postgresql package - that causes problems. One effect seems to be
+   the command line utilities don't get installed in "/usr/bin" which causes other problems.
+
+Traffic Portal
+**************
+
+The base instructions worked.
+
+.. code-block::
+
+   curl --silent --location https://rpm.nodesource.com/setup_14.x | sudo bash -
+   sudo dnf install -y nodejs
+   sudo dnf install -y /tmp/traffic_portal-6.0.0-11512.e4469f55.el8.x86_64.rpm
+
+It is expected that Traffic Portal will accept incoming browser requests and then make requests
+to the Traffic Ops host for data.
+
+.. rubric:: References
+
+* `Installing Traffic Portal <https://traffic-control-cdn.readthedocs.io/en/latest/admin/traffic_portal/installation.html>`__
+
+Tools
+*****
+
+Communications should be over TLS and that requires certificates. For the prototype I generated my
+own root certificate and used it to sign the deployed certificates. It is expected that instead of
+answering prompts, the scripts will be edited to put the appropriate values in the certificates.
+
+Note - this is fine for proof of concept and prototyping, but not for actual production use.
+
+The script to generate the root certificate.
+
+.. code-block::
+
+   # SPDX-License-Identifier: Apache-2.0
+   # Generate root certificate.
+   # Note - after running this, no existing signed certificate will work with the new root CA.
+
+   # the openssl.cnf file requires two environment variables
+   # PREFIX - the certificate prexifx. This is used to decorate the distinguished name.
+   # DN - this must be "CA" for root certs and "Signed" for signed certs.
+
+   # Set serial number for signed certs.
+   echo 1 > ca-serial-no.txt
+
+   # Generate the root cert key.
+   rm -f vgl-ca.key
+   openssl genrsa -passout pass:claudio -des3 -out vgl-ca.key 2048
+
+   # Create the root cert.
+   rm -f vgl-ca.pem
+   PREFIX=vgl DN=CA openssl req -passin pass:claudio -config ./openssl.cnf -x509 -new -nodes \
+      -key vgl-ca.key -sha256 -days 36500 -batch -out vgl-ca.pem
+
+Once the root certificate has been generated, signed certificates for deployment are generated
+with this script.
+
+.. code-block::
+
+   # SPDX-License-Identifier: Apache-2.0
+   # Bash script to generate signed certificates.
+
+   # the openssl.cnf file requires two environment variables
+   # PREFIX - the certificate prefix. This is used to decorate the distinguished name.
+   # DN - this must be "CA" for root certs and "Signed" for signed certs.
+
+   let N=$(cat ca-serial-no.txt) # signed certificate serial number.
+
+   # Generate key for the signed cert.
+   name="vgl-signed-${N}"
+   key_file="${name}.key"
+   cert_file="${name}.pem"
+
+   rm -f ${key_file}
+   PREFIX=vgl DN=Signed openssl genrsa -passout pass:claudio -out ${key_file} 2048
+
+   # Generate the CSR for the signed cert.
+   rm -f tmp.csr
+   PREFIX=vgl DN=Signed openssl req -passin pass:claudio -config ./openssl.cnf -new -key ${key_file} -batch -out tmp.csr
+
+   # Generate the signed certificate.
+   rm -f ${cert_file}
+   PREFIX=vgl DN=Signed openssl x509 -passin pass:claudio -req -in tmp.csr -CA vgl-ca.pem -CAkey vgl-ca.key \
+        -set_serial 0$N -out ${cert_file} -days 36500 -sha256
+
+   # cleanup.
+   rm -f tmp.csr
+   let N=N+1
+   echo ${N} > ca-serial-no.txt

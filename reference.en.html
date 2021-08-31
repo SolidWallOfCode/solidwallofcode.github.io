@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Diagrams &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Open Source Contributions" href="guide.en.html" />
@@ -30,9 +31,26 @@
         <li class="right" >
           <a href="notes/hash-table.en.html" title="Hash Container Notes"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Diagrams</a></li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="diagrams">
+<span id="reference"></span><h1>Diagrams<a class="headerlink" href="#diagrams" title="Permalink to this headline">¶</a></h1>
+<p>Process start up</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
@@ -52,65 +70,15 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="diagrams">
-<span id="reference"></span><h1>Diagrams<a class="headerlink" href="#diagrams" title="Permalink to this headline">¶</a></h1>
-<p>Process start up</p>
-<p class="plantuml">
-<object data="_images/plantuml-c8cf12721c92d0f8032ef0eccbc8ba18fd872dea.svg" type="image/svg+xml" style="width:943px;height:740px;">
-<img src="_images/plantuml-c8cf12721c92d0f8032ef0eccbc8ba18fd872dea.png" alt="&#64;startuml
-
-:netProcessor.init();
-:init_HttpProxyServer();
-:eventProcessor::start();
-note right: ET_NET threads start here
-:plugin_init();
-note right: Global plugin initialization
-:cacheProcessor.start();
-fork
-:udpNet::start();
-:init_accept_HttpProxyServer();
-:TS_EVENT_LIFECYCLE_PORTS_INITIALIZED&gt;
-if (cache_wait) then (ready)
-:start_HttpProxyServer();
-:TS_EVENT_LIFECYCLE_PORTS_READY&gt;
-else (not ready)
-:cache_wait = waited;
-endif
-:tasksProcessor.start();
-fork again
-:Cache Initialization;
-if (cache_waited) then (waited)
-:start_HttpProxyServer();
-:TS_EVENT_LIFECYCLE_PORTS_READY&gt;
-else (not ready)
-:cache_waited = ready;
-endif
-:TS_EVENT_LIFECYCLE_CACHE_READY&gt;
-end fork
-&#64;enduml"/>
-
-</object></p>
-</div>
-
-
-          </div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -127,12 +95,13 @@ end fork
         <li class="right" >
           <a href="notes/hash-table.en.html" title="Hash Container Notes"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Diagrams</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

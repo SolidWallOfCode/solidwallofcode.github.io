@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Command Registration &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Testing" href="testing.en.html" />
@@ -32,9 +33,97 @@
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="cache-tool.en.html" accesskey="U">Cache Tool</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="cache-tool.en.html" accesskey="U">Cache Tool</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Command Registration</a></li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="command-registration">
+<span id="id1"></span><h1>Command Registration<a class="headerlink" href="#command-registration" title="Permalink to this headline">¶</a></h1>
+<p>Command registration is registering <em>tags</em> that correspond to actions for a command line tool to execute. There is a tree of tags so that more specific commands are done by listing multiple tags. E.g. “list” and “list stripes” are different actions and each tag controls which tags are allowed to follow. For exanmple <strong class="program">traffic_ctl</strong> with commands like:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">traffic_ctl</span><span class="w"> </span><span class="n">shutdown</span><span class="w"></span>
+<span class="n">traffic_ctl</span><span class="w"> </span><span class="n">metric</span><span class="w"> </span><span class="n">set</span><span class="w"> </span><span class="n">proxy</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">http</span><span class="p">.</span><span class="n">cache</span><span class="p">.</span><span class="n">enable</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Internally this is done in <strong class="program">traffic_ctl</strong> in an ad hoc fashion where each action is done by
+invoking a function and each such function must handle dispatching to any subcommand tags. This
+class is an attempt to make that generic so that action functions are leafs of command line parsing.
+This reduces cut and paste code along with making the tag hieararchy controlled from the top level
+of the program rather than being scattered across the implementation.</p>
+</section>
+<section id="implementation">
+<h1>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h1>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv412CommandTable">
+<span id="_CPPv312CommandTable"></span><span id="_CPPv212CommandTable"></span><span id="CommandTable"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CommandTable</span></span></span><a class="headerlink" href="#_CPPv412CommandTable" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>The root of a set of registered commands.</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N12CommandTable12CommandTableEv">
+<span id="_CPPv3N12CommandTable12CommandTableEv"></span><span id="_CPPv2N12CommandTable12CommandTableEv"></span><span id="CommandTable::CommandTable"></span><span class="sig-name descname"><span class="n"><span class="pre">CommandTable</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N12CommandTable12CommandTableEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Construct an empty command table.</p>
+</dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N12CommandTable6ActionE">
+<span id="_CPPv3N12CommandTable6ActionE"></span><span id="_CPPv2N12CommandTable6ActionE"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Action</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="external-types.en.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4I0ENSt8functionE" title="std::function"><span class="n"><span class="pre">function</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="external-types.en.html#_CPPv42ts" title="ts"><span class="n"><span class="pre">ts</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4N2ts6ErrataE" title="ts::Errata"><span class="n"><span class="pre">Errata</span></span></a><span class="p"><span class="pre">(</span></span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N12CommandTable6ActionE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>A function that performs the action for a command. This action is always a leaf, any
+additional arguments available are passeed to the function rather than checked for additional
+commands. The first argument to the function will be the number of arguments and the second an
+array of constant character pointers that are the arguments.</p>
+</dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N12CommandTable13NullaryActionE">
+<span id="_CPPv3N12CommandTable13NullaryActionE"></span><span id="_CPPv2N12CommandTable13NullaryActionE"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">NullaryAction</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="external-types.en.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4I0ENSt8functionE" title="std::function"><span class="n"><span class="pre">function</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="external-types.en.html#_CPPv42ts" title="ts"><span class="n"><span class="pre">ts</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4N2ts6ErrataE" title="ts::Errata"><span class="n"><span class="pre">Errata</span></span></a><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N12CommandTable13NullaryActionE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>A function that performs an action for a command. This action can be used on a non-terminal
+command but can take no arguments. It will be invoked only if no more arguments remain after
+processing the tag for the command.</p>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N12CommandTable7CommandE">
+<span id="_CPPv3N12CommandTable7CommandE"></span><span id="_CPPv2N12CommandTable7CommandE"></span><span id="CommandTable::Command"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Command</span></span></span><a class="headerlink" href="#_CPPv4N12CommandTable7CommandE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>An command action.</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE">
+<span id="_CPPv3N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE"></span><span id="_CPPv2N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE"></span><span id="CommandTable::Command::subCommand__ssCR.ssCR"></span><span class="sig-name descname"><span class="n"><span class="pre">subCommand</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string"><span class="n"><span class="pre">string</span></span></a><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <a class="reference internal" href="external-types.en.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string"><span class="n"><span class="pre">string</span></span></a><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">help</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Add a subcommand to this command. The tag used is <em>name</em> along with a <em>help</em> string for diagnostics.</p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE6Action">
+<span id="_CPPv3N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE6Action"></span><span id="_CPPv2N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE6Action"></span><span id="CommandTable::Command::subCommand__ssCR.ssCR.Action"></span><span class="sig-name descname"><span class="n"><span class="pre">subCommand</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string"><span class="n"><span class="pre">string</span></span></a><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <a class="reference internal" href="external-types.en.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string"><span class="n"><span class="pre">string</span></span></a><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">help</span></span>, <a class="reference internal" href="#_CPPv4N12CommandTable6ActionE" title="CommandTable::Action"><span class="n"><span class="pre">Action</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">f</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE6Action" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Add a subcommand to this command. The tag will be <em>name</em>. Help for this command
+will be <em>help</em>. If the command is invoked the function <em>f</em> will be called.
+This will be a leaf tag meaning that if this tag is reached no more subcommands will be
+accessible and additional arguments will be passed to <em>f</em>.</p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE13NullaryAction">
+<span id="_CPPv3N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE13NullaryAction"></span><span id="_CPPv2N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE13NullaryAction"></span><span id="CommandTable::Command::subCommand__ssCR.ssCR.NullaryAction"></span><span class="sig-name descname"><span class="n"><span class="pre">subCommand</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string"><span class="n"><span class="pre">string</span></span></a><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <a class="reference internal" href="external-types.en.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string"><span class="n"><span class="pre">string</span></span></a><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">help</span></span>, <a class="reference internal" href="#_CPPv4N12CommandTable13NullaryActionE" title="CommandTable::NullaryAction"><span class="n"><span class="pre">NullaryAction</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">f</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE13NullaryAction" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Add a subcommand to this command. The tag will be <em>name</em>. Help for this command
+will be <em>help</em>. If the command is invoked the function <em>f</em> will be called.
+This command will only be invoked if no more arguments are available, otherwise the
+additional arguments will be treated as subcommand tags.</p>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
@@ -60,101 +149,15 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="command-registration">
-<span id="id1"></span><h1>Command Registration<a class="headerlink" href="#command-registration" title="Permalink to this headline">¶</a></h1>
-<p>Command registration is registering <em>tags</em> that correspond to actions for a command line tool to execute. There is a tree of tags so that more specific commands are done by listing multiple tags. E.g. “list” and “list stripes” are different actions and each tag controls which tags are allowed to follow. For exanmple <strong class="program">traffic_ctl</strong> with commands like:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">traffic_ctl</span> <span class="n">shutdown</span>
-<span class="n">traffic_ctl</span> <span class="n">metric</span> <span class="n">set</span> <span class="n">proxy</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">http</span><span class="p">.</span><span class="n">cache</span><span class="p">.</span><span class="n">enable</span> <span class="mi">0</span>
-</pre></div>
-</div>
-<p>Internally this is done in <strong class="program">traffic_ctl</strong> in an ad hoc fashion where each action is done by
-invoking a function and each such function must handle dispatching to any subcommand tags. This
-class is an attempt to make that generic so that action functions are leafs of command line parsing.
-This reduces cut and paste code along with making the tag hieararchy controlled from the top level
-of the program rather than being scattered across the implementation.</p>
-</div>
-<div class="section" id="implementation">
-<h1>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="_CPPv412CommandTable">
-<span id="_CPPv312CommandTable"></span><span id="_CPPv212CommandTable"></span><span id="CommandTable"></span><em class="property">class </em><code class="descname">CommandTable</code><a class="headerlink" href="#_CPPv412CommandTable" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>The root of a set of registered commands.</p>
-<dl class="function">
-<dt id="_CPPv4N12CommandTable12CommandTableEv">
-<span id="_CPPv3N12CommandTable12CommandTableEv"></span><span id="_CPPv2N12CommandTable12CommandTableEv"></span><span id="CommandTable::CommandTable"></span><code class="descname">CommandTable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N12CommandTable12CommandTableEv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Construct an empty command table.</p>
-</dd></dl>
-
-<dl class="type">
-<dt id="_CPPv4N12CommandTable6ActionE">
-<span id="_CPPv3N12CommandTable6ActionE"></span><span id="_CPPv2N12CommandTable6ActionE"></span><em class="property">using </em><code class="descname">Action</code> = <a class="reference internal" href="external-types.en.html#_CPPv4St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv4I0ENSt8functionE" title="std::function">function</a>&lt;<a class="reference internal" href="external-types.en.html#_CPPv42ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv4N2ts6ErrataE" title="ts::Errata">Errata</a><span class="sig-paren">(</span>int, char *[]<span class="sig-paren">)</span>&gt;<a class="headerlink" href="#_CPPv4N12CommandTable6ActionE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>A function that performs the action for a command. This action is always a leaf, any
-additional arguments available are passeed to the function rather than checked for additional
-commands. The first argument to the function will be the number of arguments and the second an
-array of constant character pointers that are the arguments.</p>
-</dd></dl>
-
-<dl class="type">
-<dt id="_CPPv4N12CommandTable13NullaryActionE">
-<span id="_CPPv3N12CommandTable13NullaryActionE"></span><span id="_CPPv2N12CommandTable13NullaryActionE"></span><em class="property">using </em><code class="descname">NullaryAction</code> = <a class="reference internal" href="external-types.en.html#_CPPv4St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv4I0ENSt8functionE" title="std::function">function</a>&lt;<a class="reference internal" href="external-types.en.html#_CPPv42ts" title="ts">ts</a>::<a class="reference internal" href="external-types.en.html#_CPPv4N2ts6ErrataE" title="ts::Errata">Errata</a><span class="sig-paren">(</span><span class="sig-paren">)</span>&gt;<a class="headerlink" href="#_CPPv4N12CommandTable13NullaryActionE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>A function that performs an action for a command. This action can be used on a non-terminal
-command but can take no arguments. It will be invoked only if no more arguments remain after
-processing the tag for the command.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="_CPPv4N12CommandTable7CommandE">
-<span id="_CPPv3N12CommandTable7CommandE"></span><span id="_CPPv2N12CommandTable7CommandE"></span><span id="CommandTable::Command"></span><em class="property">class </em><code class="descname">Command</code><a class="headerlink" href="#_CPPv4N12CommandTable7CommandE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>An command action.</p>
-<dl class="function">
-<dt id="_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE">
-<span id="_CPPv3N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE"></span><span id="_CPPv2N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE"></span><span id="CommandTable::Command::subCommand__ssCR.ssCR"></span><code class="descname">subCommand</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv4St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string">string</a> <em class="property">const</em> &amp;<em>name</em>, <a class="reference internal" href="external-types.en.html#_CPPv4St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string">string</a> <em class="property">const</em> &amp;<em>help</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Add a subcommand to this command. The tag used is <em>name</em> along with a <em>help</em> string for diagnostics.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE6Action">
-<span id="_CPPv3N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE6Action"></span><span id="_CPPv2N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE6Action"></span><span id="CommandTable::Command::subCommand__ssCR.ssCR.Action"></span><code class="descname">subCommand</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv4St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string">string</a> <em class="property">const</em> &amp;<em>name</em>, <a class="reference internal" href="external-types.en.html#_CPPv4St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string">string</a> <em class="property">const</em> &amp;<em>help</em>, <a class="reference internal" href="#_CPPv4N12CommandTable6ActionE" title="CommandTable::Action">Action</a> <em>f</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE6Action" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Add a subcommand to this command. The tag will be <em>name</em>. Help for this command
-will be <em>help</em>. If the command is invoked the function <em>f</em> will be called.
-This will be a leaf tag meaning that if this tag is reached no more subcommands will be
-accessible and additional arguments will be passed to <em>f</em>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE13NullaryAction">
-<span id="_CPPv3N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE13NullaryAction"></span><span id="_CPPv2N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE13NullaryAction"></span><span id="CommandTable::Command::subCommand__ssCR.ssCR.NullaryAction"></span><code class="descname">subCommand</code><span class="sig-paren">(</span><a class="reference internal" href="external-types.en.html#_CPPv4St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string">string</a> <em class="property">const</em> &amp;<em>name</em>, <a class="reference internal" href="external-types.en.html#_CPPv4St" title="std">std</a>::<a class="reference internal" href="external-types.en.html#_CPPv4NSt6stringE" title="std::string">string</a> <em class="property">const</em> &amp;<em>help</em>, <a class="reference internal" href="#_CPPv4N12CommandTable13NullaryActionE" title="CommandTable::NullaryAction">NullaryAction</a> <em>f</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N12CommandTable7Command10subCommandERKNSt6stringERKNSt6stringE13NullaryAction" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Add a subcommand to this command. The tag will be <em>name</em>. Help for this command
-will be <em>help</em>. If the command is invoked the function <em>f</em> will be called.
-This command will only be invoked if no more arguments are available, otherwise the
-additional arguments will be treated as subcommand tags.</p>
-</dd></dl>
-
-</dd></dl>
-
-</dd></dl>
-
-</div>
-
-
-          </div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -173,12 +176,13 @@ additional arguments will be treated as subcommand tags.</p>
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="cache-tool.en.html" >Cache Tool</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="cache-tool.en.html" >Cache Tool</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Command Registration</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

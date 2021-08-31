@@ -1,22 +1,23 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Partial Object Caching &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Cache Logic / Operations" href="poc-logic.en.html" />
-    <link rel="prev" title="TSConfig / Lua" href="../tsconfig-lua.en.html" /> 
+    <link rel="prev" title="Apache Traffic Control" href="../atc/atc-index.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -28,56 +29,19 @@
           <a href="poc-logic.en.html" title="Cache Logic / Operations"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../tsconfig-lua.en.html" title="TSConfig / Lua"
+          <a href="../atc/atc-index.html" title="Apache Traffic Control"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Partial Object Caching</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
-            </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Partial Object Caching</a><ul>
-<li><a class="reference internal" href="#archives">Archives</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../tsconfig-lua.en.html"
-                        title="previous chapter">TSConfig / Lua</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="poc-logic.en.html"
-                        title="next chapter">Cache Logic / Operations</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/poc/poc-index.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="partial-object-caching">
+  <section id="partial-object-caching">
 <h1>Partial Object Caching<a class="headerlink" href="#partial-object-caching" title="Permalink to this headline">¶</a></h1>
 <p>Partial object caching is the ability to cache and serve range requests. Doing this requires a major restructuring
 of the cache logic. This means this is not a feature that can be turned on or off, even at build time.</p>
@@ -105,7 +69,7 @@ the overall work. These features include</p>
 <li class="toctree-l1"><a class="reference internal" href="cache-glossary.en.html">Glossary</a></li>
 </ul>
 </div>
-<div class="section" id="archives">
+<section id="archives">
 <h2>Archives<a class="headerlink" href="#archives" title="Permalink to this headline">¶</a></h2>
 <p>These are historical documents relating to partial object caching. These are documents written in
 the past and not yet updated. There are here primarily for reference and in the hope that I will be
@@ -126,11 +90,50 @@ able to update them in the not distant future.</p>
 </li>
 </ul>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Partial Object Caching</a><ul>
+<li><a class="reference internal" href="#archives">Archives</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../atc/atc-index.html"
+                        title="previous chapter">Apache Traffic Control</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="poc-logic.en.html"
+                        title="next chapter">Cache Logic / Operations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/poc/poc-index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -145,14 +148,15 @@ able to update them in the not distant future.</p>
           <a href="poc-logic.en.html" title="Cache Logic / Operations"
              >next</a> |</li>
         <li class="right" >
-          <a href="../tsconfig-lua.en.html" title="TSConfig / Lua"
+          <a href="../atc/atc-index.html" title="Apache Traffic Control"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Partial Object Caching</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Traffic Server Layer 7 Working Group &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Hash Container Notes" href="hash-table.en.html" />
@@ -30,61 +31,20 @@
         <li class="right" >
           <a href="ATS-Cork-WG-Summary.en.html" title="Traffic Server Cork Working Group"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Traffic Server Layer 7 Working Group</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
-            </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Traffic Server Layer 7 Working Group</a><ul>
-<li><a class="reference internal" href="#configuration">Configuration</a></li>
-<li><a class="reference internal" href="#sm-interaction"><code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> Interaction</a></li>
-<li><a class="reference internal" href="#next-steps">Next Steps</a></li>
-<li><a class="reference internal" href="#open-issues">Open Issues</a></li>
-<li><a class="reference internal" href="#visions">Visions</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="ATS-Cork-WG-Summary.en.html"
-                        title="previous chapter">Traffic Server Cork Working Group</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="hash-table.en.html"
-                        title="next chapter">Hash Container Notes</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/notes/L7R-Denver.en.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="traffic-server-layer-7-working-group">
+  <section id="traffic-server-layer-7-working-group">
 <h1>Traffic Server Layer 7 Working Group<a class="headerlink" href="#traffic-server-layer-7-working-group" title="Permalink to this headline">¶</a></h1>
 <p>My view on the Layer 7 Routing working group meetings in Denver, 25-27 Jul 2018.</p>
-<div class="section" id="configuration">
+<section id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
 <p>The YAML schema will be updated to be more generic. The “primary” and “secondary” rings will be
 removed and replaced with generic “rings” which will be defined in a specific section. The
@@ -92,8 +52,8 @@ removed and replaced with generic “rings” which will be defined in a specifi
 will describe the elements of the CDN and “strategy” will describe the CDN policy for a specific
 node. To make this easier to deploy, some version of John’s include support for YAML (which does not have
 this natively).</p>
-</div>
-<div class="section" id="sm-interaction">
+</section>
+<section id="sm-interaction">
 <h2><code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> Interaction<a class="headerlink" href="#sm-interaction" title="Permalink to this headline">¶</a></h2>
 <p>The various strategies in the L7R configuration files will provide a set of “strategies”, each
 marked with a unique tag. There is a globally configured default strategy tag. During remap, this
@@ -111,33 +71,11 @@ reports that to the strategizer. Note that all decisions about how to proceed fr
 response is done by the strategizer. This includes not only HTTP responses but also network errors.
 Even though the session is open at the time the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> receives it, that does not guarantee the
 absence of further network problems.</p>
-<div class="figure align-center" id="id3">
-<p class="plantuml">
-<object data="../_images/plantuml-69d8fd80b473b6ee681613d8862008712c79b1ae.svg" type="image/svg+xml" style="width:459px;height:455px;">
-<img src="../_images/plantuml-69d8fd80b473b6ee681613d8862008712c79b1ae.png" alt="entity L7Policy
-actor Strategizer
-actor HttpSM
-participant Upstream
-
-hide footbox
-
-HttpSM -\ L7Policy : create &quot;tag&quot;
-L7Policy -/ HttpSM : return: Strategizer
-activate Strategizer
-Strategizer -&gt; HttpSM : SESSION_READY
-note right : Contains session
-HttpSM -&gt; Upstream : HTTP Request
-Upstream -&gt; HttpSM : Upstream Response
-HttpSM -&gt; HttpSM : Read response.
-HttpSM -\ Strategizer : result
-note right : Contains response
-Strategizer -/ HttpSM : return: ACTION
-HttpSM -&gt; HttpSM : process response
-HttpSM -&gt; Strategizer : finish"/>
-
-</object></p>
-<p class="caption"><span class="caption-text">Generic Transaction</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
+<figure class="align-center" id="id3">
+<figcaption>
+<p><span class="caption-text">Generic Transaction</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>The interaction is split out in this manner to accomodate the variety of synchronous and
 asynchronous operations. In particular if there is an HTTP reponse from the upstream then the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code>
 needs to be able to handle it in an appropriate way. However, that depends on what the next action
@@ -160,147 +98,37 @@ session after the <code class="code docutils literal notranslate"><span class="p
 strategy completion to send data to the user agent - that flow needs to start as soon as possible.
 The <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> can no longer know if that is correct without consulting the strategizer therefore that
 must be a synchronous call.</p>
-<div class="figure align-center" id="id4">
-<p class="plantuml">
-<object data="../_images/plantuml-48ea60bdd194290b59121ebfb67c5eb41896fdb7.svg" type="image/svg+xml" style="width:484px;height:498px;">
-<img src="../_images/plantuml-48ea60bdd194290b59121ebfb67c5eb41896fdb7.png" alt="entity L7Policy
-actor Strategizer
-actor HttpSM
-participant Upstream
-
-hide footbox
-
-HttpSM -\ L7Policy : create &quot;tag&quot;
-L7Policy -/ HttpSM : return: Strategizer
-activate Strategizer
-Strategizer -&gt; HttpSM : SESSION_READY
-note right : Contains session
-HttpSM -&gt; Upstream : HTTP Request
-Upstream -&gt; HttpSM : &quot;&quot;200 OK&quot;&quot;
-HttpSM -&gt; HttpSM : Read response header.
-HttpSM -\ Strategizer : result
-note right : HTTP 200 Response
-Strategizer -/ HttpSM : return: DONE
-HttpSM -&gt; HttpSM : Read upstream response,\nsend to user agent.
-...
-HttpSM -&gt; Strategizer : finish"/>
-
-</object></p>
-<p class="caption"><span class="caption-text">Successful Transaction</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
-</div>
+<figure class="align-center" id="id4">
+<figcaption>
+<p><span class="caption-text">Successful Transaction</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Even in an HTTP failure there is still work for the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code>. In this case, for a <code class="docutils literal notranslate"><span class="pre">404</span></code> response
 status the strategizer will fail over to a different upstream. This behavior is used to probe
 multiple upstream pods for specific content, a <code class="docutils literal notranslate"><span class="pre">404</span></code> indicating the next target should be tried
 rather than returning the response to the user agent. The <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> must drain any body from the response
 but needs to know, while draining, that the body will not be returned to the user agent.</p>
-<div class="figure align-center" id="id5">
-<p class="plantuml">
-<object data="../_images/plantuml-b8efb6194521f6a6d9b28e31faf7fe1c5e9f66fb.svg" type="image/svg+xml" style="width:527px;height:583px;">
-<img src="../_images/plantuml-b8efb6194521f6a6d9b28e31faf7fe1c5e9f66fb.png" alt="entity L7Policy
-actor Strategizer
-actor HttpSM
-participant Upstream
-
-hide footbox
-
-HttpSM -\ L7Policy : create &quot;tag&quot;
-L7Policy -/ HttpSM : return: Strategizer
-activate Strategizer
-Strategizer -&gt; HttpSM : SESSION_READY
-note right : Contains session
-HttpSM -&gt; Upstream : HTTP Request
-Upstream -&gt; HttpSM : &quot;&quot;404 NOT FOUND&quot;&quot;
-HttpSM -&gt; HttpSM : Read response header.
-HttpSM -\ Strategizer : result
-note right : HTTP 404 Response
-Strategizer -/ HttpSM : return: RETRY
-HttpSM -&gt; HttpSM : Drain upstream response body
-...
-HttpSM -&gt; Strategizer : finish
-...
-Strategizer -&gt; HttpSM : SESSION_READY
-== As 200 OK case =="/>
-
-</object></p>
-<p class="caption"><span class="caption-text">Fail / Retry Transaction</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
-</div>
+<figure class="align-center" id="id5">
+<figcaption>
+<p><span class="caption-text">Fail / Retry Transaction</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Another view of the activity demonstrates the “co-routine” like nature of the interaction. Both the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> and strategizer perform blocking operations where the other side must wait for an event or signal to indication the operation has completed. The basic logic is</p>
-<div class="figure align-center" id="id6">
-<p class="plantuml">
-<object data="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.svg" type="image/svg+xml" style="width:923px;height:437px;">
-<img src="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.png" alt="partition HttpSM {
-   (*) --&gt; &quot;Determine strategy tag&quot;
-}
-
-partition Strategy {
-   &quot;Determine strategy tag&quot; --&gt; &quot;Create strategizer instance&quot;
-   &quot;Create strategizer instance&quot; -u-&gt; &quot;Connect upstream&quot;
-   &quot;Connect upstream&quot; --&gt; &quot;Event: SESSION_READY&quot;
-}
-
-partition HttpSM {
-   &quot;Event: SESSION_READY&quot; -l-&gt;  if &quot;send request&quot; then
-      --&gt;[net error] ===RESULT===
-   else
-      --&gt;[success] &quot;Read Response Header&quot;
-      -&gt; ===RESULT===
-   endif
-}
-
-partition Strategy {
-   --&gt; &quot;Compute next action&quot;
-}
-
-partition HttpSM {
-   if &quot;ACTION&quot; then
-      --&gt;[DONE] &quot;Forward to User Agent&quot;
-   else
-      --&gt;[RETRY] &quot;Drain session&quot;
-   endif
-}
-
-partition Strategy {
-   &quot;Drain session&quot; --&gt;[finish()] &quot;Connect upstream&quot;
-   &quot;Forward to User Agent&quot; -down-&gt;[finish()] &quot;Destruct&quot;
-}
-
-partition HttpSM {
-   &quot;Destruct&quot; --&gt; (*)
-}"/>
-
-</object></p>
-<p class="caption"><span class="caption-text">Upstream session logic</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
-</div>
+<figure class="align-center" id="id6">
+<figcaption>
+<p><span class="caption-text">Upstream session logic</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>The state sequence in the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> is much simplified by this work. In particular, the
 nemesis of redirection or other upstream connection failures requiring rolling back the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> state
 will be avoided. Instead there is a simpler loop which spans a much smaller set of states.</p>
-<div class="figure align-center" id="id7">
-<p class="plantuml">
-<object data="../_images/plantuml-441af616861ab2bacfe88f69e9fffa08f9b5bd46.svg" type="image/svg+xml" style="width:471px;height:700px;">
-<img src="../_images/plantuml-441af616861ab2bacfe88f69e9fffa08f9b5bd46.png" alt="[*] -&gt; ServerOpen
-ServerOpen -&gt; WaitForTransaction
-WaitForTransaction --&gt; HandleServerTransaction : SESSION_READY
-HandleServerTransaction --&gt; ReadResponseHeader
-ReadResponseHeader --&gt; HandleResponseHeader : HTTP response
-ReadResponseHeader -&gt; ReportServerResponse : network error
-ReportServerResponse -&gt; DrainResponse : ACTION: RETRY
-DrainResponse --&gt; WaitForTransaction
-HandleResponseHeader --&gt; ReportServerResponse
-ReportServerResponse --&gt; HandleServerResponse : ACTION: DONE
-
-state ServerOpen : Create Strategizer
-HandleServerTransaction : Send request
-ReadResponseHeader : Wait for upstream response
-HandleResponseHeader : Read and validate header
-ReportServerResponse: Report to stategizer\nGet next action
-HandleServerResponse : Send response to User Agent\nSignal strategizer
-DrainResponse : Drain reponse\nSignal strategizer"/>
-
-</object></p>
-<p class="caption"><span class="caption-text">State Machine Upstream States</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
-</div>
-</div>
-<div class="section" id="next-steps">
+<figure class="align-center" id="id7">
+<figcaption>
+<p><span class="caption-text">State Machine Upstream States</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="next-steps">
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
 <p>In my view the key next steps are first, to get <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code> committed to master. After that
 it was agreed the next deliverable would be a plugin or plugins that would emulate the current
@@ -317,8 +145,8 @@ as a temporary expedient, to have the core use <code class="code docutils litera
 purposes and leave the plugin (which will reuquire much more in the way of infrastructure changes)
 until later. There is a reasonable chance that the core will end up using <code class="code docutils literal notranslate"><span class="pre">Extendible</span></code>
 internally, because it makes the overall code base much more modular.</p>
-</div>
-<div class="section" id="open-issues">
+</section>
+<section id="open-issues">
 <h2>Open Issues<a class="headerlink" href="#open-issues" title="Permalink to this headline">¶</a></h2>
 <p>There are still a few open issues which aren’t fully resolved.</p>
 <dl class="simple">
@@ -330,8 +158,8 @@ the IP addres of the upstream, both in the core and using the plugin API call
 need to be defined. This is needed for the default routing situation and for forward proxying.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="visions">
+</section>
+<section id="visions">
 <h2>Visions<a class="headerlink" href="#visions" title="Permalink to this headline">¶</a></h2>
 <p><code class="code docutils literal notranslate"><span class="pre">Extendible</span></code> was quite a hit and there was a push to use it in other situations, in particular
 with the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code>. I pushed back on that because I think updating the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> would be a major change and
@@ -364,11 +192,54 @@ global plugins and therefore can be done statically rather than dynamically.</p>
 <dd><p>This is a stupid name but no one else would provide a better one, which frankly shouldn’t be challenging.</p>
 </dd>
 </dl>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Traffic Server Layer 7 Working Group</a><ul>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#sm-interaction"><code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> Interaction</a></li>
+<li><a class="reference internal" href="#next-steps">Next Steps</a></li>
+<li><a class="reference internal" href="#open-issues">Open Issues</a></li>
+<li><a class="reference internal" href="#visions">Visions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ATS-Cork-WG-Summary.en.html"
+                        title="previous chapter">Traffic Server Cork Working Group</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="hash-table.en.html"
+                        title="next chapter">Hash Container Notes</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notes/L7R-Denver.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -385,12 +256,13 @@ global plugins and therefore can be done statically rather than dynamically.</p>
         <li class="right" >
           <a href="ATS-Cork-WG-Summary.en.html" title="Traffic Server Cork Working Group"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Traffic Server Layer 7 Working Group</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

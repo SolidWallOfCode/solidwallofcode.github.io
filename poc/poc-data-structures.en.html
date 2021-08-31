@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Cache Data Structures &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Cache Types" href="cache-types.en.html" />
@@ -31,96 +32,46 @@
           <a href="poc-logic.en.html" title="Cache Logic / Operations"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="poc-index.html" accesskey="U">Partial Object Caching</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="poc-index.html" accesskey="U">Partial Object Caching</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Cache Data Structures</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
-            </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Cache Data Structures</a><ul>
-<li><a class="reference internal" href="#diagrams">Diagrams</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="poc-logic.en.html"
-                        title="previous chapter">Cache Logic / Operations</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="cache-types.en.html"
-                        title="next chapter">Cache Types</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/poc/poc-data-structures.en.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="cache-data-structures">
+  <section id="cache-data-structures">
 <h1>Cache Data Structures<a class="headerlink" href="#cache-data-structures" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="_CPPv43Vol">
-<span id="_CPPv33Vol"></span><span id="_CPPv23Vol"></span><span id="Vol"></span><em class="property">class </em><code class="descname">Vol</code><a class="headerlink" href="#_CPPv43Vol" title="Permalink to this definition">¶</a><br /></dt>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv43Vol">
+<span id="_CPPv33Vol"></span><span id="_CPPv23Vol"></span><span id="Vol"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Vol</span></span></span><a class="headerlink" href="#_CPPv43Vol" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>A badly named class that represents a <a class="reference internal" href="cache-glossary.en.html#term-stripe"><span class="xref std std-term">stripe</span></a>.</p>
 </dd></dl>
 
-<dl class="class">
-<dt id="_CPPv412OpenDirEntry">
-<span id="_CPPv312OpenDirEntry"></span><span id="_CPPv212OpenDirEntry"></span><span id="OpenDirEntry"></span><em class="property">class </em><code class="descname">OpenDirEntry</code><a class="headerlink" href="#_CPPv412OpenDirEntry" title="Permalink to this definition">¶</a><br /></dt>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv412OpenDirEntry">
+<span id="_CPPv312OpenDirEntry"></span><span id="_CPPv212OpenDirEntry"></span><span id="OpenDirEntry"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">OpenDirEntry</span></span></span><a class="headerlink" href="#_CPPv412OpenDirEntry" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Represents an active cache object.</p>
 </dd></dl>
 
-<dl class="class">
-<dt id="_CPPv4N19CacheHttpInfoVector5SliceE">
-<span id="_CPPv3N19CacheHttpInfoVector5SliceE"></span><span id="_CPPv2N19CacheHttpInfoVector5SliceE"></span><span id="CacheHttpInfoVector::Slice"></span><em class="property">class </em><code class="descclassname">CacheHttpInfoVector<code class="descclassname">::</code></code><code class="descname">Slice</code><a class="headerlink" href="#_CPPv4N19CacheHttpInfoVector5SliceE" title="Permalink to this definition">¶</a><br /></dt>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N19CacheHttpInfoVector5SliceE">
+<span id="_CPPv3N19CacheHttpInfoVector5SliceE"></span><span id="_CPPv2N19CacheHttpInfoVector5SliceE"></span><span id="CacheHttpInfoVector::Slice"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">CacheHttpInfoVector</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Slice</span></span></span><a class="headerlink" href="#_CPPv4N19CacheHttpInfoVector5SliceE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>A version of an <a class="reference internal" href="cache-glossary.en.html#term-alternate"><span class="xref std std-term">alternate</span></a>.</p>
 </dd></dl>
 
-<dl class="class">
-<dt id="_CPPv47CacheVC">
-<span id="_CPPv37CacheVC"></span><span id="_CPPv27CacheVC"></span><span id="CacheVC"></span><em class="property">class </em><code class="descname">CacheVC</code><a class="headerlink" href="#_CPPv47CacheVC" title="Permalink to this definition">¶</a><br /></dt>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv47CacheVC">
+<span id="_CPPv37CacheVC"></span><span id="_CPPv27CacheVC"></span><span id="CacheVC"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CacheVC</span></span></span><a class="headerlink" href="#_CPPv47CacheVC" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>A cache operation object that intermediates between the HTTP transaction and an object in cache.
 Each instance is associated with a specific cached object and a specific transaction.</p>
 </dd></dl>
 
-<div class="section" id="diagrams">
+<section id="diagrams">
 <h2>Diagrams<a class="headerlink" href="#diagrams" title="Permalink to this headline">¶</a></h2>
 <p>Class diagram.</p>
-<p class="plantuml">
-<object data="../_images/plantuml-4e3592d2d62075f6b4aa3ec0d83fc2556829ddce.svg" type="image/svg+xml" style="width:294px;height:83px;">
-<img src="../_images/plantuml-4e3592d2d62075f6b4aa3ec0d83fc2556829ddce.png" alt="class OpenDirEntry {
-   CacheVC* open_writer
-}
-
-class CacheVC {
-
-}
-
-OpenDirEntry::open_writer *- CacheVC"/>
-
-</object></p>
 <div class="graphviz"><img src="../_images/graphviz-c29c258668418330ce1ec11e94f7041c4d248cd7.png" alt="digraph data {
 rankdir=LR
 node [shape=plaintext]
@@ -171,11 +122,50 @@ Slice:writers -&gt; CacheVC:name [dir=back,arrowtail=odiamond,label=&quot;1:*&qu
 Slice:active -&gt; CacheVC:name [dir=back,arrowtail=odiamond,label=&quot;1:*&quot;]
 Slice:waiting -&gt; CacheVC:name [dir=back,arrowtail=odiamond,label=&quot;1:*&quot;]
 }" class="graphviz" /></div>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Cache Data Structures</a><ul>
+<li><a class="reference internal" href="#diagrams">Diagrams</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="poc-logic.en.html"
+                        title="previous chapter">Cache Logic / Operations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cache-types.en.html"
+                        title="next chapter">Cache Types</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/poc/poc-data-structures.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -193,12 +183,13 @@ Slice:waiting -&gt; CacheVC:name [dir=back,arrowtail=odiamond,label=&quot;1:*&qu
           <a href="poc-logic.en.html" title="Cache Logic / Operations"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="poc-index.html" >Partial Object Caching</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="poc-index.html" >Partial Object Caching</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Cache Data Structures</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>External Types &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Completed Projects" href="completed.en.html" /> 
@@ -26,9 +27,138 @@
         <li class="right" >
           <a href="completed.en.html" title="Completed Projects"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">External Types</a></li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="external-types">
+<span id="id1"></span><h1>External Types<a class="headerlink" href="#external-types" title="Permalink to this headline">¶</a></h1>
+<section id="traffic-server">
+<h2>Traffic Server<a class="headerlink" href="#traffic-server" title="Permalink to this headline">¶</a></h2>
+<dl class="c type">
+<dt class="sig sig-object c" id="c.TSReturnCode">
+<span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TSReturnCode</span></span></span><a class="headerlink" href="#c.TSReturnCode" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c type">
+<dt class="sig sig-object c" id="c.TSHttpTxn">
+<span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TSHttpTxn</span></span></span><a class="headerlink" href="#c.TSHttpTxn" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c type">
+<dt class="sig sig-object c" id="c.TSIOBufferReader">
+<span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TSIOBufferReader</span></span></span><a class="headerlink" href="#c.TSIOBufferReader" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c type">
+<dt class="sig sig-object c" id="c.TSIOBufferBlock">
+<span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TSIOBufferBlock</span></span></span><a class="headerlink" href="#c.TSIOBufferBlock" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c type">
+<dt class="sig sig-object c" id="c.TSIOBuffer">
+<span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TSIOBuffer</span></span></span><a class="headerlink" href="#c.TSIOBuffer" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c type">
+<dt class="sig sig-object c" id="c.TSVConn">
+<span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TSVConn</span></span></span><a class="headerlink" href="#c.TSVConn" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.TSmalloc">
+<span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">TSmalloc</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">n</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TSmalloc" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.TSstrdup">
+<span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">TSstrdup</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">str</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.TSstrdup" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv414NetVConnection">
+<span id="_CPPv314NetVConnection"></span><span id="_CPPv214NetVConnection"></span><span id="NetVConnection"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">NetVConnection</span></span></span><a class="headerlink" href="#_CPPv414NetVConnection" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv416INKVConnInternal">
+<span id="_CPPv316INKVConnInternal"></span><span id="_CPPv216INKVConnInternal"></span><span id="INKVConnInternal"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">INKVConnInternal</span></span></span><a class="headerlink" href="#_CPPv416INKVConnInternal" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv42ts">
+<span id="_CPPv32ts"></span><span id="_CPPv22ts"></span><span id="ts"></span><span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ts</span></span></span><a class="headerlink" href="#_CPPv42ts" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N2ts11string_viewE">
+<span id="_CPPv3N2ts11string_viewE"></span><span id="_CPPv2N2ts11string_viewE"></span><span id="ts::string_view"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">string_view</span></span></span><a class="headerlink" href="#_CPPv4N2ts11string_viewE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>A local implementation of the C++17 <a class="reference external" href="http://en.cppreference.com/w/cpp/string/basic_string_view">std::string_view</a>. See <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/lib/ts/string_view.h">string_view.h</a>.</p>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N2ts7MemViewE">
+<span id="_CPPv3N2ts7MemViewE"></span><span id="_CPPv2N2ts7MemViewE"></span><span id="ts::MemView"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MemView</span></span></span><a class="headerlink" href="#_CPPv4N2ts7MemViewE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N2ts6ErrataE">
+<span id="_CPPv3N2ts6ErrataE"></span><span id="_CPPv2N2ts6ErrataE"></span><span id="ts::Errata"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Errata</span></span></span><a class="headerlink" href="#_CPPv4N2ts6ErrataE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</section>
+<section id="stl-types">
+<h2>STL types<a class="headerlink" href="#stl-types" title="Permalink to this headline">¶</a></h2>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4St">
+<span id="_CPPv3St"></span><span id="_CPPv2St"></span><span id="std"></span><span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">std</span></span></span><a class="headerlink" href="#_CPPv4St" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4NSt6stringE">
+<span id="_CPPv3NSt6stringE"></span><span id="_CPPv2NSt6stringE"></span><span id="ss"></span><span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">string</span></span></span><a class="headerlink" href="#_CPPv4NSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4I0ENSt8functionE">
+<span id="_CPPv3I0ENSt8functionE"></span><span id="_CPPv2I0ENSt8functionE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">function</span></span></span><a class="headerlink" href="#_CPPv4I0ENSt8functionE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</section>
+<section id="builtin-types">
+<h2>Builtin Types<a class="headerlink" href="#builtin-types" title="Permalink to this headline">¶</a></h2>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv46size_t">
+<span id="_CPPv36size_t"></span><span id="_CPPv26size_t"></span><span id="s"></span><span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">size_t</span></span></span><a class="headerlink" href="#_CPPv46size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c type">
+<dt class="sig sig-object c" id="c.int64_t">
+<span class="k"><span class="pre">type</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">int64_t</span></span></span><a class="headerlink" href="#c.int64_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c type">
+<dt class="sig sig-object c">
+<span class="sig-name descname"><span class="pre">bool</span></span></dt>
+<dd></dd></dl>
+
+</section>
+<section id="reference-stubs">
+<span id="custom-logging-fields"></span><h2>Reference Stubs<a class="headerlink" href="#reference-stubs" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
@@ -56,142 +186,15 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="external-types">
-<span id="id1"></span><h1>External Types<a class="headerlink" href="#external-types" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="traffic-server">
-<h2>Traffic Server<a class="headerlink" href="#traffic-server" title="Permalink to this headline">¶</a></h2>
-<dl class="type">
-<dt id="c.TSReturnCode">
-<code class="descname">TSReturnCode</code><a class="headerlink" href="#c.TSReturnCode" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="c.TSHttpTxn">
-<code class="descname">TSHttpTxn</code><a class="headerlink" href="#c.TSHttpTxn" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="c.TSIOBufferReader">
-<code class="descname">TSIOBufferReader</code><a class="headerlink" href="#c.TSIOBufferReader" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="c.TSIOBufferBlock">
-<code class="descname">TSIOBufferBlock</code><a class="headerlink" href="#c.TSIOBufferBlock" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="c.TSIOBuffer">
-<code class="descname">TSIOBuffer</code><a class="headerlink" href="#c.TSIOBuffer" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="c.TSVConn">
-<code class="descname">TSVConn</code><a class="headerlink" href="#c.TSVConn" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="c.TSmalloc">
-void * <code class="descname">TSmalloc</code><span class="sig-paren">(</span>size_t<em> n</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSmalloc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="c.TSstrdup">
-char * <code class="descname">TSstrdup</code><span class="sig-paren">(</span>char *<em> str</em><span class="sig-paren">)</span><a class="headerlink" href="#c.TSstrdup" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="_CPPv414NetVConnection">
-<span id="_CPPv314NetVConnection"></span><span id="_CPPv214NetVConnection"></span><span id="NetVConnection"></span><em class="property">class </em><code class="descname">NetVConnection</code><a class="headerlink" href="#_CPPv414NetVConnection" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="_CPPv416INKVConnInternal">
-<span id="_CPPv316INKVConnInternal"></span><span id="_CPPv216INKVConnInternal"></span><span id="INKVConnInternal"></span><em class="property">class </em><code class="descname">INKVConnInternal</code><a class="headerlink" href="#_CPPv416INKVConnInternal" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="_CPPv42ts">
-<span id="_CPPv32ts"></span><span id="_CPPv22ts"></span><span id="ts"></span><em class="property">type </em><code class="descname">ts</code><a class="headerlink" href="#_CPPv42ts" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="_CPPv4N2ts11string_viewE">
-<span id="_CPPv3N2ts11string_viewE"></span><span id="_CPPv2N2ts11string_viewE"></span><span id="ts::string_view"></span><em class="property">class </em><code class="descname">string_view</code><a class="headerlink" href="#_CPPv4N2ts11string_viewE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>A local implementation of the C++17 <a class="reference external" href="http://en.cppreference.com/w/cpp/string/basic_string_view">std::string_view</a>. See <a class="reference external" href="https://github.com/apache/trafficserver/blob/master/lib/ts/string_view.h">string_view.h</a>.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="_CPPv4N2ts7MemViewE">
-<span id="_CPPv3N2ts7MemViewE"></span><span id="_CPPv2N2ts7MemViewE"></span><span id="ts::MemView"></span><em class="property">class </em><code class="descname">MemView</code><a class="headerlink" href="#_CPPv4N2ts7MemViewE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="_CPPv4N2ts6ErrataE">
-<span id="_CPPv3N2ts6ErrataE"></span><span id="_CPPv2N2ts6ErrataE"></span><span id="ts::Errata"></span><em class="property">class </em><code class="descname">Errata</code><a class="headerlink" href="#_CPPv4N2ts6ErrataE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="stl-types">
-<h2>STL types<a class="headerlink" href="#stl-types" title="Permalink to this headline">¶</a></h2>
-<dl class="type">
-<dt id="_CPPv4St">
-<span id="_CPPv3St"></span><span id="_CPPv2St"></span><span id="std"></span><em class="property">type </em><code class="descname">std</code><a class="headerlink" href="#_CPPv4St" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="_CPPv4NSt6stringE">
-<span id="_CPPv3NSt6stringE"></span><span id="_CPPv2NSt6stringE"></span><span id="ss"></span><em class="property">type </em><code class="descname">string</code><a class="headerlink" href="#_CPPv4NSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="_CPPv4I0ENSt8functionE">
-<span id="_CPPv3I0ENSt8functionE"></span><span id="_CPPv2I0ENSt8functionE"></span>template&lt;typename <code class="descname">T</code>&gt;<br /><em class="property">using </em><code class="descname">function</code><a class="headerlink" href="#_CPPv4I0ENSt8functionE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="builtin-types">
-<h2>Builtin Types<a class="headerlink" href="#builtin-types" title="Permalink to this headline">¶</a></h2>
-<dl class="type">
-<dt id="_CPPv46size_t">
-<span id="_CPPv36size_t"></span><span id="_CPPv26size_t"></span><span id="s"></span><em class="property">type </em><code class="descname">size_t</code><a class="headerlink" href="#_CPPv46size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="c.int64_t">
-<code class="descname">int64_t</code><a class="headerlink" href="#c.int64_t" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt id="c.bool">
-<code class="descname">bool</code><a class="headerlink" href="#c.bool" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="reference-stubs">
-<span id="custom-logging-fields"></span><h2>Reference Stubs<a class="headerlink" href="#reference-stubs" title="Permalink to this headline">¶</a></h2>
-</div>
-</div>
-
-
-          </div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -205,12 +208,13 @@ char * <code class="descname">TSstrdup</code><span class="sig-paren">(</span>cha
         <li class="right" >
           <a href="completed.en.html" title="Completed Projects"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">External Types</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

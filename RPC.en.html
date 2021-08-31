@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Administrative JSON RPC &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Delain" href="delain.en.html" />
@@ -31,9 +32,71 @@
           <a href="plugin-coordination.en.html" title="Plugin Coordination"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" accesskey="U">Traffic Server Projects</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Administrative JSON RPC</a></li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="administrative-json-rpc">
+<span id="rpc-refactor"></span><h1>Administrative JSON RPC<a class="headerlink" href="#administrative-json-rpc" title="Permalink to this headline">¶</a></h1>
+<p>To communicate between <code class="docutils literal notranslate"><span class="pre">traffic_manager</span></code> and <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> there is an RPC mechanism in
+<code class="docutils literal notranslate"><span class="pre">mgmt/api</span></code>. This is a simple serialization style RPC which runs over sockets. The goal of this
+project is to replace this with a <a class="reference external" href="https://www.jsonrpc.org/specification">JSON-RPC</a> based implementation. The key benefits would be</p>
+<ul class="simple">
+<li><p>A standard RPC mechanism that is widely supported.</p></li>
+<li><p>Enable internal extensibility.</p></li>
+<li><p>More robust argument handling.</p></li>
+<li><p>Synchronous management actions (also, remove unnecessary delays).</p></li>
+<li><p>Zero config, dynamic configuration.</p></li>
+</ul>
+<p>The current logic is hand rolled and the messages and arguments are deeply embedded in the implementation, which makes changing them difficult and risky. This has an effect on most of these properties. A clean implementation that is generic would do much all by itself to ameloriate most of these issues, irrespective of it being JSON-RPC.</p>
+<section id="standard-rpc">
+<h2>Standard RPC<a class="headerlink" href="#standard-rpc" title="Permalink to this headline">¶</a></h2>
+<p>Currently only Traffic Server specific implementations can access the external management API. This means interacting with any sort of standard managemet tools is very difficult, requiring custom code. Traffic Server ships with a Perl library to enable access via Perl, but this code is old, unmaintained, and painful to build.</p>
+<p>In contrast, a JSON-RPC based API opens up a wide variety of libraries and tools in most (if not all) of the popular languages. There would be no need to provide any explicit support in the Traffic Server code base, as these existing tools are better than anything our community is likely to build.</p>
+<p>One concern is performance, but in general the performance contraints for management APIs are much less severe than production traffic and in my view not a serious blocker for this application.</p>
+</section>
+<section id="internal-extensibility">
+<h2>Internal extensibility<a class="headerlink" href="#internal-extensibility" title="Permalink to this headline">¶</a></h2>
+<p>The functionality of the management API is limited primarily because it is so difficult. The new implementation must support a subsystem adding message types to the RPC without code changes in the RPC library. This will make adding additional functionality easy and make providing additional features much more feasible.</p>
+</section>
+<section id="argument-handling">
+<h2>Argument handling<a class="headerlink" href="#argument-handling" title="Permalink to this headline">¶</a></h2>
+<p>This is a mixed bag. On the one hand, using JSON-RPC will mean sending message arguments as JSON encoded data, effectively strings. This means converting to and from strings as the messages pass. Although it is a judgement call to say that will not be a problem. one can point to the large number of production web servers that use JSON-RPC (or just JSON encoded data) at production traffic levels.</p>
+<p>On the other hand JSON encoded data is very easy to pass around and extend. If a new management API function needs a new type, it does not need any modification or additional support in the RPC library. The RPC library will be expected to handle only JSON encoded data. It may the case that an encoding framework is provided, but in general I have found it easier to directly print JSON encoded data than to use such a framework. Decoding is somewhat more challenging and we will need to look at what support can be provided by the RPC library. The RPC library will be responsible for parsing from text to JSON (or equivalent) data strutures. Other core components should need only to do direct type conversions. The RPC library must provide a set of basic converters for standard JSON types (integer, floats, booleans, possibly a few others).</p>
+</section>
+<section id="synchronicity">
+<h2>Synchronicity<a class="headerlink" href="#synchronicity" title="Permalink to this headline">¶</a></h2>
+<p>A key problem from the operators point of view is the “fire and forget” style of the current management API. The command line tools can verify the <em>reciept</em> of a message, but not any action done because of that message. The new implementation must be able to support synchronous messages for two reasons.</p>
+<ul class="simple">
+<li><p>First so that the operators (or their tools) can know the message has been acted upon.</p></li>
+<li><p>Enable message processing to pass back diagnostic information directly to the caller, rather than by spewing to a log file in the (frequently vain) hope an operator will notice.</p></li>
+</ul>
+<p>It is acceptable for synchronicity to depend on the message, or on flags in the messages, but it must be possible.</p>
+<p>In addition, there are multi-second delays built in to the current management API, for no particularly good reason I can see. A polling style is used, which seems unnecessary. Eliminating those delays would be worth while by itself, independent of using JSON-RPC.</p>
+</section>
+<section id="dynamic-configuration">
+<h2>Dynamic configuration<a class="headerlink" href="#dynamic-configuration" title="Permalink to this headline">¶</a></h2>
+<p>I dare to dream big - I want a Traffic Server which can start up with almost no (or literally no) configuration and then be fully configured via the management API. It has been a goal to minimize the required configuration need for a working Traffic Server for other reasons, but as the ability to configure via a management API is, in my opinion, critical for the long term success of Traffic Server.</p>
+<p>As cloud based computing increases, operators will want ot embed Traffic Server in such systems (e.g. inside Kubernetes). Having to package configuration files is painful in such environments. What is wanted is the ability to deploy with a small amount of generic configuration (e.g. something that can be embeded in a RPM package) and bootstrap from that to the specific configuration needed.</p>
+</section>
+<section id="code-structure">
+<h2>Code Structure<a class="headerlink" href="#code-structure" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned, the new implementation should be done in a library style, so that it depends on (at most) the already existing “tscore” library, but <em>none</em> of the proxy specific code. This is, in my view, the greatest single issue with the current code, its excessively complicated dependencies and linking. The new implementation must be a simple library with simple dependencies that don’t reach all over the code base.</p>
+<p>Although not needed in the first phase, it should be kept in mind that the ability of <em>plugins</em> to register management API calls would be a very powerful feature. The design and implementation of this first phase should keep this in mind as a future feature.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
@@ -66,75 +129,15 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="administrative-json-rpc">
-<span id="rpc-refactor"></span><h1>Administrative JSON RPC<a class="headerlink" href="#administrative-json-rpc" title="Permalink to this headline">¶</a></h1>
-<p>To communicate between <code class="docutils literal notranslate"><span class="pre">traffic_manager</span></code> and <code class="docutils literal notranslate"><span class="pre">traffic_server</span></code> there is an RPC mechanism in
-<code class="docutils literal notranslate"><span class="pre">mgmt/api</span></code>. This is a simple serialization style RPC which runs over sockets. The goal of this
-project is to replace this with a <a class="reference external" href="https://www.jsonrpc.org/specification">JSON-RPC</a> based implementation. The key benefits would be</p>
-<ul class="simple">
-<li><p>A standard RPC mechanism that is widely supported.</p></li>
-<li><p>Enable internal extensibility.</p></li>
-<li><p>More robust argument handling.</p></li>
-<li><p>Synchronous management actions (also, remove unnecessary delays).</p></li>
-<li><p>Zero config, dynamic configuration.</p></li>
-</ul>
-<p>The current logic is hand rolled and the messages and arguments are deeply embedded in the implementation, which makes changing them difficult and risky. This has an effect on most of these properties. A clean implementation that is generic would do much all by itself to ameloriate most of these issues, irrespective of it being JSON-RPC.</p>
-<div class="section" id="standard-rpc">
-<h2>Standard RPC<a class="headerlink" href="#standard-rpc" title="Permalink to this headline">¶</a></h2>
-<p>Currently only Traffic Server specific implementations can access the external management API. This means interacting with any sort of standard managemet tools is very difficult, requiring custom code. Traffic Server ships with a Perl library to enable access via Perl, but this code is old, unmaintained, and painful to build.</p>
-<p>In contrast, a JSON-RPC based API opens up a wide variety of libraries and tools in most (if not all) of the popular languages. There would be no need to provide any explicit support in the Traffic Server code base, as these existing tools are better than anything our community is likely to build.</p>
-<p>One concern is performance, but in general the performance contraints for management APIs are much less severe than production traffic and in my view not a serious blocker for this application.</p>
-</div>
-<div class="section" id="internal-extensibility">
-<h2>Internal extensibility<a class="headerlink" href="#internal-extensibility" title="Permalink to this headline">¶</a></h2>
-<p>The functionality of the management API is limited primarily because it is so difficult. The new implementation must support a subsystem adding message types to the RPC without code changes in the RPC library. This will make adding additional functionality easy and make providing additional features much more feasible.</p>
-</div>
-<div class="section" id="argument-handling">
-<h2>Argument handling<a class="headerlink" href="#argument-handling" title="Permalink to this headline">¶</a></h2>
-<p>This is a mixed bag. On the one hand, using JSON-RPC will mean sending message arguments as JSON encoded data, effectively strings. This means converting to and from strings as the messages pass. Although it is a judgement call to say that will not be a problem. one can point to the large number of production web servers that use JSON-RPC (or just JSON encoded data) at production traffic levels.</p>
-<p>On the other hand JSON encoded data is very easy to pass around and extend. If a new management API function needs a new type, it does not need any modification or additional support in the RPC library. The RPC library will be expected to handle only JSON encoded data. It may the case that an encoding framework is provided, but in general I have found it easier to directly print JSON encoded data than to use such a framework. Decoding is somewhat more challenging and we will need to look at what support can be provided by the RPC library. The RPC library will be responsible for parsing from text to JSON (or equivalent) data strutures. Other core components should need only to do direct type conversions. The RPC library must provide a set of basic converters for standard JSON types (integer, floats, booleans, possibly a few others).</p>
-</div>
-<div class="section" id="synchronicity">
-<h2>Synchronicity<a class="headerlink" href="#synchronicity" title="Permalink to this headline">¶</a></h2>
-<p>A key problem from the operators point of view is the “fire and forget” style of the current management API. The command line tools can verify the <em>reciept</em> of a message, but not any action done because of that message. The new implementation must be able to support synchronous messages for two reasons.</p>
-<ul class="simple">
-<li><p>First so that the operators (or their tools) can know the message has been acted upon.</p></li>
-<li><p>Enable message processing to pass back diagnostic information directly to the caller, rather than by spewing to a log file in the (frequently vain) hope an operator will notice.</p></li>
-</ul>
-<p>It is acceptable for synchronicity to depend on the message, or on flags in the messages, but it must be possible.</p>
-<p>In addition, there are multi-second delays built in to the current management API, for no particularly good reason I can see. A polling style is used, which seems unnecessary. Eliminating those delays would be worth while by itself, independent of using JSON-RPC.</p>
-</div>
-<div class="section" id="dynamic-configuration">
-<h2>Dynamic configuration<a class="headerlink" href="#dynamic-configuration" title="Permalink to this headline">¶</a></h2>
-<p>I dare to dream big - I want a Traffic Server which can start up with almost no (or literally no) configuration and then be fully configured via the management API. It has been a goal to minimize the required configuration need for a working Traffic Server for other reasons, but as the ability to configure via a management API is, in my opinion, critical for the long term success of Traffic Server.</p>
-<p>As cloud based computing increases, operators will want ot embed Traffic Server in such systems (e.g. inside Kubernetes). Having to package configuration files is painful in such environments. What is wanted is the ability to deploy with a small amount of generic configuration (e.g. something that can be embeded in a RPM package) and bootstrap from that to the specific configuration needed.</p>
-</div>
-<div class="section" id="code-structure">
-<h2>Code Structure<a class="headerlink" href="#code-structure" title="Permalink to this headline">¶</a></h2>
-<p>As mentioned, the new implementation should be done in a library style, so that it depends on (at most) the already existing “tscore” library, but <em>none</em> of the proxy specific code. This is, in my view, the greatest single issue with the current code, its excessively complicated dependencies and linking. The new implementation must be a simple library with simple dependencies that don’t reach all over the code base.</p>
-<p>Although not needed in the first phase, it should be kept in mind that the ability of <em>plugins</em> to register management API calls would be a very powerful feature. The design and implementation of this first phase should keep this in mind as a future feature.</p>
-</div>
-</div>
-
-
-          </div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -152,12 +155,13 @@ project is to replace this with a <a class="reference external" href="https://ww
           <a href="plugin-coordination.en.html" title="Plugin Coordination"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">SWOC Docs</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="ats-projects.en.html" >Traffic Server Projects</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Administrative JSON RPC</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

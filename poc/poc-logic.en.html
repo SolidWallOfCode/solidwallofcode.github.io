@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Cache Logic / Operations &#8212; AMC Traffic Server Documentation</title>
-    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Cache Data Structures" href="poc-data-structures.en.html" />
@@ -31,62 +32,22 @@
           <a href="poc-index.html" title="Partial Object Caching"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="poc-index.html" accesskey="U">Partial Object Caching</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="poc-index.html" accesskey="U">Partial Object Caching</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Cache Logic / Operations</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
-            </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Cache Logic / Operations</a><ul>
-<li><a class="reference internal" href="#read">Read</a></li>
-<li><a class="reference internal" href="#cache-startup">Cache Startup</a></li>
-<li><a class="reference internal" href="#lock-waiting">Lock Waiting</a></li>
-<li><a class="reference internal" href="#write-operations">Write Operations</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="poc-index.html"
-                        title="previous chapter">Partial Object Caching</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="poc-data-structures.en.html"
-                        title="next chapter">Cache Data Structures</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/poc/poc-logic.en.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="cache-logic-operations">
+  <section id="cache-logic-operations">
 <h1>Cache Logic / Operations<a class="headerlink" href="#cache-logic-operations" title="Permalink to this headline">¶</a></h1>
 <p>When an object in cache (or potentiallyin cache) is active in a transaction, it is tracked by an
 <em>ODE</em>, which is an instance of <a class="reference internal" href="poc-data-structures.en.html#_CPPv412OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> <a class="footnote-reference brackets" href="#f1" id="id1">1</a>. For any cache oject the first operation is
 always a read.</p>
-<div class="section" id="read">
+<section id="read">
 <h2>Read<a class="headerlink" href="#read" title="Permalink to this headline">¶</a></h2>
 <p>Reading starts with <code class="code docutils literal notranslate"><span class="pre">Cache::open_read</span></code>. This attempts to get the stripe lock and then probes
 the open directory entries and the stripe directory. A <a class="reference internal" href="poc-data-structures.en.html#_CPPv47CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instance is created if
@@ -99,46 +60,9 @@ not, or a <a class="reference internal" href="poc-data-structures.en.html#_CPPv4
 the <code class="code docutils literal notranslate"><span class="pre">CacheVC::stateReadFirstDoc</span></code> which loads the first doc fragment from disk. If another
 <a class="reference internal" href="poc-data-structures.en.html#_CPPv47CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instance is already reading from disk then the <a class="reference internal" href="poc-data-structures.en.html#_CPPv47CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> waits for the read
 to complete.</p>
-<p class="plantuml">
-<object data="../_images/plantuml-526ed14b05f0dc8eb00d6f4e05b08070ec6fdf11.svg" type="image/svg+xml" style="width:868px;height:83px;">
-<img src="../_images/plantuml-526ed14b05f0dc8eb00d6f4e05b08070ec6fdf11.png" alt="state Cache::open_read : Create CacheVC
-
-state Probe : Check cache for\nODE or dir entry
-state ReadInit :
-state rReadFirstDoc : Load the first\ndoc fragment.
-
-Cache::open_read --&gt; Probe : Lock miss
-cache::open_read --&gt; ReadInit"/>
-
-</object></p>
-</div>
-<div class="section" id="cache-startup">
+</section>
+<section id="cache-startup">
 <h2>Cache Startup<a class="headerlink" href="#cache-startup" title="Permalink to this headline">¶</a></h2>
-<p class="plantuml">
-<object data="../_images/plantuml-24a9bccb13092e69c932aace8d6de1c3502bbb03.svg" type="image/svg+xml" style="width:600px;height:451px;">
-<img src="../_images/plantuml-24a9bccb13092e69c932aace8d6de1c3502bbb03.png" alt="hide empty members
-hide empty methods
-skinparam defaultTextAlignment left
-
-class CacheProcessor
-class DiskInit
-class CacheDisk
-class VolInit
-class Vol
-
-CacheProcessor --&gt; DiskInit : //create//
-DiskInit --&gt; CacheDisk : [1] open()
-note on link : Start I/O for Span Header
-CacheDisk --&gt; CacheDisk : [2] openStart()
-note on link : Validate Span Header
-CacheDisk -d-&gt; CacheDisk : [3] openDone()
-CacheDisk --&gt; CacheProcessor : [4] diskInitialized()
-
-CacheProcessor --&gt; Cache : [5] open()
-Cache --&gt; VolInit : [6] mainEvent()
-VolInit --&gt; Vol : [7] init()"/>
-
-</object></p>
 <p>State machine.</p>
 <div class="graphviz"><img src="../_images/graphviz-abe1fb346cc194dcd816c610aa7973c26afae21a.png" alt="digraph cache {
 
@@ -270,8 +194,8 @@ VolInit --&gt; Vol : [7] init()"/>
         [label=&quot;pop/&quot;]
 
 }" class="graphviz" /></div>
-</div>
-<div class="section" id="lock-waiting">
+</section>
+<section id="lock-waiting">
 <h2>Lock Waiting<a class="headerlink" href="#lock-waiting" title="Permalink to this headline">¶</a></h2>
 <p>To avoid the current issues with excessive event flows when many <a class="reference internal" href="poc-data-structures.en.html#_CPPv47CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instances are
 waiting for locks along with many failed lock attempts, the <a class="reference internal" href="poc-data-structures.en.html#_CPPv43Vol" title="Vol"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Vol</span></code></a> and <a class="reference internal" href="poc-data-structures.en.html#_CPPv412OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a>
@@ -300,8 +224,8 @@ distribution issue is of lesser importance because of the (usually) much larger 
 which spreads the load when the instances become available. It is unfortunate this causes
 <a class="reference internal" href="poc-data-structures.en.html#_CPPv47CacheVC" title="CacheVC"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CacheVC</span></code></a> instances to dispatch on other threads but the <a class="reference internal" href="poc-data-structures.en.html#_CPPv412OpenDirEntry" title="OpenDirEntry"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">OpenDirEntry</span></code></a> interactions
 tend to be less closely coupled to HTTP state machine instances.</p>
-</div>
-<div class="section" id="write-operations">
+</section>
+<section id="write-operations">
 <h2>Write Operations<a class="headerlink" href="#write-operations" title="Permalink to this headline">¶</a></h2>
 <p class="rubric">Footnotes</p>
 <dl class="footnote brackets">
@@ -309,11 +233,53 @@ tend to be less closely coupled to HTTP state machine instances.</p>
 <dd><p>Previously an ODE was opened only for a write operation. This was workable when only one write operation per cache object could be active at a time. The current architecture has a much more complex relationship between reading and writing cache objects and so requires tracking to start earlier. This is also necessary for collapsed forwarding so that multiple readers are detected before a write is started.</p>
 </dd>
 </dl>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/balcora-gate-400x400.jpg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Cache Logic / Operations</a><ul>
+<li><a class="reference internal" href="#read">Read</a></li>
+<li><a class="reference internal" href="#cache-startup">Cache Startup</a></li>
+<li><a class="reference internal" href="#lock-waiting">Lock Waiting</a></li>
+<li><a class="reference internal" href="#write-operations">Write Operations</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="poc-index.html"
+                        title="previous chapter">Partial Object Caching</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="poc-data-structures.en.html"
+                        title="next chapter">Cache Data Structures</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/poc/poc-logic.en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -331,12 +297,13 @@ tend to be less closely coupled to HTTP state machine instances.</p>
           <a href="poc-index.html" title="Partial Object Caching"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SWOC Docs</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="poc-index.html" >Partial Object Caching</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="poc-index.html" >Partial Object Caching</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Cache Logic / Operations</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, amc@apache.org.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

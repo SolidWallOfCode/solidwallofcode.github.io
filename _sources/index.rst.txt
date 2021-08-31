@@ -17,6 +17,7 @@ Projects planned for Apache |TS|.
    :maxdepth: 2
 
    ats-projects.en
+   atc/atc-index
    poc/poc-index
 
 Event Notes
