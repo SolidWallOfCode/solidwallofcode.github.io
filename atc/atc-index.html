@@ -149,6 +149,40 @@ to the Traffic Ops host for data.</p>
 own root certificate and used it to sign the deployed certificates. It is expected that instead of
 answering prompts, the scripts will be edited to put the appropriate values in the certificates.</p>
 <p>Note - this is fine for proof of concept and prototyping, but not for actual production use.</p>
+<p>Both scripts depend on a file name “openssl.cnf” which is defined by OpenSSL. This is the base
+content, which should be tweaked as needed for local conditions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># SPDX-License-Identifier: Apache-2.0
+
+# Required environment variables
+# PREFIX - used to set the common name.
+# DN - used to select a root or signed distinguished name. Must be &quot;CA&quot; or &quot;Signed&quot;.
+
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+new_certs_dir = .
+
+[ req ]
+# Disable prompting so the commands use data from here!
+prompt = no
+distinguished_name = DN-${ENV::DN}
+
+[DN-Signed]
+CN = base.ex:role.${ENV::PREFIX}
+O = TxnBox
+C = S3
+ST = Amber
+L = Kolvir
+
+[DN-CA]
+CN = TxnBox CA ${ENV::PREFIX}
+O = TxnBox
+C = S3
+ST = Confusion
+L = Dazed
+</pre></div>
+</div>
 <p>The script to generate the root certificate.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
 <span class="c1"># Generate root certificate.</span>
