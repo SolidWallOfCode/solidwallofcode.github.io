@@ -48,10 +48,10 @@
 <h2>Traffic Ops<a class="headerlink" href="#traffic-ops" title="Permalink to this headline">¶</a></h2>
 <p>The Traffic Ops host will host both the Postgresql database and the ATC “traffic_ops” package.
 “traffic_ops” is the central engine of ATC - most other components connect to “traffic_ops” and
-treat it as the source of truth. The current recommendation is to install the database and this on
-the same host to avoid having to configure external access to the database.</p>
+treat it as the source of truth. The current recommendation is to install the database and
+“traffic_ops” on the same host to avoid having to configure external access to the database.</p>
 <ol class="arabic">
-<li><p>Install Postgresql. An install script can be obtained from <a class="reference external" href="https://www.postgresql.org/download/linxu/redhat">here</a>
+<li><p>Install Postgresql. An install script can be obtained from <a class="reference external" href="https://www.postgresql.org/download/linux/redhat/">here</a>
 or this one can be used (which was obtained from that webpage).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the repository RPM:</span>
 <span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">postgresql</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">pub</span><span class="o">/</span><span class="n">repos</span><span class="o">/</span><span class="n">yum</span><span class="o">/</span><span class="n">reporpms</span><span class="o">/</span><span class="n">EL</span><span class="o">-</span><span class="mi">8</span><span class="o">-</span><span class="n">x86_64</span><span class="o">/</span><span class="n">pgdg</span><span class="o">-</span><span class="n">redhat</span><span class="o">-</span><span class="n">repo</span><span class="o">-</span><span class="n">latest</span><span class="o">.</span><span class="n">noarch</span><span class="o">.</span><span class="n">rpm</span>
@@ -73,13 +73,32 @@ or this one can be used (which was obtained from that webpage).</p>
 <li><p>No configuration to enable access from other hosts. All access will be from this host.</p></li>
 <li><p>Root access is via user id, not password.</p></li>
 </ul>
-</li>
-<li><p>Install <a class="reference external" href="https://fedoraproject.org/wiki/EPEL">EPEL</a> which provides some of the “traffic_ops” requirements.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="o">-</span><span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">epel</span><span class="o">-</span><span class="n">release</span>
+<p>As of Traffic Control 6.0.0 and Postgresql 13 (at this time, the stable version of each), there is
+a mismatch between how Postgresql and Traffic Control expect to perform password authentication.
+To fix this, Postgresql needs to be adjusted to use an older method.</p>
+<p>Edit “/var/lib/pgsql/13/data/postgresql.conf” and make this change</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">password_encryption</span> <span class="o">=</span> <span class="n">md5</span>       <span class="c1"># md5 or scram-sha-256</span>
+</pre></div>
+</div>
+<p>It may or not be necessary to also change “/var/lib/pgsql/13/data/pg_hba.conf” to enable “md5”
+password authentication. This involves changing “scram-sha-256” to “md5”.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># IPv4 local connections:</span>
+<span class="n">host</span>    <span class="nb">all</span>             <span class="nb">all</span>             <span class="mf">127.0.0.1</span><span class="o">/</span><span class="mi">32</span>            <span class="n">md5</span>
+<span class="c1"># IPv6 local connections:</span>
+<span class="n">host</span>    <span class="nb">all</span>             <span class="nb">all</span>             <span class="p">::</span><span class="mi">1</span><span class="o">/</span><span class="mi">128</span>                 <span class="n">md5</span>
+</pre></div>
+</div>
+<p>If this is not done, you may see this error from “traffic_ops”</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pq</span><span class="p">:</span> <span class="n">unknown</span> <span class="n">authentication</span> <span class="n">response</span><span class="p">:</span> <span class="mi">10</span>
 </pre></div>
 </div>
 </li>
-<li><p>Install the “traffic_ops” RPM. This should also install all dependencies.</p>
+<li><p>Install <a class="reference external" href="https://fedoraproject.org/wiki/EPEL">EPEL</a> which provides some of the “traffic_ops” requirements.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">epel</span><span class="o">-</span><span class="n">release</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install the “traffic_ops” RPM. This should automatically install all dependencies.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">powertools</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">epel</span> <span class="o">-</span><span class="n">y</span> <span class="n">traffic_ops</span><span class="o">-</span><span class="mf">6.0.0</span><span class="o">-</span><span class="mf">11512.e4469</span><span class="n">f55</span><span class="o">.</span><span class="n">el8</span><span class="o">.</span><span class="n">x86_64</span><span class="o">.</span><span class="n">rpm</span>
 </pre></div>
 </div>
@@ -96,6 +115,17 @@ something a bit more secure.</p>
 \<span class="n">q</span>
 </pre></div>
 </div>
+<p>If doing this by hand the terminal output should look like</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ psql
+psql (13.4)
+Type &quot;help&quot; for help.
+
+postgres=# CREATE USER traffic_ops with encrypted password &#39;vgl&#39;;
+CREATE ROLE
+postgres=# \q
+$
+</pre></div>
+</div>
 <p>Then at the shell command prompt (<em>not</em> in the <code class="docutils literal notranslate"><span class="pre">psql</span></code> environment) create the databases.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">createdb</span> <span class="n">traffic_ops</span> <span class="o">--</span><span class="n">owner</span> <span class="n">traffic_ops</span>
 <span class="n">createdb</span> <span class="n">traffic_vault</span> <span class="o">--</span><span class="n">owner</span> <span class="n">traffic_ops</span>
@@ -105,11 +135,27 @@ something a bit more secure.</p>
 </li>
 <li><p>Finalization</p>
 <p>The script “/opt/traffic_ops/install/bin/postinstall” needs to be invoked as root. Unfortunately
-The check for postgresql superuser may not work. Line 38 may need to be changed to</p>
+the check for postgresql superuser may not work. Line 38 may need to be changed to</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [[ ! $(su -c &#39;psql -c &quot;show is_superuser&quot;&#39; - postgres &lt;/dev/null 2&gt;/dev/null) =~ &#39;on&#39; ]]; then
 </pre></div>
 </div>
 <p>At some point I will submit a PR to fix this.</p>
+<p>For the “secrets”, this is still a bit of a mystery to me.</p>
+</li>
+<li><p>Network Configuration</p>
+<p>TLS requires a certificate and corresponding key files. These can be anywhere as long as they
+are accessible to the “traffic_ops” process. The best locations are either in “/etc/pki” or somewhere
+in the “traffic_ops” install directory (generally “/opt/traffic_ops”). The location of these files
+is stored in the “cdn.conf” file in “/opt/traffic_ops/app/conf”. For legacy reasons these are
+referenced by editing the URL for the <code class="docutils literal notranslate"><span class="pre">listen</span></code> key under the <code class="docutils literal notranslate"><span class="pre">hypnotoad</span></code> key. In the query
+string of this URL are two keys, “cert” and “key”. The “cert” value must be the absolute path to
+the certificate (“.pem”) file. The “key” value must the absolute path to the key (”<a href="#id1"><span class="problematic" id="id2">*</span></a>.key”) file.</p>
+<p>To allow external connections from Traffic Portal the TLS port must opened in the firewall. This is
+done with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">firewall</span><span class="o">-</span><span class="n">cmd</span> <span class="o">--</span><span class="n">permanent</span> <span class="o">--</span><span class="n">zone</span><span class="o">=</span><span class="n">public</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">service</span><span class="o">=</span><span class="n">https</span>
+<span class="n">sudo</span> <span class="n">firewall</span><span class="o">-</span><span class="n">cmd</span> <span class="o">--</span><span class="n">reload</span>
+</pre></div>
+</div>
 </li>
 </ol>
 <p class="rubric">References</p>
@@ -239,6 +285,34 @@ let N=N+1
 echo ${N} &gt; ca-serial-no.txt
 </pre></div>
 </div>
+<p>Note - install a certificate for use requires both the certificate file “.pem” and the key file “.key”.
+The root certificate may need to be installed but the root key must <em>never</em> be deployed on a production
+machine. It is used only to generate the signed certificates that are deployed.</p>
+</section>
+<section id="common-issues">
+<h2>Common Issues<a class="headerlink" href="#common-issues" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>If the Portal page comes up completely blank, this likely due to “traffic_portal” not being able
+to connect to “traffic_ops”. Check that
+*  “traffic_ops” host has port 443 open
+*  The name of the “traffic_ops” host resolved correctly on the “traffic portal” host.
+*  Check that “/etc/traffic_portal/conf/config.js” has been updated to have the “traffic ops” host.</p></li>
+<li><p>If the initial admin login doesn’t work, verify the password tweaks have been done. If not,
+it will be necessary to make then changes and then reset the password for the “traffic_ops”
+user. This is most easily done by logging in to the Postgresql host with this command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psql</span> <span class="o">--</span><span class="n">host</span> <span class="mf">127.0.0.1</span> <span class="o">--</span><span class="n">user</span> <span class="n">traffic_ops</span>
+</pre></div>
+</div>
+<p>There should be a password prompt - use the password specified in the “traffic ops” post install.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">password</span>
+</pre></div>
+</div>
+<p>Enter the password (twice) when prompted. Then exit Postgresql with the following command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">q</span>
+</pre></div>
+</div>
+</li>
+</ul>
 </section>
 </section>
 
@@ -258,6 +332,7 @@ echo ${N} &gt; ca-serial-no.txt
 <li><a class="reference internal" href="#traffic-ops">Traffic Ops</a></li>
 <li><a class="reference internal" href="#traffic-portal">Traffic Portal</a></li>
 <li><a class="reference internal" href="#tools">Tools</a></li>
+<li><a class="reference internal" href="#common-issues">Common Issues</a></li>
 </ul>
 </li>
 </ul>

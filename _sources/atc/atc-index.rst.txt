@@ -11,10 +11,10 @@ Traffic Ops
 
 The Traffic Ops host will host both the Postgresql database and the ATC "traffic_ops" package.
 "traffic_ops" is the central engine of ATC - most other components connect to "traffic_ops" and
-treat it as the source of truth. The current recommendation is to install the database and this on
-the same host to avoid having to configure external access to the database.
+treat it as the source of truth. The current recommendation is to install the database and
+"traffic_ops" on the same host to avoid having to configure external access to the database.
 
-#. Install Postgresql. An install script can be obtained from `here <https://www.postgresql.org/download/linxu/redhat>`__
+#. Install Postgresql. An install script can be obtained from `here <https://www.postgresql.org/download/linux/redhat/>`__
    or this one can be used (which was obtained from that webpage).
 
    .. code-block::
@@ -38,13 +38,39 @@ the same host to avoid having to configure external access to the database.
    *  No configuration to enable access from other hosts. All access will be from this host.
    *  Root access is via user id, not password.
 
+   As of Traffic Control 6.0.0 and Postgresql 13 (at this time, the stable version of each), there is
+   a mismatch between how Postgresql and Traffic Control expect to perform password authentication.
+   To fix this, Postgresql needs to be adjusted to use an older method.
+
+   Edit "/var/lib/pgsql/13/data/postgresql.conf" and make this change
+
+   .. code-block::
+
+      password_encryption = md5       # md5 or scram-sha-256
+
+   It may or not be necessary to also change "/var/lib/pgsql/13/data/pg_hba.conf" to enable "md5"
+   password authentication. This involves changing "scram-sha-256" to "md5".
+
+   .. code-block::
+
+      # IPv4 local connections:
+      host    all             all             127.0.0.1/32            md5
+      # IPv6 local connections:
+      host    all             all             ::1/128                 md5
+
+   If this is not done, you may see this error from "traffic_ops"
+
+   .. code-block::
+
+      pq: unknown authentication response: 10
+
 #. Install `EPEL <https://fedoraproject.org/wiki/EPEL>`__ which provides some of the "traffic_ops" requirements.
 
    .. code-block::
 
-      sudo dnf -install -y epel-release
+      sudo dnf install -y epel-release
 
-#. Install the "traffic_ops" RPM. This should also install all dependencies.
+#. Install the "traffic_ops" RPM. This should automatically install all dependencies.
 
    .. code-block::
 
@@ -67,6 +93,19 @@ the same host to avoid having to configure external access to the database.
       CREATE USER traffic_ops with encrypted password 'vgl';
       \q
 
+   If doing this by hand the terminal output should look like
+
+   .. code-block::
+
+      $ psql
+      psql (13.4)
+      Type "help" for help.
+
+      postgres=# CREATE USER traffic_ops with encrypted password 'vgl';
+      CREATE ROLE
+      postgres=# \q
+      $
+
    Then at the shell command prompt (*not* in the ``psql`` environment) create the databases.
 
    .. code-block::
@@ -79,13 +118,33 @@ the same host to avoid having to configure external access to the database.
 #. Finalization
 
    The script "/opt/traffic_ops/install/bin/postinstall" needs to be invoked as root. Unfortunately
-   The check for postgresql superuser may not work. Line 38 may need to be changed to
+   the check for postgresql superuser may not work. Line 38 may need to be changed to
 
    .. code-block::
 
        if [[ ! $(su -c 'psql -c "show is_superuser"' - postgres </dev/null 2>/dev/null) =~ 'on' ]]; then
 
    At some point I will submit a PR to fix this.
+
+   For the "secrets", this is still a bit of a mystery to me.
+
+#. Network Configuration
+
+   TLS requires a certificate and corresponding key files. These can be anywhere as long as they
+   are accessible to the "traffic_ops" process. The best locations are either in "/etc/pki" or somewhere
+   in the "traffic_ops" install directory (generally "/opt/traffic_ops"). The location of these files
+   is stored in the "cdn.conf" file in "/opt/traffic_ops/app/conf". For legacy reasons these are
+   referenced by editing the URL for the ``listen`` key under the ``hypnotoad`` key. In the query
+   string of this URL are two keys, "cert" and "key". The "cert" value must be the absolute path to
+   the certificate (".pem") file. The "key" value must the absolute path to the key ("*.key") file.
+
+   To allow external connections from Traffic Portal the TLS port must opened in the firewall. This is
+   done with
+
+   .. code-block::
+
+      sudo firewall-cmd --permanent --zone=public --add-service=https
+      sudo firewall-cmd --reload
 
 .. rubric:: References
 
@@ -227,3 +286,36 @@ with this script.
    rm -f tmp.csr
    let N=N+1
    echo ${N} > ca-serial-no.txt
+
+Note - install a certificate for use requires both the certificate file ".pem" and the key file ".key".
+The root certificate may need to be installed but the root key must *never* be deployed on a production
+machine. It is used only to generate the signed certificates that are deployed.
+
+Common Issues
+*************
+
+*  If the Portal page comes up completely blank, this likely due to "traffic_portal" not being able
+   to connect to "traffic_ops". Check that
+   *  "traffic_ops" host has port 443 open
+   *  The name of the "traffic_ops" host resolved correctly on the "traffic portal" host.
+   *  Check that "/etc/traffic_portal/conf/config.js" has been updated to have the "traffic ops" host.
+
+*  If the initial admin login doesn't work, verify the password tweaks have been done. If not,
+   it will be necessary to make then changes and then reset the password for the "traffic_ops"
+   user. This is most easily done by logging in to the Postgresql host with this command.
+
+   .. code-block::
+
+      psql --host 127.0.0.1 --user traffic_ops
+
+   There should be a password prompt - use the password specified in the "traffic ops" post install.
+
+   .. code-block::
+
+      \password
+
+   Enter the password (twice) when prompted. Then exit Postgresql with the following command.
+
+   .. code-block::
+
+      \q
