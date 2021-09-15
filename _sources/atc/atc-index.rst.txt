@@ -177,9 +177,58 @@ The base instructions worked.
 It is expected that Traffic Portal will accept incoming browser requests and then make requests
 to the Traffic Ops host for data.
 
+The Traffic Portal listening ports must be opened in the CentOS firewall.
+
+.. code-block::
+
+      sudo firewall-cmd --permanent --zone=public --add-service=http
+      sudo firewall-cmd --permanent --zone=public --add-service=https
+      sudo firewall-cmd --reload
+
 .. rubric:: References
 
 * `Installing Traffic Portal <https://traffic-control-cdn.readthedocs.io/en/latest/admin/traffic_portal/installation.html>`__
+
+Traffic Server
+**************
+
+This requires building an RPM for Traffic Server. There is a base ".spec" file in
+"tools/packages/trafficserver.spec". This is close but probably not quite what is needed.
+Among the changes I intend to try
+
+*  Change the ``--layout`` option to "opt" instead of "Gentoo".
+
+To build the RPM several packages are needed on the build machine.
+
+.. code-block::
+
+   sudo dnf install -y epel-release
+   sudo dnf install -y rpmdevtools
+   sudo dnf --enablerepo=epel --enablerepo=powertools install -y expat-devel hwloc-devel libcurl-devel ncurses-devel
+
+The ``rpmbuild`` command will put the output in "~/rpmbuild/RPMS" and I cannot find any way to
+change that.
+
+Notes
+   The output directory can be overriden in the ".spec" file with
+
+   .. code-block::
+
+      %_topdir /path
+
+Administration
+**************
+
+It is not possible to create "servers" (records for ATS instances) immediately. Information about
+the CDN must be created first. The steps for that are
+
+#. Define a "division".
+#. Define a "region".
+#. Define a "location" (aka "physical location").
+#. Define a "cache group".
+#. Define a "profile" of type ``ATS_PROFILE``.
+
+After this a "server" can be created to represent an ATS instance.
 
 Tools
 *****

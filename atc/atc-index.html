@@ -184,10 +184,53 @@ the command line utilities don’t get installed in “/usr/bin” which causes 
 </div>
 <p>It is expected that Traffic Portal will accept incoming browser requests and then make requests
 to the Traffic Ops host for data.</p>
+<p>The Traffic Portal listening ports must be opened in the CentOS firewall.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">firewall</span><span class="o">-</span><span class="n">cmd</span> <span class="o">--</span><span class="n">permanent</span> <span class="o">--</span><span class="n">zone</span><span class="o">=</span><span class="n">public</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">service</span><span class="o">=</span><span class="n">http</span>
+<span class="n">sudo</span> <span class="n">firewall</span><span class="o">-</span><span class="n">cmd</span> <span class="o">--</span><span class="n">permanent</span> <span class="o">--</span><span class="n">zone</span><span class="o">=</span><span class="n">public</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">service</span><span class="o">=</span><span class="n">https</span>
+<span class="n">sudo</span> <span class="n">firewall</span><span class="o">-</span><span class="n">cmd</span> <span class="o">--</span><span class="n">reload</span>
+</pre></div>
+</div>
 <p class="rubric">References</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://traffic-control-cdn.readthedocs.io/en/latest/admin/traffic_portal/installation.html">Installing Traffic Portal</a></p></li>
 </ul>
+</section>
+<section id="traffic-server">
+<h2>Traffic Server<a class="headerlink" href="#traffic-server" title="Permalink to this headline">¶</a></h2>
+<p>This requires building an RPM for Traffic Server. There is a base “.spec” file in
+“tools/packages/trafficserver.spec”. This is close but probably not quite what is needed.
+Among the changes I intend to try</p>
+<ul class="simple">
+<li><p>Change the <code class="docutils literal notranslate"><span class="pre">--layout</span></code> option to “opt” instead of “Gentoo”.</p></li>
+</ul>
+<p>To build the RPM several packages are needed on the build machine.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">epel</span><span class="o">-</span><span class="n">release</span>
+<span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">rpmdevtools</span>
+<span class="n">sudo</span> <span class="n">dnf</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">epel</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">powertools</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">expat</span><span class="o">-</span><span class="n">devel</span> <span class="n">hwloc</span><span class="o">-</span><span class="n">devel</span> <span class="n">libcurl</span><span class="o">-</span><span class="n">devel</span> <span class="n">ncurses</span><span class="o">-</span><span class="n">devel</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">rpmbuild</span></code> command will put the output in “~/rpmbuild/RPMS” and I cannot find any way to
+change that.</p>
+<dl>
+<dt>Notes</dt><dd><p>The output directory can be overriden in the “.spec” file with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">_topdir</span> <span class="o">/</span><span class="n">path</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+<section id="administration">
+<h2>Administration<a class="headerlink" href="#administration" title="Permalink to this headline">¶</a></h2>
+<p>It is not possible to create “servers” (records for ATS instances) immediately. Information about
+the CDN must be created first. The steps for that are</p>
+<ol class="arabic simple">
+<li><p>Define a “division”.</p></li>
+<li><p>Define a “region”.</p></li>
+<li><p>Define a “location” (aka “physical location”).</p></li>
+<li><p>Define a “cache group”.</p></li>
+<li><p>Define a “profile” of type <code class="docutils literal notranslate"><span class="pre">ATS_PROFILE</span></code>.</p></li>
+</ol>
+<p>After this a “server” can be created to represent an ATS instance.</p>
 </section>
 <section id="tools">
 <h2>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">¶</a></h2>
@@ -331,6 +374,8 @@ user. This is most easily done by logging in to the Postgresql host with this co
 <li><a class="reference internal" href="#">Apache Traffic Control</a><ul>
 <li><a class="reference internal" href="#traffic-ops">Traffic Ops</a></li>
 <li><a class="reference internal" href="#traffic-portal">Traffic Portal</a></li>
+<li><a class="reference internal" href="#traffic-server">Traffic Server</a></li>
+<li><a class="reference internal" href="#administration">Administration</a></li>
 <li><a class="reference internal" href="#tools">Tools</a></li>
 <li><a class="reference internal" href="#common-issues">Common Issues</a></li>
 </ul>
