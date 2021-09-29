@@ -6,6 +6,28 @@ Apache Traffic Control
 
 My notes on creating a prototype CDN using ATC and ATS. All of this is specifically for CentOS 8.
 
+Generic Preparation
+*******************
+
+Certain bits of data applying to the overall CDN must be decided before installing. This includes
+
+*  A domain name for the CDN.
+
+*  A domain name for the CDN infrastructure (which can be the same as the CDN).
+
+*  Host names for the hosts on which Traffic Control components will installed.
+
+*  Admin user name and password.
+
+*  Vault user name and password.
+
+Various bits of the install will ask for these values, it is critical to be consistent.
+
+It is possible to decide on an install path but unless it is absolutely critical to have the
+installs in a specific location it is *much* easier to use the "/opt" default built in to Traffic
+Control. Similarly for the "traffic_ops" and "traffic_vault" users in the databases - I have
+verified it is possible to change them but it's a lot of work for very little reward. I'd avoid it.
+
 Traffic Ops
 ***********
 
@@ -85,12 +107,14 @@ treat it as the source of truth. The current recommendation is to install the da
       sudo su -c "bash -l" - postgress
 
    Create the "traffic_ops" user, in this case with the password "vgl". In production this should be
-   something a bit more secure.
+   something a bit more secure. Because of the fragility of the install process, a "traffic_vault" user
+   must also be created or the Traffic Vault database will not be populated [#]_.
 
    .. code-block::
 
       psql
       CREATE USER traffic_ops with encrypted password 'vgl';
+      CREATE USER traffic_vault with encrypted password 'vgl';
       \q
 
    If doing this by hand the terminal output should look like
@@ -103,6 +127,8 @@ treat it as the source of truth. The current recommendation is to install the da
 
       postgres=# CREATE USER traffic_ops with encrypted password 'vgl';
       CREATE ROLE
+      postgres=# CREATE USER traffic_vault with encrypted password 'vgl';
+      CREATE ROLE
       postgres=# \q
       $
 
@@ -111,7 +137,7 @@ treat it as the source of truth. The current recommendation is to install the da
    .. code-block::
 
       createdb traffic_ops --owner traffic_ops
-      createdb traffic_vault --owner traffic_ops
+      createdb traffic_vault --owner traffic_vault
 
    Then ``exit`` from the "postgres" user shell.
 
@@ -130,13 +156,27 @@ treat it as the source of truth. The current recommendation is to install the da
 
 #. Network Configuration
 
-   TLS requires a certificate and corresponding key files. These can be anywhere as long as they
-   are accessible to the "traffic_ops" process. The best locations are either in "/etc/pki" or somewhere
-   in the "traffic_ops" install directory (generally "/opt/traffic_ops"). The location of these files
-   is stored in the "cdn.conf" file in "/opt/traffic_ops/app/conf". For legacy reasons these are
-   referenced by editing the URL for the ``listen`` key under the ``hypnotoad`` key. In the query
-   string of this URL are two keys, "cert" and "key". The "cert" value must be the absolute path to
-   the certificate (".pem") file. The "key" value must the absolute path to the key ("*.key") file.
+   TLS requires a certificates, which consist of a certificate file and corresponding a key. The
+   certificate is public and the key file private, the latter being essentially the "password" for
+   the certifcate. These can be anywhere as long as they are accessible to the "traffic_ops"
+   process. Do make sure the key file has restricted read access. The best locations are either in
+   "/etc/pki" or somewhere in the "traffic_ops" install directory (generally "/opt/traffic_ops").
+   The location of these files is stored in the "cdn.conf" file in "/opt/traffic_ops/app/conf". For
+   legacy reasons these are referenced by editing the URL for the ``listen`` key under the
+   ``hypnotoad`` key. In the query string of this URL are two keys, "cert" and "key". The "cert"
+   value must be the absolute path to the certificate (".pem") file. The "key" value must the
+   absolute path to the key (".key") file.
+
+   Components that connect to Traffic Ops require the hostname to be in the certificate. The hostname
+   to check is pulled from the connection URL - that is, if Traffic Portal is set to connect to
+
+   .. code-block::
+
+      https://atc-ops
+
+   then the hostname "atc-ops" must be in the certificate. This can be done by making it the common
+   name or by putting it as a ``DNS`` entry in the SAN data. See the certificate generation scripts
+   for examples of how to do this.
 
    To allow external connections from Traffic Portal the TLS port must opened in the firewall. This is
    done with
@@ -193,42 +233,115 @@ Traffic Server
 **************
 
 This requires building an RPM for Traffic Server. There is a base ".spec" file in
-"tools/packages/trafficserver.spec". This is close but probably not quite what is needed.
-Among the changes I intend to try
-
-*  Change the ``--layout`` option to "opt" instead of "Gentoo".
+"tools/packages/trafficserver.spec". This requires some modification to work correctly. The
+primary reason is to make the paths compatible with ``t3c``.
 
 To build the RPM several packages are needed on the build machine.
+
+Base RPM tools.
 
 .. code-block::
 
    sudo dnf install -y epel-release
    sudo dnf install -y rpmdevtools
+
+Packages required by the ATS ".spec" file.
+
+.. code-block::
+
    sudo dnf --enablerepo=epel --enablerepo=powertools install -y expat-devel hwloc-devel libcurl-devel ncurses-devel
 
-The ``rpmbuild`` command will put the output in "~/rpmbuild/RPMS" and I cannot find any way to
-change that.
-
-Notes
-   The output directory can be overriden in the ".spec" file with
+The ``rpmbuild`` command will put the output in "~/rpmbuild/RPMS" by default. This can be changed in
+the ".spec" file by adding
 
    .. code-block::
 
       %_topdir /path
 
+The underlying directory structure (e.g. that the output goes in to "_topdir/RPMS" doesn't seem
+overridable.
+
+The "astats_over_http" plugin is required to enable monitoring and statistics. This is no longer
+part of the standard Traffic Server installation (it's been replaced by "stats_over_http" which is
+just enough different to not work). This will need to be obtained from the Traffic Control repository.
+I need to work out the best way to build and package it - unfortunately building requires an
+install of at least the development package from Traffic Server. For now it's a single binary
+which I copy by hand.
+
 Administration
 **************
 
-It is not possible to create "servers" (records for ATS instances) immediately. Information about
-the CDN must be created first. The steps for that are
+Before configuring any Traffic Server instances the CDN must be created in Traffic Ops.
+
+It is not possible to immediately create those "servers" (records for ATS instances). Information
+about the CDN must be created first. The steps for that are
 
 #. Define a "division".
-#. Define a "region".
-#. Define a "location" (aka "physical location").
-#. Define a "cache group".
-#. Define a "profile" of type ``ATS_PROFILE``.
 
-After this a "server" can be created to represent an ATS instance.
+#. Define a "region".
+
+#. Define a "location" (aka "physical location").
+
+#. Define a "cache group".
+
+#. Define a "profile" of type ``ATS_PROFILE``. It works best if at least two are created, one for
+   mid-tier instances and another for edge.
+
+This sets up the basic CDN. Local configuration of Traffic Server depends on "Parameters". These
+must be defined and then attached to the profile used to configure the Traffic Server instance. The
+Parameters required to configure a Traffic Server instance are
+
+===================================== ============== ===========================================
+Name                                  Config File    Value
+===================================== ============== ===========================================
+path                                  astats.config  _astats
+record_types                          astats.config   122
+allow_ip                              astats.config  127.0.0.1
+location                              astats.config  /opt/trafficserver/etc/trafficserver
+traffic_server                        package        9.1.0-el8.x86_64
+CONFIG proxy.config.http.server_ports records.config 80 80:ipv6
+===================================== ============== ===========================================
+
+There are several types of Parameters, apparently distinguished by the "Config File" value and
+sometimes the name. Generically each Parameter decribes a value / line to be placed in a configuration
+file on the local system when running ``t3c``. If other values in "records.config" are needed each
+is added as a Parameter with the name of the configuration option, the value, and the config file
+"records.config", and then the Parameter attached to the profiles which in turn are attached to
+Servers which correspond to Traffic Server instances. ``t3c`` works back from the host name to
+the Server to the Profile to the Parameters when generating local configuration files.
+
+There are some special cases.
+
+A Config File of "package" indicates this is a package to install. The actual package name is
+generated by concatenating the "name" and "value" of the Parameter. In this case, the package
+"traffic_server.9.1.0-el8.x86_64" is to be installed. This calls out to ``yum`` to do the work
+therefore if the package is already installed it is skipped.
+
+A Parameter Name of "location" indicate the location of the configuration file, not any of its
+contents. This enables moving configuration files around, but is *required* for any configuration
+file that is not part of the standard Traffic Server install. The common case for this is
+plugins which require a configuration file - that must be specified in a Parameter.
+
+Having created these Parameters, assign them to the Traffic Server profiles created earlier.
+Although these Profiles will start out identical they will rapidly diverge as more detailed
+configuration is needed.
+
+Configuration
+=============
+
+Current ``t3c`` command.
+
+.. code-block::
+
+      sudo t3c apply --verbose --run-mode=badass \
+                     --cache-host-name=mid-ts \
+                     --traffic-ops-user=admin \
+                     --traffic-ops-password=vgl \
+                     --traffic-ops-url=https://atc-ops \
+                     --git=no \
+
+The ``--cache-host`` is the key used to look up the Server in Traffic Ops which in turn controls the
+Profile used to generate the configuration files.
 
 Tools
 *****
@@ -300,8 +413,8 @@ The script to generate the root certificate.
    PREFIX=vgl DN=CA openssl req -passin pass:claudio -config ./openssl.cnf -x509 -new -nodes \
       -key vgl-ca.key -sha256 -days 36500 -batch -out vgl-ca.pem
 
-Once the root certificate has been generated, signed certificates for deployment are generated
-with this script.
+Once the root certificate has been generated, simple signed certificates for deployment are
+generated with this script.
 
 .. code-block::
 
@@ -333,6 +446,65 @@ with this script.
 
    # cleanup.
    rm -f tmp.csr
+   let N=N+1
+   echo ${N} > ca-serial-no.txt
+
+If the common name is based on the CDN and not the Traffic Ops host, an alternate script can be
+used which takes as a single argument the host name to embed in the SAN data. This scripts uses
+the domain "solidwallofcode.com" which should be changed to the domain being used for the CDN
+infrastructure.
+
+.. code-block::
+
+   # SPDX-License-Identifier: Apache-2.0
+   # Bash script to generate signed certificate for a specific host.
+
+   host="$1"
+   if [ -z "$host" ] ; then
+      echo "Usage: $(basename $0) host"
+      exit 1
+   fi
+
+   # the openssl.cnf file requires two environment variables
+   # PREFIX - the certificate prefix. This is used to decorate the distinguished name.
+   # DN - this must be "CA" for root certs and "Signed" for signed certs.
+
+   let N=$(cat ca-serial-no.txt) # signed certificate serial number.
+
+   # Generate key for the signed cert.
+   name="vgl-signed-${host}"
+   key_file="${name}.key"
+   cert_file="${name}.pem"
+
+   rm -f ${key_file}
+   PREFIX=vgl DN=Signed openssl genrsa -passout pass:claudio -out ${key_file} 2048
+
+   # Generate the CSR for the signed cert.
+   rm -f tmp.csr
+   PREFIX=vgl DN=Signed openssl req -passin pass:claudio -config ./openssl.cnf -new -key ${key_file} -addext "subjectAltName=DNS:${host}" -batch -out tmp.csr
+
+   # Generate the signed certificate. This is ugly but OpenSSL is broken - extensions (such as SANS) are flat out
+   # not carried over from the CSR to the certificate. It's listed as a bug, but no indication it will ever get fixed.
+   # Of course, there's no nice --addext option for certificate generation, so it's necessary to create a file
+   # for the extension data.
+   rm -f ${cert_file}
+   cat > sans.tmp <<SANS
+   [req_ext]
+   subjectAltName = @alt_names
+
+   [alt_names]
+   # The hostname.
+   DNS.1 = ${host}
+   # The FQDN.
+   DNS.2 = ${host}.solidwallofcode.com
+   SANS
+
+   # Finally the certificate can be generated.
+   PREFIX=vgl DN=Signed openssl x509 -passin pass:claudio -req -in tmp.csr -CA vgl-ca.pem -CAkey vgl-ca.key \
+   -set_serial 0$N -out ${cert_file} -days 36500 -sha256 -extfile sans.tmp -extensions req_ext
+
+   # cleanup.
+   rm -f tmp.csr sans.tmp
    let N=N+1
    echo ${N} > ca-serial-no.txt
 
@@ -368,3 +540,46 @@ Common Issues
    .. code-block::
 
       \q
+
+*  TLS verification requires a match between the hostname in the URL and the certificate. I solved
+   this by putting the host name (base and FQDN) in the SAN data. A new certificate generation script
+   was required. If not used, the following problem occurs.
+
+   .. code-block::
+
+      Login error Post "https://atc-ops/api/3.1/user/login": x509: certificate is not valid for any names, but wanted to match atc-ops
+
+   This can be worked around by adding the option ``--traffic-ops-insecure=true`` to the ``t3c``
+   command line but it's better to have correct certificates.
+
+Issues
+******
+
+*  To do monitoring, the "astats_over_http" plugin must be used, but this is not in the ATS 9
+   distribution and must be compiled separately.
+
+To Do
+*****
+
+*  Recreate the Traffic Server VMs with a disk layout that supports raw device caching, then adjust
+   the Traffic Ops Parameters to use those raw devices.
+
+Footnotes
+*********
+
+.. [#]
+
+   The Traffic Vault installation logic uses an SQL dump which requires the user name "traffic_vault".
+   If that user doesn't exist then no tables are created. Moreover if it does exist it will be the
+   owner of all of the tables. The user can be changed manually in the file and then the tables
+   created using
+
+   .. code-block:
+
+      su -c 'psql traffic_vault < /opt/traffic_ops/app/db/trafficvault/create_tables.sql' - postgres
+
+   The first argument is the database name (which is normally "traffic_vault"). The input seems to
+   require the full path (likely due to ``su`` changing to the "postgres" user home directory).
+   I recommend making a copy of the dump file, changing that, and then using the copy to initialize
+   the database.
+

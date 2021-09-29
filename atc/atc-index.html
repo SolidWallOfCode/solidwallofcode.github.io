@@ -44,6 +44,22 @@
   <section id="apache-traffic-control">
 <h1>Apache Traffic Control<a class="headerlink" href="#apache-traffic-control" title="Permalink to this headline">¶</a></h1>
 <p>My notes on creating a prototype CDN using ATC and ATS. All of this is specifically for CentOS 8.</p>
+<section id="generic-preparation">
+<h2>Generic Preparation<a class="headerlink" href="#generic-preparation" title="Permalink to this headline">¶</a></h2>
+<p>Certain bits of data applying to the overall CDN must be decided before installing. This includes</p>
+<ul class="simple">
+<li><p>A domain name for the CDN.</p></li>
+<li><p>A domain name for the CDN infrastructure (which can be the same as the CDN).</p></li>
+<li><p>Host names for the hosts on which Traffic Control components will installed.</p></li>
+<li><p>Admin user name and password.</p></li>
+<li><p>Vault user name and password.</p></li>
+</ul>
+<p>Various bits of the install will ask for these values, it is critical to be consistent.</p>
+<p>It is possible to decide on an install path but unless it is absolutely critical to have the
+installs in a specific location it is <em>much</em> easier to use the “/opt” default built in to Traffic
+Control. Similarly for the “traffic_ops” and “traffic_vault” users in the databases - I have
+verified it is possible to change them but it’s a lot of work for very little reward. I’d avoid it.</p>
+</section>
 <section id="traffic-ops">
 <h2>Traffic Ops<a class="headerlink" href="#traffic-ops" title="Permalink to this headline">¶</a></h2>
 <p>The Traffic Ops host will host both the Postgresql database and the ATC “traffic_ops” package.
@@ -109,9 +125,11 @@ password authentication. This involves changing “scram-sha-256” to “md5”
 </pre></div>
 </div>
 <p>Create the “traffic_ops” user, in this case with the password “vgl”. In production this should be
-something a bit more secure.</p>
+something a bit more secure. Because of the fragility of the install process, a “traffic_vault” user
+must also be created or the Traffic Vault database will not be populated <a class="footnote-reference brackets" href="#id2" id="id1">1</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psql</span>
 <span class="n">CREATE</span> <span class="n">USER</span> <span class="n">traffic_ops</span> <span class="k">with</span> <span class="n">encrypted</span> <span class="n">password</span> <span class="s1">&#39;vgl&#39;</span><span class="p">;</span>
+<span class="n">CREATE</span> <span class="n">USER</span> <span class="n">traffic_vault</span> <span class="k">with</span> <span class="n">encrypted</span> <span class="n">password</span> <span class="s1">&#39;vgl&#39;</span><span class="p">;</span>
 \<span class="n">q</span>
 </pre></div>
 </div>
@@ -122,13 +140,15 @@ Type &quot;help&quot; for help.
 
 postgres=# CREATE USER traffic_ops with encrypted password &#39;vgl&#39;;
 CREATE ROLE
+postgres=# CREATE USER traffic_vault with encrypted password &#39;vgl&#39;;
+CREATE ROLE
 postgres=# \q
 $
 </pre></div>
 </div>
 <p>Then at the shell command prompt (<em>not</em> in the <code class="docutils literal notranslate"><span class="pre">psql</span></code> environment) create the databases.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">createdb</span> <span class="n">traffic_ops</span> <span class="o">--</span><span class="n">owner</span> <span class="n">traffic_ops</span>
-<span class="n">createdb</span> <span class="n">traffic_vault</span> <span class="o">--</span><span class="n">owner</span> <span class="n">traffic_ops</span>
+<span class="n">createdb</span> <span class="n">traffic_vault</span> <span class="o">--</span><span class="n">owner</span> <span class="n">traffic_vault</span>
 </pre></div>
 </div>
 <p>Then <code class="docutils literal notranslate"><span class="pre">exit</span></code> from the “postgres” user shell.</p>
@@ -143,13 +163,24 @@ the check for postgresql superuser may not work. Line 38 may need to be changed 
 <p>For the “secrets”, this is still a bit of a mystery to me.</p>
 </li>
 <li><p>Network Configuration</p>
-<p>TLS requires a certificate and corresponding key files. These can be anywhere as long as they
-are accessible to the “traffic_ops” process. The best locations are either in “/etc/pki” or somewhere
-in the “traffic_ops” install directory (generally “/opt/traffic_ops”). The location of these files
-is stored in the “cdn.conf” file in “/opt/traffic_ops/app/conf”. For legacy reasons these are
-referenced by editing the URL for the <code class="docutils literal notranslate"><span class="pre">listen</span></code> key under the <code class="docutils literal notranslate"><span class="pre">hypnotoad</span></code> key. In the query
-string of this URL are two keys, “cert” and “key”. The “cert” value must be the absolute path to
-the certificate (“.pem”) file. The “key” value must the absolute path to the key (”<a href="#id1"><span class="problematic" id="id2">*</span></a>.key”) file.</p>
+<p>TLS requires a certificates, which consist of a certificate file and corresponding a key. The
+certificate is public and the key file private, the latter being essentially the “password” for
+the certifcate. These can be anywhere as long as they are accessible to the “traffic_ops”
+process. Do make sure the key file has restricted read access. The best locations are either in
+“/etc/pki” or somewhere in the “traffic_ops” install directory (generally “/opt/traffic_ops”).
+The location of these files is stored in the “cdn.conf” file in “/opt/traffic_ops/app/conf”. For
+legacy reasons these are referenced by editing the URL for the <code class="docutils literal notranslate"><span class="pre">listen</span></code> key under the
+<code class="docutils literal notranslate"><span class="pre">hypnotoad</span></code> key. In the query string of this URL are two keys, “cert” and “key”. The “cert”
+value must be the absolute path to the certificate (“.pem”) file. The “key” value must the
+absolute path to the key (“.key”) file.</p>
+<p>Components that connect to Traffic Ops require the hostname to be in the certificate. The hostname
+to check is pulled from the connection URL - that is, if Traffic Portal is set to connect to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">atc</span><span class="o">-</span><span class="n">ops</span>
+</pre></div>
+</div>
+<p>then the hostname “atc-ops” must be in the certificate. This can be done by making it the common
+name or by putting it as a <code class="docutils literal notranslate"><span class="pre">DNS</span></code> entry in the SAN data. See the certificate generation scripts
+for examples of how to do this.</p>
 <p>To allow external connections from Traffic Portal the TLS port must opened in the firewall. This is
 done with</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">firewall</span><span class="o">-</span><span class="n">cmd</span> <span class="o">--</span><span class="n">permanent</span> <span class="o">--</span><span class="n">zone</span><span class="o">=</span><span class="n">public</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">service</span><span class="o">=</span><span class="n">https</span>
@@ -198,39 +229,122 @@ to the Traffic Ops host for data.</p>
 <section id="traffic-server">
 <h2>Traffic Server<a class="headerlink" href="#traffic-server" title="Permalink to this headline">¶</a></h2>
 <p>This requires building an RPM for Traffic Server. There is a base “.spec” file in
-“tools/packages/trafficserver.spec”. This is close but probably not quite what is needed.
-Among the changes I intend to try</p>
-<ul class="simple">
-<li><p>Change the <code class="docutils literal notranslate"><span class="pre">--layout</span></code> option to “opt” instead of “Gentoo”.</p></li>
-</ul>
+“tools/packages/trafficserver.spec”. This requires some modification to work correctly. The
+primary reason is to make the paths compatible with <code class="docutils literal notranslate"><span class="pre">t3c</span></code>.</p>
 <p>To build the RPM several packages are needed on the build machine.</p>
+<p>Base RPM tools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">epel</span><span class="o">-</span><span class="n">release</span>
 <span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">rpmdevtools</span>
-<span class="n">sudo</span> <span class="n">dnf</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">epel</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">powertools</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">expat</span><span class="o">-</span><span class="n">devel</span> <span class="n">hwloc</span><span class="o">-</span><span class="n">devel</span> <span class="n">libcurl</span><span class="o">-</span><span class="n">devel</span> <span class="n">ncurses</span><span class="o">-</span><span class="n">devel</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">rpmbuild</span></code> command will put the output in “~/rpmbuild/RPMS” and I cannot find any way to
-change that.</p>
-<dl>
-<dt>Notes</dt><dd><p>The output directory can be overriden in the “.spec” file with</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">_topdir</span> <span class="o">/</span><span class="n">path</span>
+<p>Packages required by the ATS “.spec” file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">epel</span> <span class="o">--</span><span class="n">enablerepo</span><span class="o">=</span><span class="n">powertools</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">expat</span><span class="o">-</span><span class="n">devel</span> <span class="n">hwloc</span><span class="o">-</span><span class="n">devel</span> <span class="n">libcurl</span><span class="o">-</span><span class="n">devel</span> <span class="n">ncurses</span><span class="o">-</span><span class="n">devel</span>
 </pre></div>
 </div>
-</dd>
-</dl>
+<p>The <code class="docutils literal notranslate"><span class="pre">rpmbuild</span></code> command will put the output in “~/rpmbuild/RPMS” by default. This can be changed in
+the “.spec” file by adding</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">_topdir</span> <span class="o">/</span><span class="n">path</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The underlying directory structure (e.g. that the output goes in to “_topdir/RPMS” doesn’t seem
+overridable.</p>
+<p>The “astats_over_http” plugin is required to enable monitoring and statistics. This is no longer
+part of the standard Traffic Server installation (it’s been replaced by “stats_over_http” which is
+just enough different to not work). This will need to be obtained from the Traffic Control repository.
+I need to work out the best way to build and package it - unfortunately building requires an
+install of at least the development package from Traffic Server. For now it’s a single binary
+which I copy by hand.</p>
 </section>
 <section id="administration">
 <h2>Administration<a class="headerlink" href="#administration" title="Permalink to this headline">¶</a></h2>
-<p>It is not possible to create “servers” (records for ATS instances) immediately. Information about
-the CDN must be created first. The steps for that are</p>
+<p>Before configuring any Traffic Server instances the CDN must be created in Traffic Ops.</p>
+<p>It is not possible to immediately create those “servers” (records for ATS instances). Information
+about the CDN must be created first. The steps for that are</p>
 <ol class="arabic simple">
 <li><p>Define a “division”.</p></li>
 <li><p>Define a “region”.</p></li>
 <li><p>Define a “location” (aka “physical location”).</p></li>
 <li><p>Define a “cache group”.</p></li>
-<li><p>Define a “profile” of type <code class="docutils literal notranslate"><span class="pre">ATS_PROFILE</span></code>.</p></li>
+<li><p>Define a “profile” of type <code class="docutils literal notranslate"><span class="pre">ATS_PROFILE</span></code>. It works best if at least two are created, one for
+mid-tier instances and another for edge.</p></li>
 </ol>
-<p>After this a “server” can be created to represent an ATS instance.</p>
+<p>This sets up the basic CDN. Local configuration of Traffic Server depends on “Parameters”. These
+must be defined and then attached to the profile used to configure the Traffic Server instance. The
+Parameters required to configure a Traffic Server instance are</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 39%" />
+<col style="width: 15%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Config File</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>path</p></td>
+<td><p>astats.config</p></td>
+<td><p>_astats</p></td>
+</tr>
+<tr class="row-odd"><td><p>record_types</p></td>
+<td><p>astats.config</p></td>
+<td><p>122</p></td>
+</tr>
+<tr class="row-even"><td><p>allow_ip</p></td>
+<td><p>astats.config</p></td>
+<td><p>127.0.0.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>location</p></td>
+<td><p>astats.config</p></td>
+<td><p>/opt/trafficserver/etc/trafficserver</p></td>
+</tr>
+<tr class="row-even"><td><p>traffic_server</p></td>
+<td><p>package</p></td>
+<td><p>9.1.0-el8.x86_64</p></td>
+</tr>
+<tr class="row-odd"><td><p>CONFIG proxy.config.http.server_ports</p></td>
+<td><p>records.config</p></td>
+<td><p>80 80:ipv6</p></td>
+</tr>
+</tbody>
+</table>
+<p>There are several types of Parameters, apparently distinguished by the “Config File” value and
+sometimes the name. Generically each Parameter decribes a value / line to be placed in a configuration
+file on the local system when running <code class="docutils literal notranslate"><span class="pre">t3c</span></code>. If other values in “records.config” are needed each
+is added as a Parameter with the name of the configuration option, the value, and the config file
+“records.config”, and then the Parameter attached to the profiles which in turn are attached to
+Servers which correspond to Traffic Server instances. <code class="docutils literal notranslate"><span class="pre">t3c</span></code> works back from the host name to
+the Server to the Profile to the Parameters when generating local configuration files.</p>
+<p>There are some special cases.</p>
+<p>A Config File of “package” indicates this is a package to install. The actual package name is
+generated by concatenating the “name” and “value” of the Parameter. In this case, the package
+“traffic_server.9.1.0-el8.x86_64” is to be installed. This calls out to <code class="docutils literal notranslate"><span class="pre">yum</span></code> to do the work
+therefore if the package is already installed it is skipped.</p>
+<p>A Parameter Name of “location” indicate the location of the configuration file, not any of its
+contents. This enables moving configuration files around, but is <em>required</em> for any configuration
+file that is not part of the standard Traffic Server install. The common case for this is
+plugins which require a configuration file - that must be specified in a Parameter.</p>
+<p>Having created these Parameters, assign them to the Traffic Server profiles created earlier.
+Although these Profiles will start out identical they will rapidly diverge as more detailed
+configuration is needed.</p>
+<section id="configuration">
+<h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
+<p>Current <code class="docutils literal notranslate"><span class="pre">t3c</span></code> command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">t3c</span> <span class="n">apply</span> <span class="o">--</span><span class="n">verbose</span> <span class="o">--</span><span class="n">run</span><span class="o">-</span><span class="n">mode</span><span class="o">=</span><span class="n">badass</span> \
+               <span class="o">--</span><span class="n">cache</span><span class="o">-</span><span class="n">host</span><span class="o">-</span><span class="n">name</span><span class="o">=</span><span class="n">mid</span><span class="o">-</span><span class="n">ts</span> \
+               <span class="o">--</span><span class="n">traffic</span><span class="o">-</span><span class="n">ops</span><span class="o">-</span><span class="n">user</span><span class="o">=</span><span class="n">admin</span> \
+               <span class="o">--</span><span class="n">traffic</span><span class="o">-</span><span class="n">ops</span><span class="o">-</span><span class="n">password</span><span class="o">=</span><span class="n">vgl</span> \
+               <span class="o">--</span><span class="n">traffic</span><span class="o">-</span><span class="n">ops</span><span class="o">-</span><span class="n">url</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">atc</span><span class="o">-</span><span class="n">ops</span> \
+               <span class="o">--</span><span class="n">git</span><span class="o">=</span><span class="n">no</span> \
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">--cache-host</span></code> is the key used to look up the Server in Traffic Ops which in turn controls the
+Profile used to generate the configuration files.</p>
+</section>
 </section>
 <section id="tools">
 <h2>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">¶</a></h2>
@@ -294,8 +408,8 @@ L = Dazed
    <span class="o">-</span><span class="n">key</span> <span class="n">vgl</span><span class="o">-</span><span class="n">ca</span><span class="o">.</span><span class="n">key</span> <span class="o">-</span><span class="n">sha256</span> <span class="o">-</span><span class="n">days</span> <span class="mi">36500</span> <span class="o">-</span><span class="n">batch</span> <span class="o">-</span><span class="n">out</span> <span class="n">vgl</span><span class="o">-</span><span class="n">ca</span><span class="o">.</span><span class="n">pem</span>
 </pre></div>
 </div>
-<p>Once the root certificate has been generated, signed certificates for deployment are generated
-with this script.</p>
+<p>Once the root certificate has been generated, simple signed certificates for deployment are
+generated with this script.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># SPDX-License-Identifier: Apache-2.0
 # Bash script to generate signed certificates.
 
@@ -328,6 +442,63 @@ let N=N+1
 echo ${N} &gt; ca-serial-no.txt
 </pre></div>
 </div>
+<p>If the common name is based on the CDN and not the Traffic Ops host, an alternate script can be
+used which takes as a single argument the host name to embed in the SAN data. This scripts uses
+the domain “solidwallofcode.com” which should be changed to the domain being used for the CDN
+infrastructure.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># SPDX-License-Identifier: Apache-2.0
+# Bash script to generate signed certificate for a specific host.
+
+host=&quot;$1&quot;
+if [ -z &quot;$host&quot; ] ; then
+   echo &quot;Usage: $(basename $0) host&quot;
+   exit 1
+fi
+
+# the openssl.cnf file requires two environment variables
+# PREFIX - the certificate prefix. This is used to decorate the distinguished name.
+# DN - this must be &quot;CA&quot; for root certs and &quot;Signed&quot; for signed certs.
+
+let N=$(cat ca-serial-no.txt) # signed certificate serial number.
+
+# Generate key for the signed cert.
+name=&quot;vgl-signed-${host}&quot;
+key_file=&quot;${name}.key&quot;
+cert_file=&quot;${name}.pem&quot;
+
+rm -f ${key_file}
+PREFIX=vgl DN=Signed openssl genrsa -passout pass:claudio -out ${key_file} 2048
+
+# Generate the CSR for the signed cert.
+rm -f tmp.csr
+PREFIX=vgl DN=Signed openssl req -passin pass:claudio -config ./openssl.cnf -new -key ${key_file} -addext &quot;subjectAltName=DNS:${host}&quot; -batch -out tmp.csr
+
+# Generate the signed certificate. This is ugly but OpenSSL is broken - extensions (such as SANS) are flat out
+# not carried over from the CSR to the certificate. It&#39;s listed as a bug, but no indication it will ever get fixed.
+# Of course, there&#39;s no nice --addext option for certificate generation, so it&#39;s necessary to create a file
+# for the extension data.
+rm -f ${cert_file}
+cat &gt; sans.tmp &lt;&lt;SANS
+[req_ext]
+subjectAltName = @alt_names
+
+[alt_names]
+# The hostname.
+DNS.1 = ${host}
+# The FQDN.
+DNS.2 = ${host}.solidwallofcode.com
+SANS
+
+# Finally the certificate can be generated.
+PREFIX=vgl DN=Signed openssl x509 -passin pass:claudio -req -in tmp.csr -CA vgl-ca.pem -CAkey vgl-ca.key \
+-set_serial 0$N -out ${cert_file} -days 36500 -sha256 -extfile sans.tmp -extensions req_ext
+
+# cleanup.
+rm -f tmp.csr sans.tmp
+let N=N+1
+echo ${N} &gt; ca-serial-no.txt
+</pre></div>
+</div>
 <p>Note - install a certificate for use requires both the certificate file “.pem” and the key file “.key”.
 The root certificate may need to be installed but the root key must <em>never</em> be deployed on a production
 machine. It is used only to generate the signed certificates that are deployed.</p>
@@ -355,7 +526,45 @@ user. This is most easily done by logging in to the Postgresql host with this co
 </pre></div>
 </div>
 </li>
+<li><p>TLS verification requires a match between the hostname in the URL and the certificate. I solved
+this by putting the host name (base and FQDN) in the SAN data. A new certificate generation script
+was required. If not used, the following problem occurs.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Login</span> <span class="n">error</span> <span class="n">Post</span> <span class="s2">&quot;https://atc-ops/api/3.1/user/login&quot;</span><span class="p">:</span> <span class="n">x509</span><span class="p">:</span> <span class="n">certificate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">valid</span> <span class="k">for</span> <span class="nb">any</span> <span class="n">names</span><span class="p">,</span> <span class="n">but</span> <span class="n">wanted</span> <span class="n">to</span> <span class="n">match</span> <span class="n">atc</span><span class="o">-</span><span class="n">ops</span>
+</pre></div>
+</div>
+<p>This can be worked around by adding the option <code class="docutils literal notranslate"><span class="pre">--traffic-ops-insecure=true</span></code> to the <code class="docutils literal notranslate"><span class="pre">t3c</span></code>
+command line but it’s better to have correct certificates.</p>
+</li>
 </ul>
+</section>
+<section id="issues">
+<h2>Issues<a class="headerlink" href="#issues" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>To do monitoring, the “astats_over_http” plugin must be used, but this is not in the ATS 9
+distribution and must be compiled separately.</p></li>
+</ul>
+</section>
+<section id="to-do">
+<h2>To Do<a class="headerlink" href="#to-do" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Recreate the Traffic Server VMs with a disk layout that supports raw device caching, then adjust
+the Traffic Ops Parameters to use those raw devices.</p></li>
+</ul>
+</section>
+<section id="footnotes">
+<h2>Footnotes<a class="headerlink" href="#footnotes" title="Permalink to this headline">¶</a></h2>
+<dl class="footnote brackets">
+<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>The Traffic Vault installation logic uses an SQL dump which requires the user name “traffic_vault”.
+If that user doesn’t exist then no tables are created. Moreover if it does exist it will be the
+owner of all of the tables. The user can be changed manually in the file and then the tables
+created using</p>
+<p>The first argument is the database name (which is normally “traffic_vault”). The input seems to
+require the full path (likely due to <code class="docutils literal notranslate"><span class="pre">su</span></code> changing to the “postgres” user home directory).
+I recommend making a copy of the dump file, changing that, and then using the copy to initialize
+the database.</p>
+</dd>
+</dl>
 </section>
 </section>
 
@@ -372,12 +581,19 @@ user. This is most easily done by logging in to the Postgresql host with this co
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Apache Traffic Control</a><ul>
+<li><a class="reference internal" href="#generic-preparation">Generic Preparation</a></li>
 <li><a class="reference internal" href="#traffic-ops">Traffic Ops</a></li>
 <li><a class="reference internal" href="#traffic-portal">Traffic Portal</a></li>
 <li><a class="reference internal" href="#traffic-server">Traffic Server</a></li>
-<li><a class="reference internal" href="#administration">Administration</a></li>
+<li><a class="reference internal" href="#administration">Administration</a><ul>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#tools">Tools</a></li>
 <li><a class="reference internal" href="#common-issues">Common Issues</a></li>
+<li><a class="reference internal" href="#issues">Issues</a></li>
+<li><a class="reference internal" href="#to-do">To Do</a></li>
+<li><a class="reference internal" href="#footnotes">Footnotes</a></li>
 </ul>
 </li>
 </ul>
