@@ -72,6 +72,30 @@ response is done by the strategizer. This includes not only HTTP responses but a
 Even though the session is open at the time the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> receives it, that does not guarantee the
 absence of further network problems.</p>
 <figure class="align-center" id="id3">
+<p class="plantuml">
+<object data="../_images/plantuml-69d8fd80b473b6ee681613d8862008712c79b1ae.svg" type="image/svg+xml" style="width:459px;height:455px;">
+<img src="../_images/plantuml-69d8fd80b473b6ee681613d8862008712c79b1ae.png" alt="entity L7Policy
+actor Strategizer
+actor HttpSM
+participant Upstream
+
+hide footbox
+
+HttpSM -\ L7Policy : create &quot;tag&quot;
+L7Policy -/ HttpSM : return: Strategizer
+activate Strategizer
+Strategizer -&gt; HttpSM : SESSION_READY
+note right : Contains session
+HttpSM -&gt; Upstream : HTTP Request
+Upstream -&gt; HttpSM : Upstream Response
+HttpSM -&gt; HttpSM : Read response.
+HttpSM -\ Strategizer : result
+note right : Contains response
+Strategizer -/ HttpSM : return: ACTION
+HttpSM -&gt; HttpSM : process response
+HttpSM -&gt; Strategizer : finish"/>
+
+</object></p>
 <figcaption>
 <p><span class="caption-text">Generic Transaction</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </figcaption>
@@ -99,6 +123,31 @@ strategy completion to send data to the user agent - that flow needs to start as
 The <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> can no longer know if that is correct without consulting the strategizer therefore that
 must be a synchronous call.</p>
 <figure class="align-center" id="id4">
+<p class="plantuml">
+<object data="../_images/plantuml-48ea60bdd194290b59121ebfb67c5eb41896fdb7.svg" type="image/svg+xml" style="width:484px;height:498px;">
+<img src="../_images/plantuml-48ea60bdd194290b59121ebfb67c5eb41896fdb7.png" alt="entity L7Policy
+actor Strategizer
+actor HttpSM
+participant Upstream
+
+hide footbox
+
+HttpSM -\ L7Policy : create &quot;tag&quot;
+L7Policy -/ HttpSM : return: Strategizer
+activate Strategizer
+Strategizer -&gt; HttpSM : SESSION_READY
+note right : Contains session
+HttpSM -&gt; Upstream : HTTP Request
+Upstream -&gt; HttpSM : &quot;&quot;200 OK&quot;&quot;
+HttpSM -&gt; HttpSM : Read response header.
+HttpSM -\ Strategizer : result
+note right : HTTP 200 Response
+Strategizer -/ HttpSM : return: DONE
+HttpSM -&gt; HttpSM : Read upstream response,\nsend to user agent.
+...
+HttpSM -&gt; Strategizer : finish"/>
+
+</object></p>
 <figcaption>
 <p><span class="caption-text">Successful Transaction</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </figcaption>
@@ -109,12 +158,83 @@ multiple upstream pods for specific content, a <code class="docutils literal not
 rather than returning the response to the user agent. The <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> must drain any body from the response
 but needs to know, while draining, that the body will not be returned to the user agent.</p>
 <figure class="align-center" id="id5">
+<p class="plantuml">
+<object data="../_images/plantuml-b8efb6194521f6a6d9b28e31faf7fe1c5e9f66fb.svg" type="image/svg+xml" style="width:527px;height:583px;">
+<img src="../_images/plantuml-b8efb6194521f6a6d9b28e31faf7fe1c5e9f66fb.png" alt="entity L7Policy
+actor Strategizer
+actor HttpSM
+participant Upstream
+
+hide footbox
+
+HttpSM -\ L7Policy : create &quot;tag&quot;
+L7Policy -/ HttpSM : return: Strategizer
+activate Strategizer
+Strategizer -&gt; HttpSM : SESSION_READY
+note right : Contains session
+HttpSM -&gt; Upstream : HTTP Request
+Upstream -&gt; HttpSM : &quot;&quot;404 NOT FOUND&quot;&quot;
+HttpSM -&gt; HttpSM : Read response header.
+HttpSM -\ Strategizer : result
+note right : HTTP 404 Response
+Strategizer -/ HttpSM : return: RETRY
+HttpSM -&gt; HttpSM : Drain upstream response body
+...
+HttpSM -&gt; Strategizer : finish
+...
+Strategizer -&gt; HttpSM : SESSION_READY
+== As 200 OK case =="/>
+
+</object></p>
 <figcaption>
 <p><span class="caption-text">Fail / Retry Transaction</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Another view of the activity demonstrates the “co-routine” like nature of the interaction. Both the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> and strategizer perform blocking operations where the other side must wait for an event or signal to indication the operation has completed. The basic logic is</p>
 <figure class="align-center" id="id6">
+<p class="plantuml">
+<object data="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.svg" type="image/svg+xml" style="width:885px;height:405px;">
+<img src="../_images/plantuml-c736395380fc220dc25cafb2a414e6a4f72d4964.png" alt="partition HttpSM {
+   (*) --&gt; &quot;Determine strategy tag&quot;
+}
+
+partition Strategy {
+   &quot;Determine strategy tag&quot; --&gt; &quot;Create strategizer instance&quot;
+   &quot;Create strategizer instance&quot; -u-&gt; &quot;Connect upstream&quot;
+   &quot;Connect upstream&quot; --&gt; &quot;Event: SESSION_READY&quot;
+}
+
+partition HttpSM {
+   &quot;Event: SESSION_READY&quot; -l-&gt;  if &quot;send request&quot; then
+      --&gt;[net error] ===RESULT===
+   else
+      --&gt;[success] &quot;Read Response Header&quot;
+      -&gt; ===RESULT===
+   endif
+}
+
+partition Strategy {
+   --&gt; &quot;Compute next action&quot;
+}
+
+partition HttpSM {
+   if &quot;ACTION&quot; then
+      --&gt;[DONE] &quot;Forward to User Agent&quot;
+   else
+      --&gt;[RETRY] &quot;Drain session&quot;
+   endif
+}
+
+partition Strategy {
+   &quot;Drain session&quot; --&gt;[finish()] &quot;Connect upstream&quot;
+   &quot;Forward to User Agent&quot; -down-&gt;[finish()] &quot;Destruct&quot;
+}
+
+partition HttpSM {
+   &quot;Destruct&quot; --&gt; (*)
+}"/>
+
+</object></p>
 <figcaption>
 <p><span class="caption-text">Upstream session logic</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </figcaption>
@@ -123,6 +243,28 @@ but needs to know, while draining, that the body will not be returned to the use
 nemesis of redirection or other upstream connection failures requiring rolling back the <code class="code docutils literal notranslate"><span class="pre">HttpSM</span></code> state
 will be avoided. Instead there is a simpler loop which spans a much smaller set of states.</p>
 <figure class="align-center" id="id7">
+<p class="plantuml">
+<object data="../_images/plantuml-441af616861ab2bacfe88f69e9fffa08f9b5bd46.svg" type="image/svg+xml" style="width:471px;height:700px;">
+<img src="../_images/plantuml-441af616861ab2bacfe88f69e9fffa08f9b5bd46.png" alt="[*] -&gt; ServerOpen
+ServerOpen -&gt; WaitForTransaction
+WaitForTransaction --&gt; HandleServerTransaction : SESSION_READY
+HandleServerTransaction --&gt; ReadResponseHeader
+ReadResponseHeader --&gt; HandleResponseHeader : HTTP response
+ReadResponseHeader -&gt; ReportServerResponse : network error
+ReportServerResponse -&gt; DrainResponse : ACTION: RETRY
+DrainResponse --&gt; WaitForTransaction
+HandleResponseHeader --&gt; ReportServerResponse
+ReportServerResponse --&gt; HandleServerResponse : ACTION: DONE
+
+state ServerOpen : Create Strategizer
+HandleServerTransaction : Send request
+ReadResponseHeader : Wait for upstream response
+HandleResponseHeader : Read and validate header
+ReportServerResponse: Report to stategizer\nGet next action
+HandleServerResponse : Send response to User Agent\nSignal strategizer
+DrainResponse : Drain reponse\nSignal strategizer"/>
+
+</object></p>
 <figcaption>
 <p><span class="caption-text">State Machine Upstream States</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </figcaption>
