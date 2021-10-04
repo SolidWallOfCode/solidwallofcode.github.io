@@ -47,9 +47,7 @@ STL types
 Builtin Types
 =============
 
-.. type:: size_t
 .. c:type:: int64_t
-.. c:type:: bool
 
 .. _custom-logging-fields:
 
