@@ -186,6 +186,13 @@ treat it as the source of truth. The current recommendation is to install the da
       sudo firewall-cmd --permanent --zone=public --add-service=https
       sudo firewall-cmd --reload
 
+   To enable other components to communicate securely with Traffic Ops those systems must be able to
+   verify the certicate installed on Traffic Ops. This in turns requires installing the corresponding
+   root certificate on the host with the component that must connect to Traffic Ops.
+
+   #. Copy the root certificate to "/usr/share/pki/ca-trust-sources/anchors".
+   #. Run the (privileged) command ``update-ca-trust``.
+
 .. rubric:: References
 
 * `Installing Traffic Ops <https://traffic-control-cdn.readthedocs.io/en/latest/admin/traffic_ops.html>`__
@@ -406,6 +413,25 @@ in to the SAN data in way that validates with ATC components. The script uses th
    Installing a certificate for use requires both the certificate file ".pem" and the key file
    ".key". The root certificate may need to be installed but the root key must *never* be deployed
    on a production machine. It is used only to generate the signed certificates that are deployed.
+
+Ancillary Technology
+********************
+
+DNS
+===
+
+I used ``bind`` which is a standard package for Unix distributions. It's a bit over powered but it's
+very easy to install.
+
+.. code-block::
+
+   sudo dnf install -y bind bind-utils
+   sudo firewall-cmd --permanent --add-service=dns --zone=public
+   sudo firewall-cmd --reload
+   sudo systemctl enable named
+   sudo systemctl start named
+
+Domain searching is configured in "/etc/resolv.conf".
 
 Common Issues
 *************

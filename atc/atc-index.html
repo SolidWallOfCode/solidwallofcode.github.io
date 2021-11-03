@@ -187,6 +187,13 @@ done with</p>
 <span class="n">sudo</span> <span class="n">firewall</span><span class="o">-</span><span class="n">cmd</span> <span class="o">--</span><span class="n">reload</span>
 </pre></div>
 </div>
+<p>To enable other components to communicate securely with Traffic Ops those systems must be able to
+verify the certicate installed on Traffic Ops. This in turns requires installing the corresponding
+root certificate on the host with the component that must connect to Traffic Ops.</p>
+<ol class="arabic simple">
+<li><p>Copy the root certificate to “/usr/share/pki/ca-trust-sources/anchors”.</p></li>
+<li><p>Run the (privileged) command <code class="docutils literal notranslate"><span class="pre">update-ca-trust</span></code>.</p></li>
+</ol>
 </li>
 </ol>
 <p class="rubric">References</p>
@@ -532,6 +539,22 @@ echo ${N} &gt; ca-serial-no.txt
 on a production machine. It is used only to generate the signed certificates that are deployed.</p>
 </div>
 </section>
+<section id="ancillary-technology">
+<h2>Ancillary Technology<a class="headerlink" href="#ancillary-technology" title="Permalink to this headline">¶</a></h2>
+<section id="dns">
+<h3>DNS<a class="headerlink" href="#dns" title="Permalink to this headline">¶</a></h3>
+<p>I used <code class="docutils literal notranslate"><span class="pre">bind</span></code> which is a standard package for Unix distributions. It’s a bit over powered but it’s
+very easy to install.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">bind</span> <span class="n">bind</span><span class="o">-</span><span class="n">utils</span>
+<span class="n">sudo</span> <span class="n">firewall</span><span class="o">-</span><span class="n">cmd</span> <span class="o">--</span><span class="n">permanent</span> <span class="o">--</span><span class="n">add</span><span class="o">-</span><span class="n">service</span><span class="o">=</span><span class="n">dns</span> <span class="o">--</span><span class="n">zone</span><span class="o">=</span><span class="n">public</span>
+<span class="n">sudo</span> <span class="n">firewall</span><span class="o">-</span><span class="n">cmd</span> <span class="o">--</span><span class="n">reload</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">named</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">start</span> <span class="n">named</span>
+</pre></div>
+</div>
+<p>Domain searching is configured in “/etc/resolv.conf”.</p>
+</section>
+</section>
 <section id="common-issues">
 <h2>Common Issues<a class="headerlink" href="#common-issues" title="Permalink to this headline">¶</a></h2>
 <ul>
@@ -619,6 +642,10 @@ the database.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#tools">Tools</a></li>
+<li><a class="reference internal" href="#ancillary-technology">Ancillary Technology</a><ul>
+<li><a class="reference internal" href="#dns">DNS</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#common-issues">Common Issues</a></li>
 <li><a class="reference internal" href="#issues">Issues</a></li>
 <li><a class="reference internal" href="#to-do">To Do</a></li>
